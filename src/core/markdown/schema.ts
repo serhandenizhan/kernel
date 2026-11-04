@@ -11,3 +11,6 @@ export type CalloutType = (typeof CALLOUT_TYPES)[number]
 
 /** Escape edilmiş "\=" için geçici özel karakter (U+E000) */
 export const ESCAPED_EQ = ''
+
+/** Escape edilmiş "\[" için geçici özel karakter (U+E001): düz [[metin]] wiki link sanılmasın */
+export const ESCAPED_LB = '\uE001'

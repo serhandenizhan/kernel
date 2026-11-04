@@ -14,12 +14,9 @@ export function sanitizeTitle(title: string): string {
   return t || 'Adsız'
 }
 
-/**
- * APFS'teki büyük/küçük harf duyarsızlığına göre karşılaştırma anahtarı.
- * APFS "I"yı "i" sayar (Unicode varsayılan katlama); Türkçe toLocaleLowerCase ise "I"yı "ı" yapar ve çakışmayı kaçırır.
- * I/İ/ı/i hepsi aynı kabul edilir: gerekirse fazladan " (2)" eklenir ama asla üzerine yazılmaz.
- */
-export const foldKey = (s: string) => s.normalize('NFC').replace(/[Iİı]/g, 'i').toLowerCase().normalize('NFC')
+import { foldKey } from '@core/fold'
+
+export { foldKey }
 const key = foldKey
 
 // APFS varsayılan olarak büyük/küçük harfe duyarsızdır; karşılaştırma buna göre yapılır

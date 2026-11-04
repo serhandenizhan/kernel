@@ -3,7 +3,7 @@ import remarkParse from 'remark-parse'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import type { Nodes, Parents, PhrasingContent, RootContent, List, Table } from 'mdast'
-import { CALLOUT_TYPES, ESCAPED_EQ, MARK_ORDER, type CalloutType, type JSONContent } from './schema'
+import { CALLOUT_TYPES, ESCAPED_EQ, ESCAPED_LB, MARK_ORDER, type CalloutType, type JSONContent } from './schema'
 import { DETAILS_CLOSE, parseDetailsOpen, parseInlineHtml } from './html-blocks'
 
 type Mark = NonNullable<JSONContent['marks']>[number]
@@ -15,7 +15,7 @@ export function markdownToDoc(md: string): JSONContent {
   // .md uzantılı ikili dosya: düzenlenirse bozulur, salt okunur açılmalı
   if (md.includes('\u0000')) throw new Error('Dosya ikili veri içeriyor')
   // "\=" kaçışlarını koru: remark onları "=" yapar ve == vurgusundan ayırt edilemez hale gelirdi
-  const src = md.replace(/\\=/g, ESCAPED_EQ)
+  const src = md.replace(/\\=/g, ESCAPED_EQ).replace(/\\\[/g, ESCAPED_LB)
   const tree = processor.parse(src)
   // referans linkleri/görselleri tanımlarından çözülür (tanımlar satır içi bağlantıya dönüşür)
   resolveReferences(tree, collectDefinitions(tree))
@@ -49,8 +49,8 @@ function parseInlineMarkdown(md: string): JSONContent[] {
   return first?.type === 'paragraph' ? (first.content ?? []) : []
 }
 
-const restoreText = (s: string) => s.replaceAll(ESCAPED_EQ, '=')
-const restoreRaw = (s: string) => s.replaceAll(ESCAPED_EQ, '\\=')
+const restoreText = (s: string) => s.replaceAll(ESCAPED_EQ, '=').replaceAll(ESCAPED_LB, '[')
+const restoreRaw = (s: string) => s.replaceAll(ESCAPED_EQ, '\\=').replaceAll(ESCAPED_LB, '\\[')
 
 function convertBlocks(nodes: RootContent[]): JSONContent[] {
   const out: JSONContent[] = []
@@ -75,7 +75,7 @@ function convertBlocks(nodes: RootContent[]): JSONContent[] {
         const summary = parseInlineMarkdown(open.summary)
         out.push({
           type: 'details',
-          attrs: { card: open.card },
+          attrs: { card: open.card, heading: open.heading },
           content: [
             summary.length ? { type: 'detailsSummary', content: summary } : { type: 'detailsSummary' },
             { type: 'detailsContent', content: inner.length ? inner : [{ type: 'paragraph' }] }
@@ -139,6 +139,10 @@ function withContent(node: JSONContent, content: JSONContent[]): JSONContent {
 }
 
 function convertParagraph(children: PhrasingContent[]): JSONContent[] {
+  // tek başına ![[yol.pdf]] → gömülü PDF
+  const only = children.length === 1 ? children[0] : undefined
+  const embed = only?.type === 'text' ? /^!\[\[([^\]\n]+\.pdf)\]\]$/i.exec(only.value.trim()) : null
+  if (embed) return [{ type: 'pdfEmbed', attrs: { src: restoreText(embed[1]!) } }]
   const meaningful = children.filter((c) => !(c.type === 'text' && !c.value.trim()) && c.type !== 'break')
   // yalnızca görsel (ve isteğe bağlı *alt yazı*) içeren paragraf → görsel bloğu
   const img = meaningful[0]
@@ -274,8 +278,26 @@ function walkInline(nodes: PhrasingContent[], marks: Mark[], htmlMarks: Mark[], 
   }
 }
 
-/** Metindeki ==vurgu== işaretlerini ayırır */
+/** Metindeki [[wiki link]] ve ==vurgu== işaretlerini ayırır */
 function pushText(out: JSONContent[], value: string, marks: Mark[]): void {
+  if (!value) return
+  const wiki = /\[\[([^[\]|\n]+?)(?:\|([^[\]\n]+?))?\]\]/g
+  let wlast = 0
+  let found = false
+  for (let m = wiki.exec(value); m; m = wiki.exec(value)) {
+    found = true
+    if (m.index > wlast) pushHighlights(out, value.slice(wlast, m.index), marks)
+    out.push({ type: 'wikiLink', attrs: { target: restoreText(m[1]!.trim()), label: m[2] ? restoreText(m[2].trim()) : null } })
+    wlast = m.index + m[0].length
+  }
+  if (found) {
+    if (wlast < value.length) pushHighlights(out, value.slice(wlast), marks)
+    return
+  }
+  pushHighlights(out, value, marks)
+}
+
+function pushHighlights(out: JSONContent[], value: string, marks: Mark[]): void {
   if (!value) return
   const re = /==([^=\s](?:[^=]*[^=\s])?)==/g
   let last = 0

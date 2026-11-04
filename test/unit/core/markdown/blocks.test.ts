@@ -51,7 +51,7 @@ describe('markdownToDoc — bloklar', () => {
     expect(markdownToDoc('<details data-card>\n<summary>Soru **kalın**</summary>\n\nCevap\n\n</details>')).toEqual(
       doc({
         type: 'details',
-        attrs: { card: true },
+        attrs: { card: true, heading: null },
         content: [
           { type: 'detailsSummary', content: [t('Soru '), t('kalın', [{ type: 'bold' }])] },
           { type: 'detailsContent', content: [p(t('Cevap'))] }

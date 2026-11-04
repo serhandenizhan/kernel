@@ -449,3 +449,29 @@ mark[data-color='gray'] { --hl: #e3e8ec; }
   cursor: default;
   user-select: none;
 }
+
+/* --- wiki link ve başlıklı toggle --- */
+.wiki-link {
+  color: var(--accent-text);
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.wiki-link:hover {
+  background: var(--accent-soft);
+  border-radius: 3px;
+}
+.kernel-editor .details[data-heading] summary {
+  font-family: var(--font-ui);
+  font-size: 1.2em;
+  font-weight: 650;
+}
+.kernel-editor .details[data-heading='1'] summary {
+  font-size: 1.5em;
+}
+.pdf-card {
+  padding: 10px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  font-family: var(--font-ui);
+}

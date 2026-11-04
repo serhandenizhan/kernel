@@ -18,7 +18,7 @@ const processor = unified()
     strong: '*',
     listItemIndent: 'one',
     // "a == b" yeniden açılınca vurgu olmasın
-    unsafe: [{ character: '=', after: '=', inConstruct: 'phrasing' }, { character: '=', before: '=', inConstruct: 'phrasing' }]
+    unsafe: [{ character: '=', after: '=', inConstruct: 'phrasing' }, { character: '=', before: '=', inConstruct: 'phrasing' }, { character: '[', after: '\\[', inConstruct: 'phrasing' }]
   })
 
 // TipTap belgesini Kernel Markdown'ına çevirir
@@ -59,7 +59,8 @@ function block(n: JSONContent): BlockContent[] {
     case 'details': {
       const summary = c.find((x) => x.type === 'detailsSummary')
       const body = c.find((x) => x.type === 'detailsContent')
-      const open = `<details${n.attrs?.['card'] ? ' data-card' : ''}>\n<summary>${phrasingToMarkdown(summary?.content ?? [])}</summary>`
+      const heading = n.attrs?.['heading'] ? ` data-heading="${n.attrs['heading']}"` : ''
+      const open = `<details${n.attrs?.['card'] ? ' data-card' : ''}${heading}>\n<summary>${phrasingToMarkdown(summary?.content ?? [])}</summary>`
       return [{ type: 'html', value: open }, ...blocks(body?.content ?? []), { type: 'html', value: '</details>' }]
     }
     case 'bulletList':
@@ -85,6 +86,8 @@ function block(n: JSONContent): BlockContent[] {
     }
     case 'codeBlock':
       return [{ type: 'code', lang: (n.attrs?.['language'] as string | null) ?? null, meta: n.attrs?.['lineNumbers'] ? '{lineNumbers}' : null, value: c.map((t) => t.text ?? '').join('') }]
+    case 'pdfEmbed':
+      return [{ type: 'html', value: `![[${String(n.attrs?.['src'] ?? '')}]]` }]
     case 'blockMath':
       return [{ type: 'math', value: String(n.attrs?.['latex'] ?? '') } as unknown as BlockContent]
     case 'image': {
@@ -182,6 +185,11 @@ function wrap(mark: Mark, children: PhrasingContent[]): PhrasingContent[] {
 function leaf(item: Item): PhrasingContent[] {
   const n = item.node
   if (n.type === 'hardBreak') return [{ type: 'break' }]
+  if (n.type === 'wikiLink') {
+    const target = String(n.attrs?.['target'] ?? '')
+    const label = n.attrs?.['label']
+    return [{ type: 'html', value: label ? `[[${target}|${label}]]` : `[[${target}]]` }]
+  }
   if (n.type === 'inlineMath') return [{ type: 'inlineMath', value: String(n.attrs?.['latex'] ?? '') } as unknown as PhrasingContent]
   if (n.type !== 'text' || !n.text) return []
   if (item.marks.some((m) => m.type === 'code')) return [{ type: 'inlineCode', value: n.text }]

@@ -11,6 +11,7 @@ import { Callout } from './nodes/Callout'
 import { KernelImage } from './nodes/Image'
 import { SlashCommand } from './nodes/SlashCommand'
 import { SmartPaste } from './paste'
+import { WikiLink, PdfEmbedSchema } from './nodes/WikiLink'
 
 // Görev 6'daki Markdown şemasıyla birebir aynı düğüm/işaret adları
 
@@ -50,13 +51,19 @@ export function buildExtensions(opts: ExtensionOptions = {}): AnyExtension[] {
     KernelMath,
     Details.configure({ persist: false, HTMLAttributes: { class: 'details' } }).extend({
       addAttributes() {
-        return { ...this.parent?.(), card: { default: false, renderHTML: (a: { card?: boolean }) => (a.card ? { 'data-card': '' } : {}) } }
+        return {
+          ...this.parent?.(),
+          card: { default: false, renderHTML: (a: { card?: boolean }) => (a.card ? { 'data-card': '' } : {}) },
+          heading: { default: null, renderHTML: (a: { heading?: number | null }) => (a.heading ? { 'data-heading': String(a.heading) } : {}) }
+        }
       }
     }),
     DetailsSummary,
     DetailsContent,
     Callout,
-    KernelImage
+    KernelImage,
+    WikiLink,
+    PdfEmbedSchema
   ]
   if (!opts.readOnly) list.push(SmartPaste, MathShortcuts, SlashCommand, Placeholder.configure({ placeholder: opts.placeholder ?? 'Yazmaya başla ya da / yaz' }))
   return list

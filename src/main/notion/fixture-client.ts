@@ -14,8 +14,8 @@ export interface FixtureData {
 // Testler ve sihirbaz e2e'si için: gerçek API yerine SENTETİK veriden yanıt veren istemci
 export class FixtureNotionClient implements NotionApi {
   private byId = new Map<string, NotionBlock>()
-  /** Test kancası: true dönerse o çağrı NotionError fırlatır */
-  failOn: ((op: string, id: string) => boolean) | null = null
+  /** Test kancası: 'network' | 'not_found' | true dönerse o çağrı NotionError fırlatır */
+  failOn: ((op: string, id: string) => boolean | 'network' | 'not_found') | null = null
 
   constructor(private readonly data: FixtureData) {
     const index = (blocks: NotionBlock[]) => blocks.forEach((b) => (this.byId.set(b.id, b), index(b.children ?? [])))
@@ -23,7 +23,11 @@ export class FixtureNotionClient implements NotionApi {
   }
 
   private check(op: string, id: string): void {
-    if (this.failOn?.(op, id)) throw new NotionError('Notion hatası (503)', 503, 'service_unavailable')
+    const f = this.failOn?.(op, id)
+    if (!f) return
+    if (f === 'network') throw new NotionError('Notion’a bağlanılamadı (ağ hatası)', 0, 'network')
+    if (f === 'not_found') throw new NotionError('Notion sayfası bulunamadı ya da integration ile paylaşılmamış', 404, 'object_not_found')
+    throw new NotionError('Notion hatası (503)', 503, 'service_unavailable')
   }
 
   async me(): Promise<{ workspaceName: string }> {

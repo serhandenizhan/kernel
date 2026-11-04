@@ -52,6 +52,8 @@ export interface ImportReport {
   unsupported: { page: string; type: string }[]
   notes: string[]
   mismatches: { page: string; notion: number; kernel: number }[]
+  /** Notion'dan okunamayan sayfalar (aktarım bunları atlayıp sürer) */
+  failedPages: { page: string; error: string }[]
 }
 
 export type ImportProgress = { phase: 'scanning' | 'importing' | 'done' | 'error' | 'canceled'; pagesDone: number; pagesTotal: number; current?: string; report?: ImportReport; error?: string }

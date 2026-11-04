@@ -14,3 +14,7 @@ export const ESCAPED_EQ = ''
 
 /** Escape edilmiş "\[" için geçici özel karakter (U+E001): düz [[metin]] wiki link sanılmasın */
 export const ESCAPED_LB = '\uE001'
+/** Kaçışlı "\]", "\|" ve "\\\\" için geçici özel karakterler (wiki link hedeflerinde [, ], | ve \ taşınabilsin) */
+export const ESCAPED_RB = '\uE002'
+export const ESCAPED_PIPE = '\uE003'
+export const ESCAPED_BS = '\uE004'

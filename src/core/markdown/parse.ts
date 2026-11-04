@@ -3,7 +3,7 @@ import remarkParse from 'remark-parse'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import type { Nodes, Parents, PhrasingContent, RootContent, List, Table } from 'mdast'
-import { CALLOUT_TYPES, ESCAPED_EQ, ESCAPED_LB, MARK_ORDER, type CalloutType, type JSONContent } from './schema'
+import { CALLOUT_TYPES, ESCAPED_BS, ESCAPED_EQ, ESCAPED_LB, ESCAPED_PIPE, ESCAPED_RB, MARK_ORDER, type CalloutType, type JSONContent } from './schema'
 import { DETAILS_CLOSE, parseDetailsOpen, parseInlineHtml } from './html-blocks'
 
 type Mark = NonNullable<JSONContent['marks']>[number]
@@ -15,7 +15,7 @@ export function markdownToDoc(md: string): JSONContent {
   // .md uzantılı ikili dosya: düzenlenirse bozulur, salt okunur açılmalı
   if (md.includes('\u0000')) throw new Error('Dosya ikili veri içeriyor')
   // "\=" kaçışlarını koru: remark onları "=" yapar ve == vurgusundan ayırt edilemez hale gelirdi
-  const src = md.replace(/\\=/g, ESCAPED_EQ).replace(/\\\[/g, ESCAPED_LB)
+  const src = protectEscapes(md)
   const tree = processor.parse(src)
   // referans linkleri/görselleri tanımlarından çözülür (tanımlar satır içi bağlantıya dönüşür)
   resolveReferences(tree, collectDefinitions(tree))
@@ -49,8 +49,18 @@ function parseInlineMarkdown(md: string): JSONContent[] {
   return first?.type === 'paragraph' ? (first.content ?? []) : []
 }
 
-const restoreText = (s: string) => s.replaceAll(ESCAPED_EQ, '=').replaceAll(ESCAPED_LB, '[')
-const restoreRaw = (s: string) => s.replaceAll(ESCAPED_EQ, '\\=').replaceAll(ESCAPED_LB, '\\[')
+const ESC_TO_CHAR: Record<string, string> = { '=': ESCAPED_EQ, '[': ESCAPED_LB, ']': ESCAPED_RB, '|': ESCAPED_PIPE, '\\': ESCAPED_BS }
+const CHAR_TO_TEXT: Record<string, string> = { [ESCAPED_EQ]: '=', [ESCAPED_LB]: '[', [ESCAPED_RB]: ']', [ESCAPED_PIPE]: '|', [ESCAPED_BS]: '\\' }
+const PRIVATE = /[\uE000-\uE004]/g
+
+/** Bazı kaçışları (\\ \= \[ \] \|) özel karakterlere çevirir: remark kaçışı silince ==, [[…]] gibi yapılarla karışmasın */
+function protectEscapes(md: string): string {
+  return md.replace(/\\([\\=[\]|])/g, (_, c: string) => ESC_TO_CHAR[c]!)
+}
+/** Metin olarak: özel karakter → karakterin kendisi */
+const restoreText = (s: string) => s.replace(PRIVATE, (c) => CHAR_TO_TEXT[c]!)
+/** Ham (kod, formül) olarak: özel karakter → kaçışlı biçim (kaynakta olduğu gibi) */
+const restoreRaw = (s: string) => s.replace(PRIVATE, (c) => `\\${CHAR_TO_TEXT[c]}`)
 
 function convertBlocks(nodes: RootContent[]): JSONContent[] {
   const out: JSONContent[] = []

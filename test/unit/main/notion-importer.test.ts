@@ -26,7 +26,7 @@ function fixture(): FixtureData {
       'pg-mars': [B.para(B.t('Kızıl gezegen. Üst sayfa: '), B.mentionPage('pg-root', 'Gezegenler'))],
       'pg-mars2': [B.para(B.t('ikinci Mars'))],
       'pg-empty': [B.para(B.t('başlıksız'))],
-      'pg-slash': [B.para(B.t('hız notları'))]
+      'pg-slash': [B.para(B.t('hız notları')), B.image('https://dosya/ok2.png')]
     }
   }
 }
@@ -85,10 +85,10 @@ describe('NotionImporter', () => {
     expect(readFileSync(join(vault.root, ROOT, 'Gezegenler', 'Mars (2).md'), 'utf8')).toContain('ikinci Mars')
   })
 
-  it('Notion hatasında reddeder; devam et eksikleri tamamlar', async () => {
+  it('ağ kopunca reddeder; devam et eksikleri tamamlar', async () => {
     const client = new FixtureNotionClient(fixture())
     let failed = false
-    client.failOn = (op, id) => op === 'page' && id === 'pg-mars2' && !failed && (failed = true)
+    client.failOn = (op, id) => (op === 'page' && id === 'pg-mars2' && !failed && (failed = true) ? 'network' : false)
     await expect(make(client).run(['pg-root'])).rejects.toThrow()
     expect(progress.at(-1)?.phase).toBe('error')
     const report = await make(new FixtureNotionClient(fixture())).resume()
@@ -103,5 +103,46 @@ describe('NotionImporter', () => {
     await make(new FixtureNotionClient(fixture())).run(['pg-slash'])
     expect(existsSync(join(vault.root, `${ROOT} (2)`, 'Hız∕Zaman꞉ notlar.md'))).toBe(true)
     expect(statSync(firstFile).mtimeMs).toBe(mtime)
+  })
+
+  it('toggle, sütun, callout ve senkron blok içindeki alt sayfalar da aktarılır', async () => {
+    const data = fixture()
+    data.pages.push(B.page('pg-inT', 'Toggle içi', { parent: 'pg-root' }), B.page('pg-inC', 'Sütun içi', { parent: 'pg-root' }))
+    data.blocks['pg-root']!.push(B.toggle('Aç', [B.childPage('pg-inT', 'Toggle içi')]), B.columns([B.childPage('pg-inC', 'Sütun içi')], [B.para(B.t('sağ'))]))
+    data.blocks['pg-inT'] = [B.para(B.t('gizli sayfa'))]
+    data.blocks['pg-inC'] = [B.para(B.t('sütundaki sayfa'))]
+    const report = await make(new FixtureNotionClient(data)).run(['pg-root'])
+    const root = join(vault.root, ROOT)
+    expect(files(root)).toEqual(expect.arrayContaining(['Gezegenler/Toggle içi.md', 'Gezegenler/Sütun içi.md']))
+    expect(readFileSync(join(root, 'Gezegenler', 'Toggle içi.md'), 'utf8')).toContain('gizli sayfa')
+    expect(report.pages).toBe(5)
+  })
+
+  it('devam sonrası rapor önceki sorunları korur, dosyalar ikinci kez indirilmez', async () => {
+    // gerçek Notion'da olduğu gibi blok kimlikleri iki çalıştırmada aynı
+    const data = fixture()
+    await make(new FixtureNotionClient(data), (p, imp) => p.phase === 'importing' && p.pagesDone === 1 && imp.cancel()).run(['pg-root', 'pg-slash'])
+    const report = await make(new FixtureNotionClient(data)).resume()
+    expect(report?.failedFiles).toEqual([{ page: 'Gezegenler', url: 'https://dosya/bozuk.png' }])
+    expect(report?.unsupported).toEqual([{ page: 'Gezegenler', type: 'ai_block' }])
+    expect(report?.files).toBe(2)
+    expect(readdirSync(join(vault.root, 'attachments')).filter((f) => f.startsWith('ok2-')).length).toBe(1)
+    expect(readdirSync(join(vault.root, 'attachments')).filter((f) => f.startsWith('ok-')).length).toBe(1)
+  })
+
+  it('tek sayfadaki kalıcı hata aktarımı durdurmaz, rapora girer', async () => {
+    const client = new FixtureNotionClient(fixture())
+    client.failOn = (op, id) => (op === 'page' && id === 'pg-mars2' ? 'not_found' : false)
+    const report = await make(client).run(['pg-root', 'pg-slash'])
+    expect(report.failedPages).toEqual([{ page: 'Mars', error: 'Notion sayfası bulunamadı ya da integration ile paylaşılmamış' }])
+    expect(files(join(vault.root, ROOT))).toEqual(expect.arrayContaining(['Gezegenler/Mars.md', 'Hız∕Zaman꞉ notlar.md']))
+    expect(progress.at(-1)?.phase).toBe('done')
+  })
+
+  it('kök özetindeki rapor linki kendi aktarımının raporuna gider', async () => {
+    await make(new FixtureNotionClient(fixture())).run(['pg-slash'])
+    await make(new FixtureNotionClient(fixture())).run(['pg-slash'])
+    const second = readFileSync(join(vault.root, `${ROOT} (2).md`), 'utf8')
+    expect(second).toContain(`[[${ROOT} (2)/Notion aktarım raporu]]`)
   })
 })

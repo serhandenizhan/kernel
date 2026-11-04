@@ -21,6 +21,9 @@ const processor = unified()
     unsafe: [{ character: '=', after: '=', inConstruct: 'phrasing' }, { character: '=', before: '=', inConstruct: 'phrasing' }, { character: '[', after: '\\[', inConstruct: 'phrasing' }]
   })
 
+/** Wiki link / gömme hedeflerinde [, ], | ve \ kaçışlanır (başlıkta bulunabilirler) */
+const escWiki = (s: string) => s.replace(/[\\[\]|]/g, '\\$&')
+
 // TipTap belgesini Kernel Markdown'ına çevirir
 export function docToMarkdown(doc: JSONContent): string {
   const root: Root = { type: 'root', children: blocks(doc.content ?? []) as RootContent[] }
@@ -87,7 +90,7 @@ function block(n: JSONContent): BlockContent[] {
     case 'codeBlock':
       return [{ type: 'code', lang: (n.attrs?.['language'] as string | null) ?? null, meta: n.attrs?.['lineNumbers'] ? '{lineNumbers}' : null, value: c.map((t) => t.text ?? '').join('') }]
     case 'pdfEmbed':
-      return [{ type: 'html', value: `![[${String(n.attrs?.['src'] ?? '')}]]` }]
+      return [{ type: 'html', value: `![[${escWiki(String(n.attrs?.['src'] ?? ''))}]]` }]
     case 'blockMath':
       return [{ type: 'math', value: String(n.attrs?.['latex'] ?? '') } as unknown as BlockContent]
     case 'image': {
@@ -186,9 +189,9 @@ function leaf(item: Item): PhrasingContent[] {
   const n = item.node
   if (n.type === 'hardBreak') return [{ type: 'break' }]
   if (n.type === 'wikiLink') {
-    const target = String(n.attrs?.['target'] ?? '')
+    const target = escWiki(String(n.attrs?.['target'] ?? ''))
     const label = n.attrs?.['label']
-    return [{ type: 'html', value: label ? `[[${target}|${label}]]` : `[[${target}]]` }]
+    return [{ type: 'html', value: label ? `[[${target}|${escWiki(String(label))}]]` : `[[${target}]]` }]
   }
   if (n.type === 'inlineMath') return [{ type: 'inlineMath', value: String(n.attrs?.['latex'] ?? '') } as unknown as PhrasingContent]
   if (n.type !== 'text' || !n.text) return []

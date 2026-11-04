@@ -35,6 +35,19 @@ describe('Faz 2 şeması', () => {
     const d = docOf('dizi [[1, 2]] ve [[x]]')
     expect(markdownToDoc(docToMarkdown(d))).toEqual(d)
   })
+  it('başlığında [, ] ve | olan wiki link hedefleri kayıpsız döner', () => {
+    for (const target of ['[Taslak] Plan', 'A | B', 'x]]y', 'ters\\eğik']) {
+      const d = { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'wikiLink', attrs: { target, label: target.includes('|') ? 'etiket [1]' : null } }] }] }
+      expect(markdownToDoc(docToMarkdown(d))).toEqual(d)
+    }
+  })
+  it('adında ] olan gömülü PDF kayıpsız döner', () => {
+    const d = { type: 'doc', content: [{ type: 'pdfEmbed', attrs: { src: 'attachments/slayt [v2]].pdf' } }] }
+    expect(markdownToDoc(docToMarkdown(d))).toEqual(d)
+  })
+  it('tablo hücresindeki kaçışlı | korunur', () => {
+    expect(JSON.stringify(markdownToDoc('| a |\n| --- |\n| x \\| y |'))).toContain('x | y')
+  })
   it('kod içindeki [[x]] dokunulmaz', () => {
     expect(markdownToDoc('`[[x]]`').content![0]).toEqual({ type: 'paragraph', content: [{ type: 'text', text: '[[x]]', marks: [{ type: 'code' }] }] })
   })

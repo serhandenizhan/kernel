@@ -78,6 +78,10 @@ export function App() {
   const tourDone = useStore((s) => s.settings.tourDone)
   const [pendingImport, setPendingImport] = useState(false)
   const [resumeImport, setResumeImport] = useState(false)
+  // sihirbaz kapanınca devam modu sıfırlanır (sonraki açılış baştan başlar)
+  useEffect(() => {
+    if (overlay !== 'notion') setResumeImport(false)
+  }, [overlay])
   useTheme()
   useShortcuts()
 

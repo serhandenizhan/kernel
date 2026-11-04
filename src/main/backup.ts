@@ -1,37 +1,83 @@
-import { existsSync, statSync } from 'node:fs'
-import { readdir, readFile, rm } from 'node:fs/promises'
-import { join, relative, resolve, sep } from 'node:path'
-import { zipSync } from 'fflate'
+import { createReadStream, createWriteStream, existsSync, realpathSync, statSync } from 'node:fs'
+import { readdir, readFile, rename, rm } from 'node:fs/promises'
+import { extname, join, relative, resolve, sep } from 'node:path'
+import { Zip, ZipDeflate, ZipPassThrough } from 'fflate'
 import type { Settings } from '@shared/types'
 import { writeAtomic } from './vault/atomic'
 
 const SKIP_KERNEL = new Set(['.kernel/search-index.json', '.kernel/backup.json'])
 const BACKUP_RE = /^Kernel-yedek-\d{4}-\d{2}-\d{2}-\d{4}\.zip$/
+// zaten sıkıştırılmış biçimler yeniden sıkıştırılmaz (CPU ve süre tasarrufu)
+const STORED = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.pdf', '.zip', '.mp4', '.mov', '.mp3', '.m4a', '.heic'])
 const pad = (n: number) => String(n).padStart(2, '0')
-
-async function collect(root: string, dir: string, skipDir: string | null, out: Record<string, Uint8Array>): Promise<void> {
-  for (const e of await readdir(dir, { withFileTypes: true })) {
-    const abs = join(dir, e.name)
-    if (skipDir && resolve(abs) === skipDir) continue
-    const rel = relative(root, abs).split(sep).join('/')
-    if (e.isDirectory()) await collect(root, abs, skipDir, out)
-    else if (e.isFile() && !SKIP_KERNEL.has(rel) && !e.name.endsWith('.tmp')) out[rel] = new Uint8Array(await readFile(abs))
+const real = (p: string) => {
+  try {
+    return realpathSync(p)
+  } catch {
+    return resolve(p)
   }
 }
 
-// Kasanın zip yedeği: Kernel-yedek-YYYY-MM-DD-HHmm.zip; son `keep` yedek tutulur
+async function listFiles(root: string, dir: string, skipDir: string | null, out: string[]): Promise<void> {
+  for (const e of await readdir(dir, { withFileTypes: true })) {
+    const abs = join(dir, e.name)
+    if (skipDir && real(abs) === skipDir) continue
+    if (e.isDirectory()) await listFiles(root, abs, skipDir, out)
+    else if (e.isFile() && !e.name.endsWith('.tmp') && !e.name.endsWith('.part') && !BACKUP_RE.test(e.name)) {
+      const rel = relative(root, abs).split(sep).join('/')
+      if (!SKIP_KERNEL.has(rel)) out.push(rel)
+    }
+  }
+}
+
+// Kasanın zip yedeği: Kernel-yedek-YYYY-MM-DD-HHmm.zip; son `keep` yedek tutulur.
+// Dosyalar tek tek akıtılır, zip doğrudan diske yazılır (büyük kasalarda belleği ve ana süreci kilitlemez).
 export async function makeBackup(root: string, folder: string, keep: number, now: Date = new Date()): Promise<string> {
   if (!existsSync(folder) || !statSync(folder).isDirectory()) throw new Error('klasör bulunamadı')
-  const r = resolve(folder)
-  // yedek klasörü kasanın içindeyse kendini yedeklemesin
-  const skip = r.startsWith(resolve(root) + sep) ? r : null
-  const files: Record<string, Uint8Array> = {}
-  await collect(root, root, skip, files)
+  const rootReal = real(root)
+  const folderReal = real(folder)
+  // yedek klasörü kasanın içindeyse kendini yedeklemesin (kasanın kendisiyse yedek dosyaları zaten atlanır)
+  const skip = folderReal.startsWith(rootReal + sep) ? folderReal : null
+  const files: string[] = []
+  await listFiles(root, root, skip, files)
   const name = `Kernel-yedek-${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}.zip`
   const target = join(folder, name)
-  await writeAtomic(target, zipSync(files, { level: 6 }))
+  const part = `${target}.part`
+  const ws = createWriteStream(part)
+  try {
+    await new Promise<void>((resolveZip, reject) => {
+      ws.on('error', reject)
+      const zip = new Zip((err, chunk, final) => {
+        if (err) return reject(err)
+        ws.write(chunk)
+        if (final) ws.end(() => resolveZip())
+      })
+      void (async () => {
+        try {
+          for (const rel of files) {
+            const entry = STORED.has(extname(rel).toLowerCase()) ? new ZipPassThrough(rel) : new ZipDeflate(rel, { level: 6 })
+            zip.add(entry)
+            for await (const chunk of createReadStream(join(root, rel))) {
+              entry.push(chunk as Uint8Array)
+              if (ws.writableNeedDrain) await new Promise((r) => ws.once('drain', r))
+            }
+            entry.push(new Uint8Array(0), true)
+          }
+          zip.end()
+        } catch (e) {
+          reject(e)
+        }
+      })()
+    })
+    await rename(part, target)
+  } catch (e) {
+    ws.destroy()
+    await rm(part, { force: true })
+    throw e
+  }
   const backups = (await readdir(folder)).filter((n) => BACKUP_RE.test(n)).sort()
-  for (const old of backups.slice(0, Math.max(0, backups.length - keep))) await rm(join(folder, old), { force: true })
+  const keepN = Math.max(1, keep)
+  for (const old of backups.slice(0, Math.max(0, backups.length - keepN))) await rm(join(folder, old), { force: true })
   return target
 }
 

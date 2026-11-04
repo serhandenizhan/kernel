@@ -33,8 +33,17 @@ export function ImportWizard({ resume = false }: { resume?: boolean }) {
     []
   )
 
+  const doResume = async () => {
+    setError(null)
+    try {
+      await kernel.notion.resume()
+    } catch (e) {
+      setError(e instanceof Error ? e.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, '') : 'Aktarım sürdürülemedi')
+    }
+  }
+
   useEffect(() => {
-    if (resume) void kernel.notion.resume()
+    if (resume) void doResume()
   }, [resume])
 
   const connect = async () => {
@@ -177,20 +186,18 @@ export function ImportWizard({ resume = false }: { resume?: boolean }) {
             <div className="setting-hint">
               {progress ? `${progress.pagesDone} / ${progress.pagesTotal}` : 'Başlıyor…'} {progress?.current ? `— ${progress.current}` : ''}
             </div>
-            {error && <div className="mermaid-error">{error}. Bağlantını kontrol edip "Devam et" diyebilirsin.</div>}
+            {error && (
+              <div className="mermaid-error" data-testid="notion-error">
+                {error}. Bağlantını kontrol edip "Devam et" diyebilirsin.
+              </div>
+            )}
             <div className="modal-actions">
               {progress?.phase === 'canceled' || error ? (
                 <>
                   <button className="btn" onClick={close}>
                     Kapat
                   </button>
-                  <button
-                    className="btn primary"
-                    onClick={() => {
-                      setError(null)
-                      void kernel.notion.resume()
-                    }}
-                  >
+                  <button className="btn primary" onClick={() => void doResume()}>
                     Devam et
                   </button>
                 </>

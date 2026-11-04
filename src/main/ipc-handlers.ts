@@ -136,10 +136,14 @@ export function registerIpc(): void {
   })
   h(IPC.pagesWrite, async (id: string, input: { markdown: string; meta: PageMeta }) => {
     const vault = requireVault()
+    // sürüm geçmişi: yazmadan ÖNCEki hal saklanır (en fazla 5 dk'da bir) → düzenleme öncesi duruma dönülebilir
+    try {
+      await history?.snapshot(id, await readFile(vault.pathOf(id), 'utf8'))
+    } catch (e) {
+      log.warn('Anlık görüntü alınamadı', e)
+    }
     const res = await vault.write(id, input)
     void search?.update(vault, id)
-    // sürüm geçmişi: yazılan dosyanın tam metni (en fazla 5 dk'da bir)
-    void readFile(vault.pathOf(id), 'utf8').then((text) => history?.snapshot(id, text)).catch((e) => log.warn('Anlık görüntü alınamadı', e))
     return res
   })
   h(IPC.pagesCreate, (parentId: string | null, title?: string) => requireVault().create(parentId, title))
@@ -203,10 +207,10 @@ export function registerIpc(): void {
   h(IPC.historyRestore, async (id: string, versionId: string) => {
     const vault = requireVault()
     const body = splitFrontmatter(await history!.read(id, versionId)).body
+    // geri yükleme geri alınabilsin: şu anki hal (son 5 dk'nın düzenlemeleri dahil) önce saklanır
+    await history!.snapshot(id, await readFile(vault.pathOf(id), 'utf8'), { force: true })
     const current = await vault.read(id)
     await vault.write(id, { markdown: body, meta: current.meta })
-    // geri yükleme de yeni bir sürüm olur
-    await history!.snapshot(id, await readFile(vault.pathOf(id), 'utf8'), { force: true })
     void search?.update(vault, id)
   })
   h(IPC.templatesList, async () => {

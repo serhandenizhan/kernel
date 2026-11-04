@@ -165,7 +165,7 @@ class HistoryStore {
 // KernelApi.history: { list(id): Promise<HistoryEntry[]>; read(id, versionId): Promise<string /* gövde markdown */>; restore(id, versionId): Promise<void> }
 ```
 
-Kararlar: Klasör `.kernel/history/<id>/<versionId>.md`; anlık görüntü yazım *sonrası* dosya metnidir. `restore`: sürümün gövdesi + mevcut sayfanın meta'sı (`id` korunur) `vault.write` ile yazılır, ardından `snapshot(force)`; renderer sayfayı yeniden okur (autosave `reset`, çakışma penceresi açılmaz). Prune her `snapshot` sonrası o sayfa için ve açılışta tüm kasa için çalışır. Panel: solda sürüm listesi (göreli zaman "3 dk önce"), sağda `diffLines` ile yan yana fark (eklenen yeşil, silinen kırmızı), "Bu sürümü geri yükle".
+Kararlar: Klasör `.kernel/history/<id>/<versionId>.md`; anlık görüntü yazım *öncesi* dosya metnidir (düzenleme öncesi hal korunur — final inceleme sonrası düzeltildi). `restore`: önce mevcut metin `snapshot(force)` ile saklanır, sonra sürümün gövdesi + mevcut sayfanın meta'sı (`id` korunur) `vault.write` ile yazılır; renderer sayfayı yeniden okur (autosave `reset`, çakışma penceresi açılmaz). Prune her `snapshot` sonrası o sayfa için ve açılışta tüm kasa için çalışır. Panel: solda sürüm listesi (göreli zaman "3 dk önce"), sağda `diffLines` ile yan yana fark (eklenen yeşil, silinen kırmızı), "Bu sürümü geri yükle".
 
 - [ ] **Step 1: Failing testler**
 

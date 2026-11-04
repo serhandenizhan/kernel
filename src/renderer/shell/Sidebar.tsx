@@ -35,6 +35,9 @@ export function Sidebar() {
         }}
       />
       <div className="sidebar-footer">
+        <button className="footer-btn" data-testid="notion-import" onClick={() => s().setOverlay('notion')}>
+          <span>⇣</span> Notion'dan aktar
+        </button>
         <button className="footer-btn" onClick={() => s().setOverlay('guide')}>
           <span>?</span> Rehber
         </button>

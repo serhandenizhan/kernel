@@ -19,7 +19,7 @@ interface State {
   expanded: Record<string, boolean>
   renamingId: string | null
   toasts: Toast[]
-  overlay: 'search' | 'settings' | 'export' | 'guide' | 'history' | null
+  overlay: 'search' | 'settings' | 'export' | 'guide' | 'history' | 'notion' | null
   /** Sayfanın diskten yeniden okunmasını tetikler (örn. sürüm geri yükleme) */
   reloadToken: number
   reloadPage(): void

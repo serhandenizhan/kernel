@@ -77,6 +77,8 @@ export function SettingsDialog() {
 
         <BackupSection />
 
+        <NotionSection />
+
         <section>
           <h4>Kasa</h4>
           <div className="setting-path">{vaultPath}</div>
@@ -153,6 +155,29 @@ function BackupSection() {
       <div className="setting-hint" data-testid="backup-last">
         Son yedek: {lastText}
       </div>
+    </section>
+  )
+}
+
+function NotionSection() {
+  const [connected, setConnected] = useState(false)
+  useEffect(() => void kernel.notion.connected().then(setConnected), [])
+  if (!connected) return null
+  return (
+    <section>
+      <h4>Notion</h4>
+      <p className="setting-hint">Bu Mac'te kayıtlı bir Notion token'ı var.</p>
+      <button
+        className="btn small"
+        data-testid="notion-disconnect"
+        onClick={async () => {
+          await kernel.notion.disconnect()
+          setConnected(false)
+          useStore.getState().toast('Notion bağlantısı silindi')
+        }}
+      >
+        Notion bağlantısını sil
+      </button>
     </section>
   )
 }

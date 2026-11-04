@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useStore } from './state/store'
 import { kernel } from './lib/kernel'
 import { Sidebar } from './shell/Sidebar'
@@ -11,6 +11,7 @@ import { TocPanel } from './shell/TocPanel'
 import { ExportDialog } from './shell/ExportDialog'
 import { GuidePage } from './guide/GuidePage'
 import { HistoryPanel } from './shell/HistoryPanel'
+import { ImportWizard } from './notion/ImportWizard'
 import { Tour, TipBubble } from './guide/Tour'
 import './guide/tips'
 import { activeEditor } from './editor/Editor'
@@ -75,6 +76,8 @@ export function App() {
   const sidebarVisible = useStore((s) => s.sidebarVisible)
   const overlay = useStore((s) => s.overlay)
   const tourDone = useStore((s) => s.settings.tourDone)
+  const [pendingImport, setPendingImport] = useState(false)
+  const [resumeImport, setResumeImport] = useState(false)
   useTheme()
   useShortcuts()
 
@@ -83,6 +86,7 @@ export function App() {
     // uygulama kapanırken bekleyen kaydı yap
     kernel.app.onFlushRequest(async () => (activeEditor.flush ? activeEditor.flush() : true))
     const off = kernel.events.onTreeChanged(() => void useStore.getState().refreshTree())
+    void kernel.notion.pendingResume().then(setPendingImport).catch(() => undefined)
     const offToast = kernel.events.onToast((m, kind) => useStore.getState().toast(m, kind))
     return () => {
       off()
@@ -111,6 +115,23 @@ export function App() {
       {overlay === 'settings' && <SettingsDialog />}
       {overlay === 'export' && <ExportDialog />}
       {overlay === 'history' && <HistoryPanel />}
+      {overlay === 'notion' && <ImportWizard resume={resumeImport} />}
+      {pendingImport && overlay !== 'notion' && (
+        <div className="resume-banner glass" data-testid="notion-resume-banner">
+          Yarım kalan bir Notion aktarımı var.
+          <button
+            className="btn small primary"
+            data-testid="notion-resume"
+            onClick={() => {
+              setPendingImport(false)
+              setResumeImport(true)
+              useStore.getState().setOverlay('notion')
+            }}
+          >
+            Devam et
+          </button>
+        </div>
+      )}
       {!tourDone && <Tour />}
       <TipBubble />
       <Toasts />

@@ -32,6 +32,17 @@ const api: KernelApi = {
   pdf: { export: inv(IPC.pdfExport) } as KernelApi['pdf'],
   exportAs: { markdown: inv(IPC.exportMarkdown), html: inv(IPC.exportHtml) } as KernelApi['exportAs'],
   history: { list: inv(IPC.historyList), read: inv(IPC.historyRead), restore: inv(IPC.historyRestore) } as KernelApi['history'],
+  notion: {
+    connect: inv(IPC.notionConnect),
+    connected: inv(IPC.notionConnected),
+    disconnect: inv(IPC.notionDisconnect),
+    pages: inv(IPC.notionPages),
+    start: inv(IPC.notionStart),
+    resume: inv(IPC.notionResume),
+    cancel: inv(IPC.notionCancel),
+    pendingResume: inv(IPC.notionPending),
+    onProgress: (cb: (p: never) => void) => on(IPC.notionProgress, cb)
+  } as KernelApi['notion'],
   templates: { list: inv(IPC.templatesList), create: inv(IPC.templatesCreate), saveAs: inv(IPC.templatesSaveAs) } as KernelApi['templates'],
   backup: { now: inv(IPC.backupNow), status: inv(IPC.backupStatus), chooseFolder: inv(IPC.backupChooseFolder) } as KernelApi['backup'],
   settings: { get: inv(IPC.settingsGet), set: inv(IPC.settingsSet) } as KernelApi['settings'],

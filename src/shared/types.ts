@@ -44,6 +44,18 @@ export interface HistoryEntry {
   size: number
 }
 
+export interface ImportReport {
+  rootPageId: string
+  pages: number
+  files: number
+  failedFiles: { page: string; url: string }[]
+  unsupported: { page: string; type: string }[]
+  notes: string[]
+  mismatches: { page: string; notion: number; kernel: number }[]
+}
+
+export type ImportProgress = { phase: 'scanning' | 'importing' | 'done' | 'error' | 'canceled'; pagesDone: number; pagesTotal: number; current?: string; report?: ImportReport; error?: string }
+
 export interface PdfOptions {
   pageSize: 'A4' | 'Letter'
   margin: 'narrow' | 'normal' | 'wide'
@@ -114,6 +126,17 @@ export interface KernelApi {
     /** Sürümün gövde Markdown'ı (frontmatter hariç) */
     read(id: string, versionId: string): Promise<string>
     restore(id: string, versionId: string): Promise<void>
+  }
+  notion: {
+    connect(token: string): Promise<{ ok: true; workspace: string } | { ok: false; error: string }>
+    connected(): Promise<boolean>
+    disconnect(): Promise<void>
+    pages(): Promise<{ id: string; title: string; icon?: string }[]>
+    start(ids: string[]): Promise<void>
+    resume(): Promise<void>
+    cancel(): Promise<void>
+    pendingResume(): Promise<boolean>
+    onProgress(cb: (p: ImportProgress) => void): () => void
   }
   templates: {
     list(): Promise<string[]>

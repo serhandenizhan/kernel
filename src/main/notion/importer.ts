@@ -11,17 +11,9 @@ import type { Vault } from '../vault/vault'
 import { writeAtomic } from '../vault/atomic'
 import type { NotionApi } from './fixture-client'
 
-export interface ImportReport {
-  rootPageId: string
-  pages: number
-  files: number
-  failedFiles: { page: string; url: string }[]
-  unsupported: { page: string; type: string }[]
-  notes: string[]
-  mismatches: { page: string; notion: number; kernel: number }[]
-}
+import type { ImportProgress, ImportReport } from '@shared/types'
 
-export type ImportProgress = { phase: 'scanning' | 'importing' | 'done' | 'error' | 'canceled'; pagesDone: number; pagesTotal: number; current?: string; report?: ImportReport; error?: string }
+export type { ImportProgress, ImportReport }
 
 interface ImportState {
   date: string

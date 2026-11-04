@@ -722,3 +722,58 @@ button {
   font-size: 12px;
 }
 .section-actions { display: flex; gap: 2px; }
+
+/* --- Notion sihirbazı --- */
+.notion-wizard {
+  width: 520px;
+}
+.notion-wizard .tour-dots {
+  justify-content: flex-start;
+  margin-bottom: 10px;
+}
+.wizard-steps {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  color: var(--text-2);
+  line-height: 1.6;
+}
+.wizard-steps code {
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--code-bg);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.picker-search.wide {
+  width: 100%;
+  margin-bottom: 8px;
+}
+.notion-pages {
+  max-height: 260px;
+  margin: 8px 0 12px;
+  overflow-y: auto;
+}
+.progress-bar {
+  height: 8px;
+  margin: 10px 0 6px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--hover);
+}
+.progress-bar span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.2s;
+}
+.resume-banner {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  z-index: 1700;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  transform: translateX(-50%);
+}

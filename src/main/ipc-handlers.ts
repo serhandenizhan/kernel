@@ -17,6 +17,7 @@ import { HistoryStore } from './history'
 import { BackupScheduler, readLastBackup } from './backup'
 import { TemplateStore, formatDateTr } from './templates'
 import { exportHtml, exportMarkdownZip } from './export'
+import { registerNotionIpc } from './notion/service'
 import { splitFrontmatter } from './vault/frontmatter'
 import { log } from './log'
 
@@ -94,6 +95,7 @@ async function exportPdfWithDialog(id: string, options: PdfOptions): Promise<{ f
 }
 
 export function registerIpc(): void {
+  registerNotionIpc(broadcast)
   const h = (ch: string, fn: (...a: never[]) => unknown) => ipcMain.handle(ch, (_e, ...args) => (fn as (...a: unknown[]) => unknown)(...args))
 
   h(IPC.vaultInfo, () => (state.vault ? { path: state.vault.root } : null))

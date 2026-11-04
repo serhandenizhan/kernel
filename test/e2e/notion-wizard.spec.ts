@@ -1,0 +1,67 @@
+import { test, expect } from '@playwright/test'
+import { existsSync, mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { launch, tmpVault } from './helpers/app'
+import * as B from '../fixtures/notion/builders'
+
+const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg=='
+const TOKEN = 'secret_test_wizard_42'
+
+function writeFixture(): string {
+  const dir = mkdtempSync(join(tmpdir(), 'kernel-nf-'))
+  const file = join(dir, 'fixture.json')
+  writeFileSync(
+    file,
+    JSON.stringify({
+      workspace: 'Deneme Çalışma Alanı',
+      pages: [B.page('pg-a', 'Algoritmalar', { emoji: '🧮' }), B.page('pg-s', 'Sıralama', { parent: 'pg-a' }), B.page('pg-g', 'Gezegenler')],
+      blocks: {
+        'pg-a': [B.para(B.t('Algoritma notları')), B.childPage('pg-s', 'Sıralama'), B.image(PNG)],
+        'pg-s': [B.code('def siralama(xs):\n    return sorted(xs)', 'python')],
+        'pg-g': [B.para(B.t('Mars ve Jüpiter'))]
+      }
+    })
+  )
+  return file
+}
+
+const allText = (dir: string): string =>
+  readdirSync(dir, { withFileTypes: true })
+    .map((e) => (e.isDirectory() ? allText(join(dir, e.name)) : statSync(join(dir, e.name)).size < 2_000_000 ? readFileSync(join(dir, e.name), 'utf8') : ''))
+    .join('\n')
+
+test('Notion sihirbazı: bağlan, sayfa seç, aktar, rapor; token sonunda silinir ve hiçbir dosyaya yazılmaz', async () => {
+  const vault = tmpVault()
+  const userData = mkdtempSync(join(tmpdir(), 'kernel-ud-'))
+  const { app, win } = await launch(vault, { KERNEL_TEST_NOTION_FIXTURES: writeFixture(), KERNEL_USER_DATA: userData })
+  await win.getByTestId('notion-import').click()
+  await expect(win.getByTestId('notion-wizard')).toBeVisible()
+  await win.getByTestId('notion-next').click()
+  await win.getByTestId('notion-token').fill(TOKEN)
+  await win.getByTestId('notion-connect').click()
+  await expect(win.getByTestId('notion-workspace')).toContainText('Deneme Çalışma Alanı')
+  await expect(win.getByTestId('notion-page')).toHaveCount(2) // yalnızca üst seviye sayfalar listelenir
+  await win.getByTestId('notion-select-all').check()
+  await win.getByTestId('notion-start').click()
+  await expect(win.getByTestId('notion-report')).toBeVisible({ timeout: 20_000 })
+  await expect(win.getByTestId('notion-report')).toContainText('3 sayfa')
+  await win.getByTestId('notion-finish').click()
+  await expect(win.getByTestId('tree-row').filter({ hasText: 'Notion içe aktarım' })).toHaveCount(1)
+  expect(existsSync(join(userData, 'notion-token.bin'))).toBe(false)
+  expect(allText(vault)).not.toContain(TOKEN)
+  expect(allText(userData)).not.toContain(TOKEN)
+  const imported = readdirSync(vault).find((f) => f.startsWith('Notion içe aktarım') && !f.endsWith('.md'))!
+  expect(readFileSync(join(vault, imported, 'Algoritmalar', 'Sıralama.md'), 'utf8')).toContain('```python')
+  await app.close()
+})
+
+test('yanlış token anlaşılır hata verir', async () => {
+  const { app, win } = await launch(tmpVault(), { KERNEL_TEST_NOTION_FIXTURES: writeFixture() })
+  await win.getByTestId('notion-import').click()
+  await win.getByTestId('notion-next').click()
+  await win.getByTestId('notion-token').fill('yanlis')
+  await win.getByTestId('notion-connect').click()
+  await expect(win.getByTestId('notion-error')).toContainText('geçersiz')
+  await app.close()
+})

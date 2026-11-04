@@ -55,3 +55,14 @@ test('ilk yapıştırmada ipucu bir kez görünür', async () => {
   await expect(win.getByTestId('tip')).toHaveCount(0)
   await app.close()
 })
+
+test('rehberde Faz 2 bölümleri var; canlı Mermaid demosu çizilir; Notion butonu sihirbazı açar', async () => {
+  const { app, win } = await launch()
+  await win.keyboard.press('Meta+/')
+  const guide = win.getByTestId('guide')
+  for (const title of ["Notion'dan aktarma", 'Sürüm geçmişi ve yedek', 'Şablonlar', 'Diyagram ve PDF']) await expect(guide.getByRole('heading', { name: title })).toBeVisible()
+  await expect(win.getByTestId('guide-mermaid-demo').locator('svg')).toBeVisible({ timeout: 15_000 })
+  await win.getByTestId('guide-notion').click()
+  await expect(win.getByTestId('notion-wizard')).toBeVisible()
+  await app.close()
+})

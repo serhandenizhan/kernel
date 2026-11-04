@@ -7,6 +7,7 @@ import { buildExtensions } from '../editor/extensions'
 import { SLASH_ITEMS } from '../editor/slash-items'
 import { useStore } from '../state/store'
 import { SHORTCUTS } from './shortcuts'
+import { MermaidPreview } from '../editor/ui/MermaidView'
 
 const SAMPLE = `- **Momentum:** \\\\(p = m \\vec{v}\\\\) korunur.
   \\\\[F = \\frac{dp}{dt}\\\\]
@@ -109,6 +110,41 @@ export function GuidePage() {
         <section className="guide-section">
           <h2>Arama ve PDF</h2>
           <p>⌘K tüm sayfa adlarında ve içerikte arar. ⌘E sayfayı PDF'e çevirir: metin ve formüller vektörel, görseller tam çözünürlükte; başlıklar sayfa sonunda yalnız kalmaz, kısa kod blokları bölünmez.</p>
+        </section>
+
+        <section className="guide-section">
+          <h2>Notion'dan aktarma</h2>
+          <p>Notion'daki sayfalarını ikon, kapak, görsel, formül ve alt sayfalarıyla birlikte getir. Sihirbaz integration oluşturma adımlarını gösterir; token yalnızca bu Mac'in Anahtar Zinciri'nde durur ve aktarım bitince silinebilir. Yarıda kalırsa "Devam et" ile kaldığı yerden sürer, sonunda bir doğrulama raporu oluşturulur.</p>
+          <button
+            className="btn"
+            data-testid="guide-notion"
+            onClick={() => {
+              close()
+              useStore.getState().setOverlay('notion')
+            }}
+          >
+            Notion'dan aktar
+          </button>
+        </section>
+
+        <section className="guide-section">
+          <h2>Sürüm geçmişi ve yedek</h2>
+          <p>Kernel düzenledikçe en fazla 5 dakikada bir sayfanın sürümünü saklar (30 gün tamamı, sonra günde bir). Kenar çubuğunda sayfaya sağ tıkla → "Sürüm geçmişi": farkları gör, tek tıkla geri dön. Ayarlar → Yedekleme ile kasan her gün seçtiğin klasöre zip olarak yedeklenir.</p>
+        </section>
+
+        <section className="guide-section">
+          <h2>Şablonlar</h2>
+          <p>Kenar çubuğundaki ▾ ile "Ders notu" gibi bir şablondan yeni sayfa aç; <code>{'{{tarih}}'}</code> ve <code>{'{{başlık}}'}</code> otomatik dolar. Herhangi bir sayfayı sağ tık → "Şablon olarak kaydet" ile kendi şablonun yapabilirsin.</p>
+        </section>
+
+        <section className="guide-section">
+          <h2>Diyagram ve PDF</h2>
+          <p>
+            <code>```mermaid</code> kod bloğu canlı diyagram olarak çizilir ve PDF'e vektörel basılır. Hocanın slaytlarını sürükleyip bırak ya da <code>/pdf</code> yaz: PDF sayfanın içinde gezilebilir bir görüntüleyiciyle açılır.
+          </p>
+          <div className="demo-math" data-testid="guide-mermaid-demo">
+            <MermaidPreview code={'graph LR\n  Not --> Özet --> Sınav'} />
+          </div>
         </section>
 
         <section className="guide-section">

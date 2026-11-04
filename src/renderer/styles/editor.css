@@ -1,7 +1,11 @@
 /* Sayfa ve editör tipografisi */
 .page {
   min-height: 100%;
-  padding: 72px 48px 160px;
+  padding: 0 0 160px;
+}
+.page > .page-column {
+  max-width: calc(var(--page-width) + 96px);
+  padding: 0 48px;
 }
 .page-column {
   position: relative;
@@ -211,4 +215,171 @@
   display: flex;
   justify-content: flex-end;
   gap: 8px;
+}
+
+/* --- sayfa başlığı: kapak ve ikon --- */
+.page-header {
+  position: relative;
+  padding-top: 56px;
+}
+.page-header.has-cover {
+  padding-top: 0;
+}
+.page-cover {
+  position: relative;
+  height: 200px;
+  border-radius: var(--page-radius) var(--page-radius) 0 0;
+}
+.page-cover.repositioning {
+  cursor: ns-resize;
+}
+.cover-actions {
+  position: absolute;
+  right: 16px;
+  bottom: 12px;
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.page-cover:hover .cover-actions,
+.page-cover.repositioning .cover-actions {
+  opacity: 1;
+}
+.glass-btn {
+  padding: 5px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  backdrop-filter: blur(16px) saturate(180%);
+  color: #14232b;
+  font-size: 12px;
+  cursor: default;
+}
+.header-column {
+  padding: 0 48px;
+  max-width: calc(var(--page-width) + 96px) !important;
+}
+.page-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 84px;
+  height: 84px;
+  margin-top: 8px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  line-height: 1;
+  cursor: default;
+}
+.has-cover .page-icon {
+  margin-top: -42px;
+}
+.page-icon:hover {
+  background: var(--hover);
+}
+.header-actions {
+  display: flex;
+  gap: 4px;
+  height: 30px;
+  margin: 6px 0 4px -6px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.page:hover .header-actions,
+.header-actions:focus-within {
+  opacity: 1;
+}
+.ghost-btn {
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-3);
+  font-size: 13px;
+  cursor: default;
+}
+.ghost-btn:hover {
+  background: var(--hover);
+  color: var(--text-2);
+}
+
+/* --- seçiciler --- */
+.icon-picker,
+.cover-picker {
+  position: fixed;
+  z-index: 1200;
+  padding: 10px;
+}
+.icon-picker {
+  width: 380px;
+}
+.cover-picker {
+  width: 420px;
+}
+.picker-head {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.picker-search {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  outline: none;
+  background: var(--page);
+  color: var(--text);
+  font: inherit;
+}
+.picker-search:focus {
+  border-color: var(--accent);
+}
+.btn.small {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  max-height: 260px;
+  overflow-y: auto;
+}
+.emoji-option {
+  height: 34px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  font-size: 21px;
+  cursor: default;
+}
+.emoji-option:hover {
+  background: var(--hover);
+}
+.picker-empty,
+.picker-title {
+  padding: 4px 2px 8px;
+  color: var(--text-3);
+  font-size: 12px;
+}
+.cover-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.cover-option {
+  height: 56px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: default;
+}
+.cover-option:hover {
+  outline: 2px solid var(--accent);
+}
+.upload-btn {
+  display: inline-block;
 }

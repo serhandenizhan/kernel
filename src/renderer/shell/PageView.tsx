@@ -3,6 +3,7 @@ import type { PageData } from '@shared/types'
 import { useStore } from '../state/store'
 import { kernel } from '../lib/kernel'
 import { PageEditor, activeEditor } from '../editor/Editor'
+import { PageHeader } from './PageHeader'
 
 // Seçili sayfa: başlık alanı + editör
 export function PageView() {
@@ -36,6 +37,7 @@ export function PageView() {
   if (!page || page.id !== currentId) return null
   return (
     <article className="page" key={page.id}>
+      <PageHeader initialMeta={page.meta} />
       <div className="page-column">
         <TitleField page={page} />
         <PageEditor page={page} />

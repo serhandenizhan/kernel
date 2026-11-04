@@ -3,6 +3,7 @@ import type { TreeNode } from '@shared/types'
 import { useStore } from '../state/store'
 import { kernel } from '../lib/kernel'
 import { ContextMenu, type MenuItem } from './ContextMenu'
+import { PageIcon } from './PageHeader'
 
 type DropZone = 'before' | 'inside' | 'after'
 
@@ -151,7 +152,7 @@ function Row({
         >
           {hasChildren ? '▶' : ''}
         </span>
-        <span className="tree-icon">{node.icon && !node.icon.startsWith('attachments/') ? node.icon : '📄'}</span>
+        <span className="tree-icon">{node.icon ? <PageIcon icon={node.icon} size={16} /> : '📄'}</span>
         {renaming ? (
           <RenameInput node={node} />
         ) : (

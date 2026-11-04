@@ -50,8 +50,13 @@ export function normalizeLanguage(tag: string | null): string | null {
 const CPP_ONLY = /std::|\bcout\b|\bcin\b|#include\s*<(?:iostream|vector|string|map|algorithm)>|\btemplate\s*<|\bnamespace\b|\bclass\s+\w+\s*[:{]|\bnew\s+\w+|::/
 
 // Etiketsiz kodun dilini tahmin eder; emin değilse null
+const MERMAID_START = /^(?:(?:graph|flowchart)\s+(?:TD|TB|LR|RL|BT)\b|(?:sequenceDiagram|classDiagram|stateDiagram(?:-v2)?|erDiagram|gantt|pie|mindmap|journey)\b)/
+
 export function detectLanguage(code: string): string | null {
   if (!code.trim()) return null
+  // Mermaid diyagramları ilk satırlarından tanınır (highlight.js bilmez)
+  const first = code.split('\n').find((l) => l.trim())?.trim() ?? ''
+  if (MERMAID_START.test(first)) return 'mermaid'
   const res = hljs.highlightAuto(code, SUPPORTED_LANGUAGES)
   if (!res.language || res.relevance < 4) return null
   // C ve C++ çoğu zaman karışır: C++'a özgü bir iz yoksa C kabul et

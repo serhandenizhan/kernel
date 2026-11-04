@@ -2,11 +2,20 @@ import { useState } from 'react'
 import { NodeViewContent, NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
 import { SUPPORTED_LANGUAGES, normalizeLanguage } from '@core/smart-paste/language'
 import { getLoadedHighlighter, HIGHLIGHT_LANGUAGES, THEMES } from '../../lib/shiki'
+import { MermaidPreview } from './MermaidView'
 
 const CHUNK_LINES = 25
 
 /** Baskı (salt okunur) için: kod 25 satırlık parçalar halinde, devam parçalarında etiket tekrarlanır */
 function StaticCode({ code, language }: { code: string; language: string }) {
+  if (language === 'mermaid') {
+    return (
+      <NodeViewWrapper className="code-block static mermaid-block">
+        <MermaidPreview code={code} />
+        <NodeViewContent<'code'> as="code" style={{ display: 'none' }} />
+      </NodeViewWrapper>
+    )
+  }
   const hl = getLoadedHighlighter()
   const lines = code.split('\n')
   const chunks: string[] = []
@@ -38,7 +47,9 @@ export function CodeBlockView({ node, updateAttributes, editor }: NodeViewProps)
   const language = (node.attrs['language'] as string | null) ?? ''
   const lineNumbers = Boolean(node.attrs['lineNumbers'])
   const [copied, setCopied] = useState(false)
+  const [showCode, setShowCode] = useState(false)
   const lines = node.textContent.split('\n').length
+  const isMermaid = language === 'mermaid'
   if (!editor.isEditable) return <StaticCode code={node.textContent} language={language} />
 
   return (
@@ -53,6 +64,11 @@ export function CodeBlockView({ node, updateAttributes, editor }: NodeViewProps)
           disabled={!editor.isEditable}
           onChange={(e) => updateAttributes({ language: e.target.value ? normalizeLanguage(e.target.value) : null })}
         />
+        {isMermaid && (
+          <button className="code-btn" data-testid="mermaid-toggle" onClick={() => setShowCode(!showCode)}>
+            {showCode ? 'Önizleme' : 'Kod'}
+          </button>
+        )}
         <button className="code-btn" title="Satır numaraları" onClick={() => updateAttributes({ lineNumbers: !lineNumbers })}>
           #
         </button>
@@ -67,7 +83,8 @@ export function CodeBlockView({ node, updateAttributes, editor }: NodeViewProps)
           {copied ? 'Kopyalandı' : 'Kopyala'}
         </button>
       </div>
-      <pre data-lines={lines}>
+      {isMermaid && !showCode && <MermaidPreview code={node.textContent} />}
+      <pre data-lines={lines} style={isMermaid && !showCode ? { display: 'none' } : undefined}>
         {lineNumbers && (
           <span className="line-gutter" contentEditable={false} aria-hidden>
             {Array.from({ length: lines }, (_, i) => (

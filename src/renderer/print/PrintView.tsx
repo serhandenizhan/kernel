@@ -66,6 +66,9 @@ export function PrintView() {
       await nextFrame()
       await waitForImages()
       await document.fonts.ready
+      // Mermaid gibi asenkron çizimler bitene kadar bekle
+      for (let i = 0; i < 200 && (window.kernelPendingRenders ?? 0) > 0; i++) await new Promise((r) => setTimeout(r, 50))
+      await waitForImages()
       await nextFrame()
       await nextFrame()
       window.kernelPrintReady = true

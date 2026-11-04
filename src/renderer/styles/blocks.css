@@ -475,3 +475,24 @@ mark[data-color='gray'] { --hl: #e3e8ec; }
   border-radius: 10px;
   font-family: var(--font-ui);
 }
+
+/* --- mermaid --- */
+.mermaid-preview {
+  display: flex;
+  justify-content: center;
+  padding: 12px;
+  overflow-x: auto;
+}
+.mermaid-preview svg {
+  max-width: 100%;
+  height: auto;
+}
+.mermaid-error {
+  margin: 6px 12px;
+  color: var(--danger);
+  font-family: var(--font-ui);
+  font-size: 12px;
+}
+.print-body .mermaid-block {
+  break-inside: avoid;
+}

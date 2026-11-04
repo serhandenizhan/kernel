@@ -15,6 +15,7 @@ import { writeAtomic } from './vault/atomic'
 import { exportPdf } from './pdf'
 import { HistoryStore } from './history'
 import { BackupScheduler, readLastBackup } from './backup'
+import { TemplateStore, formatDateTr } from './templates'
 import { splitFrontmatter } from './vault/frontmatter'
 import { log } from './log'
 
@@ -197,6 +198,25 @@ export function registerIpc(): void {
     // geri yükleme de yeni bir sürüm olur
     await history!.snapshot(id, await readFile(vault.pathOf(id), 'utf8'), { force: true })
     void search?.update(vault, id)
+  })
+  h(IPC.templatesList, async () => {
+    const t = new TemplateStore(requireVault().root)
+    await t.ensureDefault()
+    return t.list()
+  })
+  h(IPC.templatesCreate, async (parentId: string | null, name: string) => {
+    const vault = requireVault()
+    const t = new TemplateStore(vault.root)
+    const node = await vault.create(parentId, `${name} ${formatDateTr(new Date())}`)
+    const { markdown, meta } = await t.render(name, node.title)
+    const page = await vault.read(node.id)
+    await vault.write(node.id, { markdown, meta: { ...page.meta, ...meta } })
+    void search?.update(vault, node.id)
+    return node
+  })
+  h(IPC.templatesSaveAs, async (id: string, name: string) => {
+    const page = await requireVault().read(id)
+    return new TemplateStore(requireVault().root).saveFrom(page.markdown, page.meta, name)
   })
   h(IPC.backupStatus, async () => ({ last: await readLastBackup(requireVault().root) }))
   h(IPC.backupNow, async () => {

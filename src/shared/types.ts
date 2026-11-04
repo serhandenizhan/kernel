@@ -111,6 +111,11 @@ export interface KernelApi {
     read(id: string, versionId: string): Promise<string>
     restore(id: string, versionId: string): Promise<void>
   }
+  templates: {
+    list(): Promise<string[]>
+    create(parentId: string | null, name: string): Promise<TreeNode>
+    saveAs(id: string, name: string): Promise<string>
+  }
   backup: {
     now(): Promise<{ filePath: string } | { error: string }>
     status(): Promise<{ last: string | null }>

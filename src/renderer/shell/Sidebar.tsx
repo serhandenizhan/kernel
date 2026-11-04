@@ -1,5 +1,6 @@
 import { useStore } from '../state/store'
 import { PageTree } from './PageTree'
+import { TemplateMenu } from './TemplateMenu'
 
 export function Sidebar() {
   const vaultPath = useStore((s) => s.vaultPath)
@@ -16,9 +17,12 @@ export function Sidebar() {
       </button>
       <div className="sidebar-section">
         <span>{vaultName}</span>
-        <button className="icon-btn" data-testid="new-page" title="Yeni sayfa (⌘N)" onClick={() => void s().createPage(null)}>
-          +
-        </button>
+        <span className="section-actions">
+          <TemplateMenu />
+          <button className="icon-btn" data-testid="new-page" title="Yeni sayfa (⌘N)" onClick={() => void s().createPage(null)}>
+            +
+          </button>
+        </span>
       </div>
       <PageTree
         onRequestIcon={(id) => {

@@ -57,6 +57,13 @@ export function PageTree({ onRequestIcon, onRequestExport }: { onRequestIcon(id:
       { label: "Finder'da göster", onSelect: () => void kernel.vault.reveal(node.id) },
       { label: 'PDF olarak dışa aktar', onSelect: () => onRequestExport(node.id) },
       {
+        label: 'Şablon olarak kaydet',
+        onSelect: async () => {
+          const saved = await kernel.templates.saveAs(node.id, node.title)
+          s.toast(`"${saved}" şablonu kaydedildi`)
+        }
+      },
+      {
         label: 'Sürüm geçmişi',
         onSelect: () => {
           s.openPage(node.id)

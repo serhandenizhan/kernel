@@ -721,3 +721,4 @@ button {
   color: var(--text-3);
   font-size: 12px;
 }
+.section-actions { display: flex; gap: 2px; }

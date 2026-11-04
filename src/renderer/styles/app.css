@@ -145,10 +145,12 @@ button {
   text-overflow: ellipsis;
 }
 .tree-row .row-actions {
-  display: none;
-}
-.tree-row:hover .row-actions {
   display: flex;
+  opacity: 0;
+}
+.tree-row:hover .row-actions,
+.tree-row:focus-within .row-actions {
+  opacity: 1;
 }
 .rename-input {
   flex: 1;

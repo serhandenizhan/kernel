@@ -47,7 +47,7 @@ describe('NotionClient', () => {
   })
   it('401 tekrar denenmez ve hata mesajı token içermez', async () => {
     const { client, calls } = harness([{ status: 401, body: { code: 'unauthorized', message: `API token is invalid: ${TOKEN}` } }])
-    const err = await client.me().catch((e) => e as NotionError)
+    const err = (await client.me().catch((e: unknown) => e)) as NotionError
     expect(err).toBeInstanceOf(NotionError)
     expect(err.code).toBe('unauthorized')
     expect(err.message).not.toContain(TOKEN)

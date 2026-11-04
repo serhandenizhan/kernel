@@ -26,7 +26,7 @@ export class Vault {
   readonly root: string
   private byId = new Map<string, string>() // id → mutlak yol
   private cache = new Map<string, Cached>() // mutlak yol → meta önbelleği
-  /** Kendi yazımlarımız: watcher bunları yok sayar (mutlak yol → zaman) */
+  /** Kendi yazımlarımız: watcher bunları yok sayar (mutlak yol → yazım sonrası mtimeMs) */
   readonly recentWrites = new Map<string, number>()
 
   constructor(root: string) {
@@ -108,9 +108,15 @@ export class Vault {
   }
 
   private async writeFile(file: string, text: string): Promise<void> {
-    this.recentWrites.set(file, Date.now())
     await writeAtomic(file, text)
     this.cache.delete(file)
+    // watcher kendi yazımımızı mtime eşleşmesiyle tanır
+    this.recentWrites.set(file, (await stat(file)).mtimeMs)
+  }
+
+  idOf(absPath: string): string | null {
+    for (const [id, p] of this.byId) if (p === absPath) return id
+    return null
   }
 
   pathOf(id: string): string {

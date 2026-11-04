@@ -13,7 +13,43 @@ declare global {
   interface Window {
     kernelPrintReady?: boolean
     kernelPrintError?: string
+    kernelSnapshotHtml?: () => Promise<string>
   }
+}
+
+async function toDataUrl(url: string): Promise<string> {
+  const blob = await (await fetch(url)).blob()
+  return new Promise((resolve) => {
+    const r = new FileReader()
+    r.onload = () => resolve(String(r.result))
+    r.readAsDataURL(blob)
+  })
+}
+
+/** Tek dosyalık HTML: stiller tek <style>'da, kasa görselleri data: URI, betik yok (fontları ana süreç gömer) */
+window.kernelSnapshotHtml = async () => {
+  const css: string[] = []
+  for (const sheet of Array.from(document.styleSheets)) {
+    try {
+      for (const rule of Array.from(sheet.cssRules)) css.push(rule.cssText)
+    } catch {
+      // erişilemeyen stil sayfası
+    }
+  }
+  const root = document.querySelector('.print-root')!.cloneNode(true) as HTMLElement
+  root.querySelectorAll('[contenteditable]').forEach((el) => el.removeAttribute('contenteditable'))
+  root.querySelectorAll('script').forEach((el) => el.remove())
+  for (const img of Array.from(root.querySelectorAll('img'))) {
+    const src = img.getAttribute('src') ?? ''
+    if (src.startsWith('kernel-file:')) img.setAttribute('src', await toDataUrl(src).catch(() => src))
+  }
+  for (const el of Array.from(root.querySelectorAll<HTMLElement>('[style*="kernel-file:"]'))) {
+    const m = /url\("?(kernel-file:[^")]+)"?\)/.exec(el.getAttribute('style') ?? '')
+    if (m) el.setAttribute('style', (el.getAttribute('style') ?? '').replace(m[1]!, await toDataUrl(m[1]!).catch(() => m[1]!)))
+  }
+  const title = document.querySelector('.print-title')?.textContent ?? 'Kernel'
+  const theme = document.documentElement.dataset['theme'] ?? 'light'
+  return `<!doctype html>\n<html lang="tr" data-theme="${theme}" class="printing"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title.replace(/</g, '&lt;')}</title><style>${css.join('\n')}\n.print-root{max-width:780px;margin:40px auto;padding:0 24px}</style></head><body>${root.outerHTML}</body></html>`
 }
 
 function parseParams(): { ids: string[]; opts: PdfOptions } {

@@ -27,6 +27,8 @@ export const IPC = {
   templatesList: 'templates:list',
   templatesCreate: 'templates:create',
   templatesSaveAs: 'templates:save-as',
+  exportMarkdown: 'export:markdown',
+  exportHtml: 'export:html',
   appFlush: 'app:flush',
   appFlushDone: 'app:flush-done',
   eventTreeChanged: 'event:tree-changed',

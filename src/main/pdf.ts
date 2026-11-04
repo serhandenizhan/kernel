@@ -8,7 +8,7 @@ import { log } from './log'
 const MARGINS: Record<PdfOptions['margin'], number> = { narrow: 0.4, normal: 0.75, wide: 1.0 } // inç
 const READY_TIMEOUT_MS = 20_000
 
-function descendants(nodes: TreeNode[], id: string): string[] {
+export function descendants(nodes: TreeNode[], id: string): string[] {
   for (const n of nodes) {
     if (n.id === id) {
       const out: string[] = []
@@ -33,8 +33,8 @@ async function waitReady(win: BrowserWindow): Promise<void> {
   throw new Error('Sayfa baskıya hazırlanamadı (zaman aşımı). Bir görsel ya da formül yüklenemiyor olabilir.')
 }
 
-// Sayfayı (ve isteğe bağlı alt sayfalarını) arayüzün kendi baskı görünümüyle PDF'e çevirir
-export async function exportPdf(vault: Vault, id: string, options: PdfOptions, savePath: string): Promise<string> {
+/** Arayüzün baskı görünümünü (#/print) gizli pencerede açar ve hazır olmasını bekler */
+export async function openPrintWindow(vault: Vault, id: string, options: PdfOptions): Promise<BrowserWindow> {
   const ids = options.includeSubpages ? [id, ...descendants(await vault.tree(), id)] : [id]
   const win = new BrowserWindow({
     show: false,
@@ -43,11 +43,23 @@ export async function exportPdf(vault: Vault, id: string, options: PdfOptions, s
     webPreferences: { preload: join(__dirname, '../preload/index.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true }
   })
   const hash = `/print?ids=${encodeURIComponent(ids.join(','))}&opts=${encodeURIComponent(JSON.stringify(options))}`
-  const tmp = `${savePath}.${process.pid}.tmp`
   try {
     if (process.env['ELECTRON_RENDERER_URL']) await win.loadURL(`${process.env['ELECTRON_RENDERER_URL']}#${hash}`)
     else await win.loadFile(join(__dirname, '../renderer/index.html'), { hash })
     await waitReady(win)
+    return win
+  } catch (e) {
+    win.destroy()
+    throw e
+  }
+}
+
+// Sayfayı (ve isteğe bağlı alt sayfalarını) arayüzün kendi baskı görünümüyle PDF'e çevirir
+export async function exportPdf(vault: Vault, id: string, options: PdfOptions, savePath: string): Promise<string> {
+  const tmp = `${savePath}.${process.pid}.tmp`
+  let win: BrowserWindow | null = null
+  try {
+    win = await openPrintWindow(vault, id, options)
     const margin = MARGINS[options.margin]
     const pdf = await win.webContents.printToPDF({
       pageSize: options.pageSize,
@@ -68,6 +80,6 @@ export async function exportPdf(vault: Vault, id: string, options: PdfOptions, s
     log.error('PDF export hatası', e)
     throw e
   } finally {
-    win.destroy()
+    win?.destroy()
   }
 }

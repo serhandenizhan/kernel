@@ -16,6 +16,7 @@ import { exportPdf } from './pdf'
 import { HistoryStore } from './history'
 import { BackupScheduler, readLastBackup } from './backup'
 import { TemplateStore, formatDateTr } from './templates'
+import { exportHtml, exportMarkdownZip } from './export'
 import { splitFrontmatter } from './vault/frontmatter'
 import { log } from './log'
 
@@ -76,21 +77,20 @@ async function touchRecent(id: string): Promise<void> {
   if (root) await writeAtomic(join(root, '.kernel', 'recent.json'), JSON.stringify(recentIds))
 }
 
-async function exportPdfWithDialog(id: string, options: PdfOptions): Promise<{ filePath: string } | { canceled: true }> {
-  const vault = requireVault()
-  const { title } = await vault.read(id)
-  const name = `${title.replace(/[/:]/g, '-')}.pdf`
-  // testlerde kaydet diyaloğu yerine verilen klasöre yazılır
+/** Kaydet diyaloğu (testlerde KERNEL_TEST_PDF_DIR klasörüne diyalogsuz) */
+async function pickTarget(id: string, ext: 'pdf' | 'html' | 'zip', label: string): Promise<string | null> {
+  const { title } = await requireVault().read(id)
+  const name = `${title.replace(/[/:]/g, '-')}.${ext}`
   const testDir = process.env['KERNEL_TEST_PDF_DIR']
-  let target: string
-  if (testDir) {
-    target = join(testDir, name)
-  } else {
-    const res = await dialog.showSaveDialog({ defaultPath: join(app.getPath('documents'), name), filters: [{ name: 'PDF', extensions: ['pdf'] }] })
-    if (res.canceled || !res.filePath) return { canceled: true }
-    target = res.filePath
-  }
-  return { filePath: await exportPdf(vault, id, options, target) }
+  if (testDir) return join(testDir, name)
+  const res = await dialog.showSaveDialog({ defaultPath: join(app.getPath('documents'), name), filters: [{ name: label, extensions: [ext] }] })
+  return res.canceled || !res.filePath ? null : res.filePath
+}
+
+async function exportPdfWithDialog(id: string, options: PdfOptions): Promise<{ filePath: string } | { canceled: true }> {
+  const target = await pickTarget(id, 'pdf', 'PDF')
+  if (!target) return { canceled: true }
+  return { filePath: await exportPdf(requireVault(), id, options, target) }
 }
 
 export function registerIpc(): void {
@@ -187,6 +187,14 @@ export function registerIpc(): void {
     return out
   })
   h(IPC.pdfExport, (id: string, o: PdfOptions) => exportPdfWithDialog(id, o))
+  h(IPC.exportMarkdown, async (id: string, includeSubpages: boolean) => {
+    const target = await pickTarget(id, 'zip', 'Markdown (zip)')
+    return target ? { filePath: await exportMarkdownZip(requireVault(), id, includeSubpages, target) } : { canceled: true }
+  })
+  h(IPC.exportHtml, async (id: string, o: PdfOptions) => {
+    const target = await pickTarget(id, 'html', 'HTML')
+    return target ? { filePath: await exportHtml(requireVault(), id, o, target) } : { canceled: true }
+  })
 
   h(IPC.historyList, (id: string) => history?.list(id) ?? [])
   h(IPC.historyRead, async (id: string, versionId: string) => splitFrontmatter((await history!.read(id, versionId))).body)

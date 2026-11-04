@@ -105,6 +105,10 @@ export interface KernelApi {
   pdf: {
     export(id: string, options: PdfOptions): Promise<{ filePath: string } | { canceled: true }>
   }
+  exportAs: {
+    markdown(id: string, includeSubpages: boolean): Promise<{ filePath: string } | { canceled: true }>
+    html(id: string, options: PdfOptions): Promise<{ filePath: string } | { canceled: true }>
+  }
   history: {
     list(id: string): Promise<HistoryEntry[]>
     /** Sürümün gövde Markdown'ı (frontmatter hariç) */

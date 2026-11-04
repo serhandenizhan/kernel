@@ -10,6 +10,7 @@ const DEFAULTS: PdfOptions = { pageSize: 'A4', margin: 'normal', showCover: true
 export function ExportDialog() {
   const currentId = useStore((s) => s.currentId)
   const [opts, setOpts] = useState<PdfOptions>(DEFAULTS)
+  const [format, setFormat] = useState<'pdf' | 'html' | 'markdown'>('pdf')
   const [busy, setBusy] = useState(false)
   const close = () => useStore.getState().setOverlay(null)
   const set = <K extends keyof PdfOptions>(k: K, v: PdfOptions[K]) => setOpts((o) => ({ ...o, [k]: v }))
@@ -25,9 +26,11 @@ export function ExportDialog() {
     setBusy(true)
     try {
       await activeEditor.flush?.() // son değişiklikler PDF'e girsin
-      const res = await kernel.pdf.export(currentId, opts)
+      const res =
+        format === 'pdf' ? await kernel.pdf.export(currentId, opts) : format === 'html' ? await kernel.exportAs.html(currentId, opts) : await kernel.exportAs.markdown(currentId, opts.includeSubpages)
       if ('filePath' in res) {
-        useStore.getState().toast(`PDF kaydedildi: ${res.filePath.split('/').pop()}`)
+        const kind = format === 'pdf' ? 'PDF' : format === 'html' ? 'HTML' : 'Markdown'
+        useStore.getState().toast(`${kind} kaydedildi: ${res.filePath.split('/').pop()}`)
         window.dispatchEvent(new CustomEvent('kernel:tip', { detail: 'first-export' }))
       }
       close()
@@ -40,8 +43,16 @@ export function ExportDialog() {
 
   return (
     <div className="modal-backdrop" onMouseDown={() => !busy && close()}>
-      <div className="modal export glass" role="dialog" aria-label="PDF olarak dışa aktar" data-testid="export-dialog" onMouseDown={(e) => e.stopPropagation()}>
-        <h3>PDF olarak dışa aktar</h3>
+      <div className="modal export glass" role="dialog" aria-label="Dışa aktar" data-testid="export-dialog" onMouseDown={(e) => e.stopPropagation()}>
+        <h3>Dışa aktar</h3>
+        <label className="setting-row">
+          <span>Biçim</span>
+          <select data-testid="export-format" value={format} onChange={(e) => setFormat(e.target.value as typeof format)}>
+            <option value="pdf">PDF</option>
+            <option value="html">HTML (tek dosya)</option>
+            <option value="markdown">Markdown (zip)</option>
+          </select>
+        </label>
         <label className="setting-row">
           <span>Kâğıt</span>
           <select data-testid="pdf-pageSize" value={opts.pageSize} onChange={(e) => set('pageSize', e.target.value as PdfOptions['pageSize'])}>

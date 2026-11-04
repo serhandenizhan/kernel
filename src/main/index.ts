@@ -5,6 +5,9 @@ import { handleVaultProtocol, registerVaultScheme } from './protocol-handler'
 import { openVault, registerIpc } from './ipc-handlers'
 import { resolveVaultPath } from './config'
 
+// Testlerde uygulama ayarları geçici klasörde tutulur
+if (process.env['KERNEL_USER_DATA']) app.setPath('userData', process.env['KERNEL_USER_DATA'])
+
 installCrashLogging()
 registerVaultScheme()
 

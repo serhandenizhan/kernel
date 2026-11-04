@@ -11,7 +11,8 @@ export function tmpVault(): string {
 export async function launch(vault = tmpVault(), extraEnv: Record<string, string> = {}): Promise<{ app: ElectronApplication; win: Page; vault: string }> {
   const app = await electron.launch({
     args: ['out/main/index.js'],
-    env: { ...process.env, KERNEL_VAULT: vault, KERNEL_TEST: '1', ...extraEnv }
+    // userData da geçici: testler gerçek uygulama ayarlarını görmez/değiştirmez
+    env: { ...process.env, KERNEL_VAULT: vault, KERNEL_TEST: '1', KERNEL_USER_DATA: mkdtempSync(join(tmpdir(), 'kernel-ud-')), ...extraEnv }
   })
   const win = await app.firstWindow()
   await win.waitForLoadState('domcontentloaded')

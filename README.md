@@ -13,7 +13,23 @@
 - **PDF export:** vektörel metin ve formüller, tam çözünürlüklü görseller, akıllı sayfa kırılımı, içindekiler (outline), sayfa numarası, alt sayfaları tek PDF'te birleştirme.
 - **Tanıtım turu ve Kernel Rehberi (⌘/)**, kısayol tablosu.
 
-Faz 2 (Notion aktarımı, sürüm geçmişi, yedekleme, şablonlar…) ve Faz 3 (`[[linkler]]`, graf, sekmeler, flashcard'lar…) için: [`docs/superpowers/specs/2026-11-04-kernel-design.md`](docs/superpowers/specs/2026-11-04-kernel-design.md).
+## Özellikler (Faz 2)
+
+- **Notion'dan aktarım:** Sihirbazla bağlan, sayfaları seç; ikon, kapak, görsel, formül, toggle, callout, tablo, alt sayfa ve sayfa bağlantıları (`[[wiki link]]`) gelir. Dosyalar anında indirilir, aktarım yarıda kalırsa kaldığı yerden sürer, sonunda doğrulama raporu oluşur. Token yalnızca macOS Anahtar Zinciri'nde şifreli tutulur.
+- **Sürüm geçmişi:** En fazla 5 dakikada bir sürüm; farkları gör, tek tıkla geri dön.
+- **Otomatik yedek:** Kasanın günlük zip yedeği seçtiğin klasöre (son 14 yedek).
+- **Şablonlar:** "Ders notu" gibi şablonlardan sayfa; kendi şablonunu kaydet.
+- **Mermaid diyagramları** ve **gömülü PDF görüntüleyici**.
+- **Dışa aktarma:** PDF'e ek olarak Markdown (zip) ve tek dosyalık HTML.
+
+### Notion'dan geçiş
+
+1. Kernel'de kenar çubuğunda **Notion'dan aktar**.
+2. [notion.so/my-integrations](https://www.notion.so/my-integrations) → **New integration** (Internal) → token'ı kopyala.
+3. Notion'da aktaracağın her ana sayfada **••• → Connections → Kernel**.
+4. Token'ı sihirbaza yapıştır, sayfaları seç, **Aktar**. Sonuç "Notion içe aktarım (tarih)" sayfasının altına gelir; mevcut notlarının üzerine hiçbir şey yazılmaz.
+
+Faz 3 (`[[linkler]]`, graf, sekmeler, flashcard'lar…) için: [`docs/superpowers/specs/2026-11-04-kernel-design.md`](docs/superpowers/specs/2026-11-04-kernel-design.md).
 
 ## Kurulum
 

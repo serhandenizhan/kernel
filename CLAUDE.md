@@ -30,6 +30,12 @@ Kernel: lokal, açık kaynak, Markdown tabanlı macOS not uygulaması (Notion al
 - Yapıştırma testleri sentetik ClipboardEvent kullanır (sistem panosuna dokunulmaz).
 - PDF: `#/print` görünümü + `printToPDF` (`src/main/pdf.ts`); testlerde `KERNEL_TEST_PDF_DIR`. Referans PNG'ler `test/pdf/baseline/`.
 
+## Notlar (Faz 2)
+- Notion: `src/core/notion` (saf dönüştürücü), `src/main/notion/{client,importer,service,fixture-client}.ts`. Testler `KERNEL_TEST_NOTION_FIXTURES` ile sentetik veri kullanır; gerçek Notion çıktısı asla test verisi yapılmaz.
+- Token: `src/main/secrets.ts` (safeStorage). `KERNEL_TEST` altında Keychain yerine test deposu.
+- Geçmiş `.kernel/history/`, yedek durumu `.kernel/backup.json`, şablonlar `.kernel/templates/`, yarım aktarım `.kernel/notion-import.json`.
+- Test ortam değişkenleri: `KERNEL_TEST_HISTORY_INTERVAL_MS`, `KERNEL_TEST_BACKUP_DIR`, `KERNEL_TEST_PDF_DIR` (PDF/HTML/zip).
+
 ## Mimari
 - `src/main` — Electron ana süreç (pencere, kasa, arama, PDF)
 - `src/preload` — `window.kernel` köprüsü

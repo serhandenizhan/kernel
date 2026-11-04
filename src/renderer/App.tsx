@@ -83,7 +83,11 @@ export function App() {
     // uygulama kapanırken bekleyen kaydı yap
     kernel.app.onFlushRequest(async () => (activeEditor.flush ? activeEditor.flush() : true))
     const off = kernel.events.onTreeChanged(() => void useStore.getState().refreshTree())
-    return off
+    const offToast = kernel.events.onToast((m, kind) => useStore.getState().toast(m, kind))
+    return () => {
+      off()
+      offToast()
+    }
   }, [])
 
   if (!ready) return null

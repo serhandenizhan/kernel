@@ -66,6 +66,7 @@ export interface Settings {
   paste: PasteSettings
   tips: { enabled: boolean; seen: string[] }
   tourDone: boolean
+  backup: { enabled: boolean; folder: string | null; keep: number }
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -74,7 +75,8 @@ export const DEFAULT_SETTINGS: Settings = {
   pageWidth: 'normal',
   paste: { stripCitations: true, latexLineHeuristic: true, unfencedCodeHeuristic: true },
   tips: { enabled: true, seen: [] },
-  tourDone: false
+  tourDone: false,
+  backup: { enabled: false, folder: null, keep: 14 }
 }
 
 export interface KernelApi {
@@ -109,6 +111,11 @@ export interface KernelApi {
     read(id: string, versionId: string): Promise<string>
     restore(id: string, versionId: string): Promise<void>
   }
+  backup: {
+    now(): Promise<{ filePath: string } | { error: string }>
+    status(): Promise<{ last: string | null }>
+    chooseFolder(): Promise<string | null>
+  }
   settings: {
     get(): Promise<Settings>
     set(patch: Partial<Settings>): Promise<Settings>
@@ -118,5 +125,7 @@ export interface KernelApi {
   events: {
     onTreeChanged(cb: () => void): () => void
     onPageChangedExternally(cb: (id: string) => void): () => void
+    /** Ana süreçten gelen bildirim (örn. otomatik yedek hatası) */
+    onToast(cb: (message: string, kind: 'info' | 'error') => void): () => void
   }
 }

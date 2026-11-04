@@ -716,3 +716,8 @@ button {
 .history-main .modal-actions {
   margin-top: 12px;
 }
+.setting-hint {
+  margin-top: 6px;
+  color: var(--text-3);
+  font-size: 12px;
+}

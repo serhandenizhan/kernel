@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import type { Settings } from '@shared/types'
 import { useStore } from '../state/store'
 import { kernel } from '../lib/kernel'
@@ -75,6 +75,8 @@ export function SettingsDialog() {
           </button>
         </section>
 
+        <BackupSection />
+
         <section>
           <h4>Kasa</h4>
           <div className="setting-path">{vaultPath}</div>
@@ -104,5 +106,53 @@ export function SettingsDialog() {
         </div>
       </div>
     </div>
+  )
+}
+
+function BackupSection() {
+  const backup = useStore((s) => s.settings.backup)
+  const [last, setLast] = useState<string | null>(null)
+  const refresh = () => void kernel.backup.status().then((s) => setLast(s.last))
+  useEffect(refresh, [])
+  const set = (patch: Partial<typeof backup>) => void useStore.getState().setSettings({ backup: { ...backup, ...patch } })
+  const lastText = last ? (Date.now() - new Date(last).getTime() < 120_000 ? 'az önce' : new Date(last).toLocaleString('tr-TR')) : 'henüz yok'
+  return (
+    <section>
+      <h4>Yedekleme</h4>
+      <label className="setting-check">
+        <input type="checkbox" data-testid="setting-backup" checked={backup.enabled} onChange={(e) => set({ enabled: e.target.checked })} />
+        Kasayı her gün otomatik yedekle (son {backup.keep} yedek tutulur)
+      </label>
+      <div className="setting-path" data-testid="backup-folder">
+        {backup.folder ?? 'Yedek klasörü seçilmedi'}
+      </div>
+      <div className="setting-actions">
+        <button
+          className="btn small"
+          data-testid="backup-choose"
+          onClick={async () => {
+            const folder = await kernel.backup.chooseFolder()
+            if (folder) await useStore.getState().setSettings({ backup: { ...useStore.getState().settings.backup, folder } })
+          }}
+        >
+          Klasör seç
+        </button>
+        <button
+          className="btn small"
+          data-testid="backup-now"
+          disabled={!backup.folder}
+          onClick={async () => {
+            const res = await kernel.backup.now()
+            if ('filePath' in res) useStore.getState().toast('Yedek alındı')
+            refresh()
+          }}
+        >
+          Şimdi yedekle
+        </button>
+      </div>
+      <div className="setting-hint" data-testid="backup-last">
+        Son yedek: {lastText}
+      </div>
+    </section>
   )
 }

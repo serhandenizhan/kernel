@@ -14,6 +14,7 @@ import { join } from 'node:path'
 import { writeAtomic } from './vault/atomic'
 import { exportPdf } from './pdf'
 import { HistoryStore } from './history'
+import { BackupScheduler, readLastBackup } from './backup'
 import { splitFrontmatter } from './vault/frontmatter'
 import { log } from './log'
 
@@ -32,6 +33,9 @@ export async function openVault(path: string): Promise<void> {
   const interval = process.env['KERNEL_TEST_HISTORY_INTERVAL_MS']
   history = new HistoryStore(path, undefined, interval !== undefined ? Number(interval) : undefined)
   void history.prune()
+  backupSettings = await readSettings(path)
+  backups.stop()
+  backups.start()
   recentIds = await loadRecent(path)
   state.stopWatcher = await watchVault(vault, (e) => {
     if (e.type === 'tree-changed') {
@@ -47,6 +51,11 @@ export async function openVault(path: string): Promise<void> {
 
 let search: SearchIndex | null = null
 let history: HistoryStore | null = null
+let backupSettings: Settings | null = null
+const backups = new BackupScheduler(
+  () => (state.vault && backupSettings ? { root: state.vault.root, settings: backupSettings } : null),
+  (msg) => broadcast(IPC.eventToast, msg, 'error')
+)
 let recentIds: string[] = []
 const RECENT_MAX = 8
 
@@ -189,6 +198,27 @@ export function registerIpc(): void {
     await history!.snapshot(id, await readFile(vault.pathOf(id), 'utf8'), { force: true })
     void search?.update(vault, id)
   })
+  h(IPC.backupStatus, async () => ({ last: await readLastBackup(requireVault().root) }))
+  h(IPC.backupNow, async () => {
+    backupSettings = await readSettings(requireVault().root)
+    const res = await backups.tick(true)
+    if (res === 'done') return { filePath: backupSettings.backup.folder ?? '' }
+    return { error: 'Yedek alınamadı' }
+  })
+  h(IPC.backupChooseFolder, async () => {
+    // testlerde diyalog yerine verilen klasör
+    const testDir = process.env['KERNEL_TEST_BACKUP_DIR']
+    let folder: string | null = testDir ?? null
+    if (!testDir) {
+      const res = await dialog.showOpenDialog({ properties: ['openDirectory', 'createDirectory'], title: 'Yedek klasörü seç' })
+      folder = res.canceled ? null : (res.filePaths[0] ?? null)
+    }
+    if (folder) {
+      const settings = await readSettings(requireVault().root)
+      backupSettings = await writeSettings(requireVault().root, { backup: { ...settings.backup, folder } })
+    }
+    return folder
+  })
   h(IPC.settingsGet, () => readSettings(requireVault().root))
-  h(IPC.settingsSet, (patch: Partial<Settings>) => writeSettings(requireVault().root, patch))
+  h(IPC.settingsSet, async (patch: Partial<Settings>) => (backupSettings = await writeSettings(requireVault().root, patch)))
 }

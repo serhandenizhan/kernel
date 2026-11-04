@@ -10,7 +10,8 @@ function merge(base: Settings, patch: Partial<Settings>): Settings {
     ...base,
     ...patch,
     paste: { ...base.paste, ...(patch.paste ?? {}) },
-    tips: { ...base.tips, ...(patch.tips ?? {}) }
+    tips: { ...base.tips, ...(patch.tips ?? {}) },
+    backup: { ...base.backup, ...(patch.backup ?? {}) }
   }
 }
 

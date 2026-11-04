@@ -31,6 +31,7 @@ const api: KernelApi = {
   search: { query: inv(IPC.searchQuery), recent: inv(IPC.searchRecent) } as KernelApi['search'],
   pdf: { export: inv(IPC.pdfExport) } as KernelApi['pdf'],
   history: { list: inv(IPC.historyList), read: inv(IPC.historyRead), restore: inv(IPC.historyRestore) } as KernelApi['history'],
+  backup: { now: inv(IPC.backupNow), status: inv(IPC.backupStatus), chooseFolder: inv(IPC.backupChooseFolder) } as KernelApi['backup'],
   settings: { get: inv(IPC.settingsGet), set: inv(IPC.settingsSet) } as KernelApi['settings'],
   app: {
     onFlushRequest(cb) {
@@ -46,7 +47,8 @@ const api: KernelApi = {
   },
   events: {
     onTreeChanged: (cb) => on(IPC.eventTreeChanged, cb),
-    onPageChangedExternally: (cb) => on(IPC.eventPageChanged, cb)
+    onPageChangedExternally: (cb) => on(IPC.eventPageChanged, cb),
+    onToast: (cb) => on(IPC.eventToast, cb)
   }
 }
 

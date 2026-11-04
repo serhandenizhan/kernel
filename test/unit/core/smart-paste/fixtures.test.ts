@@ -1,36 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { loadCases } from '../../../fixtures/paste/load'
 import { convertPaste } from '@core/smart-paste'
 import { markdownToDoc } from '@core/markdown/parse'
 import type { PasteSettings } from '@shared/types'
 
 const ALL: PasteSettings = { stripCitations: true, latexLineHeuristic: true, unfencedCodeHeuristic: true }
-
-interface Case {
-  name: string
-  input?: string
-  html?: string
-  text?: string
-  expected: string
-}
-
-export function loadCases(): Case[] {
-  const raw = readFileSync(join(__dirname, '../../../fixtures/paste/cases.txt'), 'utf8')
-  return raw
-    .split(/^=== (.+) ===$/m)
-    .slice(1)
-    .reduce<Case[]>((acc, part, i, arr) => {
-      if (i % 2 === 0) {
-        const body = arr[i + 1] ?? ''
-        const sections: Record<string, string> = {}
-        const pieces = body.split(/^--- (input|html|text|expected) ---$/m).slice(1)
-        for (let k = 0; k < pieces.length; k += 2) sections[pieces[k]!] = pieces[k + 1]!.replace(/^\n/, '').replace(/\n+$/, '')
-        acc.push({ name: part, input: sections['input'], html: sections['html'], text: sections['text'], expected: sections['expected'] ?? '' })
-      }
-      return acc
-    }, [])
-}
 
 const cases = loadCases()
 

@@ -434,3 +434,18 @@ mark[data-color='gray'] { --hl: #e3e8ec; }
   border-radius: 6px;
   outline: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
 }
+
+/* --- formüle çevir önerisi --- */
+.suggest-math {
+  margin-left: 8px;
+  padding: 1px 8px;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  vertical-align: middle;
+  cursor: default;
+  user-select: none;
+}

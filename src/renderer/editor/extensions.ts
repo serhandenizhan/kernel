@@ -10,6 +10,7 @@ import { KernelMath, MathShortcuts } from './nodes/Math'
 import { Callout } from './nodes/Callout'
 import { KernelImage } from './nodes/Image'
 import { SlashCommand } from './nodes/SlashCommand'
+import { SmartPaste } from './paste'
 
 // Görev 6'daki Markdown şemasıyla birebir aynı düğüm/işaret adları
 
@@ -57,7 +58,7 @@ export function buildExtensions(opts: ExtensionOptions = {}): AnyExtension[] {
     Callout,
     KernelImage
   ]
-  if (!opts.readOnly) list.push(MathShortcuts, SlashCommand, Placeholder.configure({ placeholder: opts.placeholder ?? 'Yazmaya başla ya da / yaz' }))
+  if (!opts.readOnly) list.push(SmartPaste, MathShortcuts, SlashCommand, Placeholder.configure({ placeholder: opts.placeholder ?? 'Yazmaya başla ya da / yaz' }))
   return list
 }
 

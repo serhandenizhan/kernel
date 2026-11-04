@@ -1,7 +1,7 @@
 import { mkdir, readdir, readFile, rename, stat } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { basename, dirname, join, relative, sep } from 'node:path'
-import { randomBytes } from 'node:crypto'
+import { createHash, randomBytes } from 'node:crypto'
 import { ulid } from 'ulid'
 import type { PageData, PageMeta, TreeNode } from '@shared/types'
 import { joinFrontmatter, splitFrontmatter } from './frontmatter'
@@ -85,6 +85,13 @@ export class Vault {
 
   private async assignId(file: string): Promise<void> {
     const text = await readFile(file, 'utf8')
+    if (text.includes('\u0000')) {
+      // ikili dosya asla değiştirilmez: yola bağlı, bellekte kalan bir kimlik ver
+      const id = `bin-${createHash('sha1').update(file).digest('hex').slice(0, 16)}`
+      this.byId.set(id, file)
+      this.cache.set(file, { id, mtimeMs: (await stat(file)).mtimeMs })
+      return
+    }
     const { meta, body } = splitFrontmatter(text)
     const st = await stat(file)
     const full = this.normalizeMeta(meta, st)

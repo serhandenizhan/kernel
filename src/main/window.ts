@@ -1,5 +1,33 @@
-import { BrowserWindow, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { join } from 'node:path'
+import { IPC } from '@shared/ipc'
+
+const FLUSH_TIMEOUT_MS = 3000
+let quitting = false
+app.on('before-quit', () => {
+  quitting = true
+})
+
+/** Arayüzden bekleyen kaydı yapmasını ister; en fazla 3 sn bekler */
+function requestFlush(win: BrowserWindow): Promise<void> {
+  return new Promise((resolve) => {
+    const done = (e: Electron.IpcMainEvent) => {
+      if (e.sender !== win.webContents) return
+      cleanup()
+      resolve()
+    }
+    const timer = setTimeout(() => {
+      cleanup()
+      resolve()
+    }, FLUSH_TIMEOUT_MS)
+    const cleanup = () => {
+      clearTimeout(timer)
+      ipcMain.removeListener(IPC.appFlushDone, done)
+    }
+    ipcMain.on(IPC.appFlushDone, done)
+    win.webContents.send(IPC.appFlush)
+  })
+}
 
 // Ana pencere: macOS trafik ışıkları kenar çubuğunun içinde, kenar çubuğu vibrancy kullanır
 export function createMainWindow(): BrowserWindow {
@@ -24,6 +52,18 @@ export function createMainWindow(): BrowserWindow {
   })
 
   win.once('ready-to-show', () => win.show())
+
+  // Kapanmadan önce açık sayfanın kaydını bekle (yazıp hemen Cmd+Q'da veri kaybı olmasın)
+  let flushed = false
+  win.on('close', (event) => {
+    if (flushed || win.webContents.isDestroyed()) return
+    event.preventDefault()
+    void requestFlush(win).then(() => {
+      flushed = true
+      if (quitting) app.quit()
+      else win.close()
+    })
+  })
 
   // Dış linkler varsayılan tarayıcıda açılır, pencere içi gezinme engellenir
   win.webContents.setWindowOpenHandler(({ url }) => {

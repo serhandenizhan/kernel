@@ -123,7 +123,17 @@ interface Item {
 const sameMark = (a: Mark, b: Mark) => a.type === b.type && JSON.stringify(a.attrs ?? {}) === JSON.stringify(b.attrs ?? {})
 
 function inline(nodes: JSONContent[]): PhrasingContent[] {
-  return build(nodes.map((node) => ({ node, marks: [...(node.marks ?? [])] })))
+  return build(trimEdges(nodes).map((node) => ({ node, marks: [...(node.marks ?? [])] })))
+}
+
+/** Blok başı/sonundaki boşluklar Markdown'da anlamsızdır; remark onları &#x20; olarak yazardı */
+function trimEdges(nodes: JSONContent[]): JSONContent[] {
+  const out = nodes.map((n) => ({ ...n }))
+  const first = out.find((n) => n.type !== 'hardBreak')
+  if (first?.type === 'text') first.text = (first.text ?? '').replace(/^\s+/, '')
+  const last = [...out].reverse().find((n) => n.type !== 'hardBreak')
+  if (last?.type === 'text') last.text = (last.text ?? '').replace(/\s+$/, '')
+  return out.filter((n) => n.type !== 'text' || n.text)
 }
 
 function build(items: Item[]): PhrasingContent[] {

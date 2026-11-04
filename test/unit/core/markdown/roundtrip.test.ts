@@ -44,6 +44,10 @@ describe('round-trip', () => {
     const s = '# değil * yıldız _alt_ [köşeli] <etiket> \\ ters `tik`'
     expect(markdownToDoc(docToMarkdown(docOf(s)))).toEqual(docOf(s))
   })
+  it('paragraf baş/sonundaki boşluklar varlık (&#x20;) olarak yazılmaz', () => {
+    expect(docToMarkdown(docOf('  Merhaba '))).toBe('Merhaba\n')
+    expect(docToMarkdown({ type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'a ' }, { type: 'text', text: 'b', marks: [{ type: 'bold' }] }, { type: 'text', text: ' ' }] }] })).toBe('a **b**\n')
+  })
   it('dosya sonu tek satır sonu', () => {
     expect(docToMarkdown(markdownToDoc('a'))).toBe('a\n')
   })

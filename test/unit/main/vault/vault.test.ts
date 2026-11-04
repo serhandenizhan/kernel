@@ -45,6 +45,16 @@ describe('Vault', () => {
     expect((await v2.read(id)).markdown).toBe('gövde')
   })
 
+  it('ikili dosyaya id yazmaz ama ağaçta gösterir', async () => {
+    writeFileSync(join(root, 'Bozuk.md'), 'a\u0000b')
+    const v = new Vault(root)
+    await v.init()
+    expect(readFileSync(join(root, 'Bozuk.md'), 'utf8')).toBe('a\u0000b')
+    const tree = await v.tree()
+    expect(tree[0]!.title).toBe('Bozuk')
+    expect((await v.read(tree[0]!.id)).markdown).toBe('a\u0000b')
+  })
+
   it('NFD dosya adını NFC başlık olarak verir', async () => {
     writeFileSync(join(root, 'Özdeğerler.md'), '')
     const v = new Vault(root)

@@ -86,6 +86,9 @@ describe('markdownToDoc — bloklar', () => {
       })
     )
   })
+  it('ikili (NUL içeren) dosyayı reddeder', () => {
+    expect(() => markdownToDoc('abc\u0000def')).toThrow('ikili')
+  })
   it('ayırıcı', () => {
     expect(markdownToDoc('a\n\n---\n\nb')).toEqual(doc(p(t('a')), { type: 'horizontalRule' }, p(t('b'))))
   })

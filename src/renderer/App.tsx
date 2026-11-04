@@ -8,6 +8,9 @@ import { PageView } from './shell/PageView'
 import './styles/tokens.css'
 import './styles/glass.css'
 import './styles/app.css'
+import './styles/editor.css'
+import 'katex/dist/katex.min.css'
+import { activeEditor } from './editor/Editor'
 
 function useTheme() {
   const settings = useStore((s) => s.settings)
@@ -72,6 +75,10 @@ export function App() {
 
   useEffect(() => {
     void useStore.getState().init()
+    // uygulama kapanırken bekleyen kaydı yap
+    kernel.app.onFlushRequest(async () => {
+      await activeEditor.flush?.()
+    })
     const off = kernel.events.onTreeChanged(() => void useStore.getState().refreshTree())
     return off
   }, [])

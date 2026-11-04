@@ -12,6 +12,8 @@ const processor = unified().use(remarkParse).use(remarkGfm).use(remarkMath)
 
 // Markdown metnini TipTap belgesine (JSONContent) çevirir
 export function markdownToDoc(md: string): JSONContent {
+  // .md uzantılı ikili dosya: düzenlenirse bozulur, salt okunur açılmalı
+  if (md.includes('\u0000')) throw new Error('Dosya ikili veri içeriyor')
   // "\=" kaçışlarını koru: remark onları "=" yapar ve == vurgusundan ayırt edilemez hale gelirdi
   const src = md.replace(/\\=/g, ESCAPED_EQ)
   const tree = processor.parse(src)

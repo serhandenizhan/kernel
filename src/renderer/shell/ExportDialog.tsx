@@ -26,7 +26,10 @@ export function ExportDialog() {
     try {
       await activeEditor.flush?.() // son değişiklikler PDF'e girsin
       const res = await kernel.pdf.export(currentId, opts)
-      if ('filePath' in res) useStore.getState().toast(`PDF kaydedildi: ${res.filePath.split('/').pop()}`)
+      if ('filePath' in res) {
+        useStore.getState().toast(`PDF kaydedildi: ${res.filePath.split('/').pop()}`)
+        window.dispatchEvent(new CustomEvent('kernel:tip', { detail: 'first-export' }))
+      }
       close()
     } catch (e) {
       useStore.getState().toast(e instanceof Error ? e.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, '') : 'PDF oluşturulamadı', 'error')

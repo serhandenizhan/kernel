@@ -1,5 +1,5 @@
 import { _electron as electron, type ElectronApplication, type Page } from '@playwright/test'
-import { mkdtempSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -8,7 +8,23 @@ export function tmpVault(): string {
   return mkdtempSync(join(tmpdir(), 'kernel-vault-'))
 }
 
-export async function launch(vault = tmpVault(), extraEnv: Record<string, string> = {}): Promise<{ app: ElectronApplication; win: Page; vault: string }> {
+export interface LaunchOptions {
+  /** true: tanıtım turu ve ipuçları açık kalır (varsayılan: kapalı, diğer testlerin tıklamalarını engellemesin) */
+  onboarding?: boolean
+  /** onboarding açıkken yalnızca turu atla (ipuçları açık) */
+  skipTour?: boolean
+}
+
+export async function launch(vault = tmpVault(), extraEnv: Record<string, string> = {}, opts: LaunchOptions = {}): Promise<{ app: ElectronApplication; win: Page; vault: string }> {
+  if (vault && (!opts.onboarding || opts.skipTour)) {
+    mkdirSync(join(vault, '.kernel'), { recursive: true })
+    const settings = opts.onboarding ? { tourDone: true } : { tourDone: true, tips: { enabled: false, seen: [] } }
+    try {
+      writeFileSync(join(vault, '.kernel', 'settings.json'), JSON.stringify(settings), { flag: 'wx' })
+    } catch {
+      // ayar dosyası zaten var (ikinci açılış): dokunma
+    }
+  }
   const app = await electron.launch({
     args: ['out/main/index.js'],
     // userData da geçici: testler gerçek uygulama ayarlarını görmez/değiştirmez

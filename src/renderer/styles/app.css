@@ -453,3 +453,183 @@ button {
   display: flex;
   gap: 6px;
 }
+
+/* --- tur ve ipuçları --- */
+.tour-backdrop {
+  background: rgba(10, 18, 24, 0.3);
+}
+.tour {
+  width: 440px;
+  padding: 28px 28px 20px;
+  text-align: center;
+}
+.tour-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 84px;
+  color: var(--accent);
+  font-size: 40px;
+  font-weight: 700;
+}
+.tour h3 {
+  margin: 8px 0 8px;
+  font-size: 20px;
+}
+.tour p {
+  min-height: 66px;
+  margin: 0 0 16px;
+  color: var(--text-2);
+  line-height: 1.55;
+}
+.tour-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.tour-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--border-strong);
+}
+.tour-dots span.on {
+  width: 18px;
+  border-radius: 3px;
+  background: var(--accent);
+}
+.tour .modal-actions {
+  justify-content: space-between;
+}
+.tip {
+  position: fixed;
+  right: 20px;
+  bottom: 76px;
+  z-index: 1800;
+  width: 320px;
+  padding: 12px 14px;
+}
+.tip-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--accent-text);
+}
+.tip p {
+  margin: 6px 0 0;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+/* --- rehber --- */
+.guide .page-column {
+  padding-top: 64px;
+}
+.guide-close {
+  position: absolute;
+  top: 24px;
+  right: 48px;
+  font-size: 18px;
+}
+.guide-lead {
+  margin: -6px 0 24px;
+  color: var(--text-2);
+  font-size: 15px;
+}
+.guide-section {
+  padding: 20px 0;
+  border-top: 1px solid var(--border);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+}
+.guide-section h2 {
+  margin: 0 0 6px;
+  font-family: var(--font-ui);
+  font-size: 19px;
+}
+.guide-section p {
+  margin: 0 0 12px;
+  color: var(--text-2);
+}
+.guide-section code {
+  padding: 0.1em 0.35em;
+  border-radius: 5px;
+  background: var(--code-bg);
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+.demo-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+.demo-label {
+  margin-bottom: 4px;
+  color: var(--text-3);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
+}
+.demo-raw {
+  margin: 0;
+  padding: 10px 12px;
+  overflow-x: auto;
+  border-radius: 8px;
+  background: var(--code-bg);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  white-space: pre-wrap;
+}
+.demo-render {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+}
+.demo-math {
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.guide-blocks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.guide-block {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 3px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+}
+.shortcut-search {
+  width: 100%;
+  margin-bottom: 8px;
+}
+.shortcut-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-ui);
+  font-size: 13px;
+}
+.shortcut-table td {
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--border);
+}
+.shortcut-table kbd {
+  padding: 2px 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: 5px;
+  background: var(--code-bg);
+  font-family: var(--font-ui);
+}
+.shortcut-table .muted {
+  color: var(--text-3);
+  text-align: right;
+}

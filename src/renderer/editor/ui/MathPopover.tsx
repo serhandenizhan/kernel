@@ -34,6 +34,7 @@ export function MathPopover({ editor }: { editor: Editor | null }) {
   useEffect(() => {
     if (!kind || !rect) return
     openedAt.current = performance.now()
+    window.dispatchEvent(new CustomEvent('kernel:tip', { detail: 'first-math' }))
     ref.current?.focus()
     ref.current?.select()
     // ikinci deneme yalnızca odak kaçtıysa; seçim yapmaz (aradaki yazılan harfler silinmesin)

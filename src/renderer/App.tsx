@@ -9,6 +9,9 @@ import { SearchPalette } from './shell/SearchPalette'
 import { SettingsDialog } from './shell/SettingsDialog'
 import { TocPanel } from './shell/TocPanel'
 import { ExportDialog } from './shell/ExportDialog'
+import { GuidePage } from './guide/GuidePage'
+import { Tour, TipBubble } from './guide/Tour'
+import './guide/tips'
 import { activeEditor } from './editor/Editor'
 
 function useTheme() {
@@ -70,6 +73,7 @@ export function App() {
   const vaultPath = useStore((s) => s.vaultPath)
   const sidebarVisible = useStore((s) => s.sidebarVisible)
   const overlay = useStore((s) => s.overlay)
+  const tourDone = useStore((s) => s.settings.tourDone)
   useTheme()
   useShortcuts()
 
@@ -97,14 +101,14 @@ export function App() {
       {sidebarVisible && <Sidebar />}
       <main className="main">
         <div className="main-drag" />
-        <div className="page-surface">
-          <PageView />
-        </div>
+        <div className="page-surface">{overlay === 'guide' ? <GuidePage /> : <PageView />}</div>
         <TocPanel />
       </main>
       {overlay === 'search' && <SearchPalette />}
       {overlay === 'settings' && <SettingsDialog />}
       {overlay === 'export' && <ExportDialog />}
+      {!tourDone && <Tour />}
+      <TipBubble />
       <Toasts />
     </div>
   )

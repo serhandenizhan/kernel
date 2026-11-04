@@ -28,7 +28,10 @@ export const SlashCommand = Extension.create({
           props.run(editor)
         },
         render: () => ({
-          onStart: (p) => useSlash.getState().show(p.items, p.command, p.clientRect?.() ?? null),
+          onStart: (p) => {
+            useSlash.getState().show(p.items, p.command, p.clientRect?.() ?? null)
+            window.dispatchEvent(new CustomEvent('kernel:tip', { detail: 'first-slash' }))
+          },
           onUpdate: (p) => useSlash.getState().show(p.items, p.command, p.clientRect?.() ?? null),
           onKeyDown: ({ event }) => useSlash.getState().key(event),
           onExit: () => useSlash.getState().hide()

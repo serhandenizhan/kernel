@@ -182,19 +182,6 @@
   font-family: var(--font-ui);
   font-weight: 600;
 }
-.kernel-editor .callout {
-  padding: 12px 16px;
-  border-radius: 10px;
-  background: var(--accent-soft);
-}
-.kernel-editor .image-block img {
-  max-width: 100%;
-  border-radius: 8px;
-}
-.kernel-editor .details {
-  display: flex;
-  gap: 6px;
-}
 
 /* --- modal --- */
 .modal-backdrop {

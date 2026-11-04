@@ -1,0 +1,326 @@
+/* Zengin bloklar: kod, formül, callout, toggle, görsel, tablo, vurgu */
+
+/* --- kod --- */
+.code-block {
+  position: relative;
+  margin: 0.8em 0;
+  border-radius: 10px;
+  background: var(--code-bg);
+}
+.code-block pre {
+  display: flex;
+  margin: 0;
+  padding: 10px 16px 14px;
+  overflow-x: auto;
+  background: transparent;
+}
+.code-block pre code {
+  flex: 1;
+  white-space: pre;
+}
+.code-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px 0 12px;
+  opacity: 0.55;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  transition: opacity 0.15s;
+}
+.code-block:hover .code-toolbar,
+.code-block:focus-within .code-toolbar {
+  opacity: 1;
+}
+.code-lang {
+  width: 120px;
+  margin-right: auto;
+  padding: 2px 6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+}
+.code-lang:hover,
+.code-lang:focus {
+  border-color: var(--border-strong);
+  outline: none;
+}
+.code-btn {
+  padding: 2px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-2);
+  cursor: default;
+}
+.code-btn:hover {
+  background: var(--hover);
+}
+.line-gutter {
+  display: flex;
+  flex-direction: column;
+  margin-right: 14px;
+  color: var(--text-3);
+  text-align: right;
+  user-select: none;
+}
+.shiki {
+  color: var(--shiki-light);
+}
+:root[data-theme='dark'] .shiki {
+  color: var(--shiki-dark);
+}
+
+/* --- formül --- */
+.tiptap-mathematics-render--editable {
+  cursor: pointer;
+  border-radius: 6px;
+}
+.tiptap-mathematics-render--editable:hover {
+  background: var(--hover);
+}
+.kernel-editor [data-type='block-math'],
+.kernel-editor .block-math-inner {
+  display: block;
+  padding: 6px 0;
+  overflow-x: auto;
+  text-align: center;
+}
+.block-math-inner:empty::before {
+  content: 'Formül';
+  color: var(--text-3);
+  font-style: italic;
+}
+.block-math-error,
+.inline-math-error {
+  color: var(--danger);
+  text-decoration: underline wavy var(--danger);
+}
+.math-popover {
+  position: fixed;
+  z-index: 1200;
+  width: 420px;
+  padding: 10px;
+}
+.math-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  outline: none;
+  resize: vertical;
+  background: var(--page);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+.math-input:focus {
+  border-color: var(--accent);
+}
+.math-error {
+  margin-top: 6px;
+  color: var(--danger);
+  font-size: 12px;
+}
+.math-hint {
+  margin-top: 6px;
+  color: var(--text-3);
+  font-size: 11px;
+}
+
+/* --- callout --- */
+.callout {
+  display: flex;
+  gap: 10px;
+  margin: 0.8em 0;
+  padding: 12px 16px 12px 12px;
+  border-radius: 10px;
+  --callout-bg: #eef2f6;
+  background: var(--callout-bg);
+}
+.callout-note { --callout-bg: #eef2f6; }
+.callout-tip { --callout-bg: #e3f4f0; }
+.callout-warning { --callout-bg: #fdf3dc; }
+.callout-danger { --callout-bg: #fbe7e5; }
+.callout-info { --callout-bg: #e6f0fb; }
+.callout-example { --callout-bg: #efe9fb; }
+:root[data-theme='dark'] .callout-note { --callout-bg: #232c35; }
+:root[data-theme='dark'] .callout-tip { --callout-bg: #17322d; }
+:root[data-theme='dark'] .callout-warning { --callout-bg: #3a3020; }
+:root[data-theme='dark'] .callout-danger { --callout-bg: #3d2523; }
+:root[data-theme='dark'] .callout-info { --callout-bg: #1f2d3d; }
+:root[data-theme='dark'] .callout-example { --callout-bg: #2c2540; }
+.callout-icon {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 18px;
+  line-height: 26px;
+  cursor: default;
+}
+.callout-icon:hover {
+  background: var(--hover);
+}
+.callout-body {
+  flex: 1;
+  min-width: 0;
+}
+.callout-title {
+  display: block;
+  width: 100%;
+  margin-bottom: 2px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-weight: 650;
+}
+.callout-content > * + * {
+  margin-top: 0.4em;
+}
+
+/* --- toggle (details) --- */
+.kernel-editor .details {
+  display: flex;
+  gap: 4px;
+  margin: 0.4em 0;
+}
+.kernel-editor .details > button {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin-top: 3px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-2);
+  cursor: default;
+}
+.kernel-editor .details > button::before {
+  content: '▶';
+  display: inline-block;
+  font-size: 10px;
+  transition: transform 0.15s;
+}
+.kernel-editor .details.is-open > button::before {
+  transform: rotate(90deg);
+}
+.kernel-editor .details > button:hover {
+  background: var(--hover);
+}
+.kernel-editor .details > div {
+  flex: 1;
+  min-width: 0;
+}
+.kernel-editor .details summary {
+  font-weight: 600;
+  list-style: none;
+}
+.kernel-editor .details summary::-webkit-details-marker {
+  display: none;
+}
+.kernel-editor .details [data-type='detailsContent'] {
+  margin-top: 0.3em;
+}
+
+/* --- görsel --- */
+.image-block {
+  margin: 1em 0;
+  text-align: center;
+}
+.image-frame {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+.image-frame img {
+  display: block;
+  max-width: 100%;
+  border-radius: 8px;
+}
+.image-block.selected .image-frame img {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.image-resize {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--page);
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0;
+  cursor: nwse-resize;
+}
+.image-block:hover .image-resize,
+.image-block.selected .image-resize {
+  opacity: 1;
+}
+.image-caption {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text-2);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  text-align: center;
+}
+
+/* --- tablo menüsü --- */
+.table-menu {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  font-size: 12px;
+}
+.table-menu button {
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  cursor: default;
+}
+.table-menu button:hover {
+  background: var(--hover);
+}
+.table-menu button.danger {
+  color: var(--danger);
+}
+.table-menu .sep {
+  width: 1px;
+  height: 16px;
+  margin: 0 4px;
+  background: var(--border-strong);
+}
+
+/* --- vurgu renkleri --- */
+.kernel-editor mark[data-color] {
+  background: var(--hl) !important;
+}
+mark[data-color='yellow'] { --hl: #fff3a3; }
+mark[data-color='green'] { --hl: #c9f0d8; }
+mark[data-color='blue'] { --hl: #cfe5ff; }
+mark[data-color='pink'] { --hl: #ffd6e7; }
+mark[data-color='purple'] { --hl: #e5d9ff; }
+mark[data-color='gray'] { --hl: #e3e8ec; }
+:root[data-theme='dark'] mark[data-color='yellow'] { --hl: #5a4f17; }
+:root[data-theme='dark'] mark[data-color='green'] { --hl: #1f4a33; }
+:root[data-theme='dark'] mark[data-color='blue'] { --hl: #1f3a5c; }
+:root[data-theme='dark'] mark[data-color='pink'] { --hl: #5a2540; }
+:root[data-theme='dark'] mark[data-color='purple'] { --hl: #3f2f66; }
+:root[data-theme='dark'] mark[data-color='gray'] { --hl: #3a434b; }
+:root[data-theme='dark'] .kernel-editor mark:not([data-color]) {
+  background: #5a4f17;
+}

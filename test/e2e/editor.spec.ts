@@ -8,6 +8,8 @@ const body = (vault: string, file: string) => readFileSync(join(vault, file), 'u
 async function newPage(win: Page, title: string, vault?: string) {
   await win.getByTestId('new-page').click()
   const t = win.getByTestId('page-title')
+  // yeni sayfanın açılmasını bekle (yoksa eski sayfanın başlığı değişir)
+  await expect(t).toHaveValue('')
   await t.fill(title)
   await t.press('Enter')
   // yeniden adlandırma diske yansıyana kadar bekle

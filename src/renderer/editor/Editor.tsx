@@ -8,6 +8,8 @@ import { useStore } from '../state/store'
 import { buildExtensions } from './extensions'
 import { createAutosave, type SaveState } from './autosave'
 import { ConflictDialog } from '../shell/ConflictDialog'
+import { MathPopover } from './ui/MathPopover'
+import { TableMenu } from './ui/TableMenu'
 
 /** Uygulama kapanırken açık sayfanın bekleyen kaydını yapar */
 export const activeEditor: { flush: (() => Promise<void>) | null; editor: TiptapEditor | null; meta: PageMeta | null; setMeta: ((m: PageMeta) => void) | null } = {
@@ -116,6 +118,8 @@ function LiveEditor({ page, initial }: { page: PageData; initial: ReturnType<typ
         {STATUS_TEXT[status]}
       </span>
       <EditorContent editor={editor} />
+      {editor && <TableMenu editor={editor} />}
+      <MathPopover editor={editor} />
       {conflict && (
         <ConflictDialog
           onKeepMine={async () => {

@@ -9,6 +9,7 @@ import './styles/tokens.css'
 import './styles/glass.css'
 import './styles/app.css'
 import './styles/editor.css'
+import './styles/blocks.css'
 import 'katex/dist/katex.min.css'
 import { activeEditor } from './editor/Editor'
 

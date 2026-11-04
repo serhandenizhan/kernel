@@ -24,6 +24,12 @@ Kernel: lokal, açık kaynak, Markdown tabanlı macOS not uygulaması (Notion al
 - `src/core/` saf modüllerdir (Electron/DOM bağımlılığı yok) ve Node'da test edilir.
 - TDD: önce başarısız test, sonra kod.
 
+## Notlar (Faz 1 sonrası)
+- Tüm npm paketleri devDependencies'tedir: electron-vite main/preload'u bundle'lar, `.app` içinde node_modules yoktur.
+- e2e yardımcısı (`test/e2e/helpers/app.ts`) geçici kasa + geçici userData kullanır; turu/ipuçlarını varsayılan kapatır (`{ onboarding: true }` ile açılır).
+- Yapıştırma testleri sentetik ClipboardEvent kullanır (sistem panosuna dokunulmaz).
+- PDF: `#/print` görünümü + `printToPDF` (`src/main/pdf.ts`); testlerde `KERNEL_TEST_PDF_DIR`. Referans PNG'ler `test/pdf/baseline/`.
+
 ## Mimari
 - `src/main` — Electron ana süreç (pencere, kasa, arama, PDF)
 - `src/preload` — `window.kernel` köprüsü

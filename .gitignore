@@ -1,0 +1,32 @@
+# Bağımlılıklar ve derleme çıktıları
+node_modules/
+dist/
+out/
+release/
+*.tsbuildinfo
+coverage/
+playwright-report/
+test-results/
+
+# Ortam ve gizli anahtarlar (Notion token vb. asla repoya girmez)
+.env
+.env.*
+!.env.example
+*.pem
+
+# KULLANICI NOTLARI — ASLA REPOYA GİRMEZ
+# Varsayılan kasa ~/Documents/Kernel (repo dışında). Bunlar ek güvence:
+/vault/
+/vaults/
+/Kernel/
+*.kernel-vault/
+.kernel/
+/attachments/
+/backups/
+/notion-import*/
+test/fixtures/private/
+tests/fixtures/private/
+
+# Sistem
+.DS_Store
+*.log

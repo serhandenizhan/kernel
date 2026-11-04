@@ -13,6 +13,8 @@ import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { writeAtomic } from './vault/atomic'
 import { exportPdf } from './pdf'
+import { HistoryStore } from './history'
+import { splitFrontmatter } from './vault/frontmatter'
 import { log } from './log'
 
 function broadcast(channel: string, ...args: unknown[]): void {
@@ -27,6 +29,9 @@ export async function openVault(path: string): Promise<void> {
   state.vault = vault
   search = new SearchIndex()
   void search.build(vault)
+  const interval = process.env['KERNEL_TEST_HISTORY_INTERVAL_MS']
+  history = new HistoryStore(path, undefined, interval !== undefined ? Number(interval) : undefined)
+  void history.prune()
   recentIds = await loadRecent(path)
   state.stopWatcher = await watchVault(vault, (e) => {
     if (e.type === 'tree-changed') {
@@ -41,6 +46,7 @@ export async function openVault(path: string): Promise<void> {
 }
 
 let search: SearchIndex | null = null
+let history: HistoryStore | null = null
 let recentIds: string[] = []
 const RECENT_MAX = 8
 
@@ -117,8 +123,11 @@ export function registerIpc(): void {
     return page
   })
   h(IPC.pagesWrite, async (id: string, input: { markdown: string; meta: PageMeta }) => {
-    const res = await requireVault().write(id, input)
-    void search?.update(requireVault(), id)
+    const vault = requireVault()
+    const res = await vault.write(id, input)
+    void search?.update(vault, id)
+    // sürüm geçmişi: yazılan dosyanın tam metni (en fazla 5 dk'da bir)
+    void readFile(vault.pathOf(id), 'utf8').then((text) => history?.snapshot(id, text)).catch((e) => log.warn('Anlık görüntü alınamadı', e))
     return res
   })
   h(IPC.pagesCreate, (parentId: string | null, title?: string) => requireVault().create(parentId, title))
@@ -169,6 +178,17 @@ export function registerIpc(): void {
   })
   h(IPC.pdfExport, (id: string, o: PdfOptions) => exportPdfWithDialog(id, o))
 
+  h(IPC.historyList, (id: string) => history?.list(id) ?? [])
+  h(IPC.historyRead, async (id: string, versionId: string) => splitFrontmatter((await history!.read(id, versionId))).body)
+  h(IPC.historyRestore, async (id: string, versionId: string) => {
+    const vault = requireVault()
+    const body = splitFrontmatter(await history!.read(id, versionId)).body
+    const current = await vault.read(id)
+    await vault.write(id, { markdown: body, meta: current.meta })
+    // geri yükleme de yeni bir sürüm olur
+    await history!.snapshot(id, await readFile(vault.pathOf(id), 'utf8'), { force: true })
+    void search?.update(vault, id)
+  })
   h(IPC.settingsGet, () => readSettings(requireVault().root))
   h(IPC.settingsSet, (patch: Partial<Settings>) => writeSettings(requireVault().root, patch))
 }

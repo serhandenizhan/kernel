@@ -10,6 +10,7 @@ import { SettingsDialog } from './shell/SettingsDialog'
 import { TocPanel } from './shell/TocPanel'
 import { ExportDialog } from './shell/ExportDialog'
 import { GuidePage } from './guide/GuidePage'
+import { HistoryPanel } from './shell/HistoryPanel'
 import { Tour, TipBubble } from './guide/Tour'
 import './guide/tips'
 import { activeEditor } from './editor/Editor'
@@ -105,6 +106,7 @@ export function App() {
       {overlay === 'search' && <SearchPalette />}
       {overlay === 'settings' && <SettingsDialog />}
       {overlay === 'export' && <ExportDialog />}
+      {overlay === 'history' && <HistoryPanel />}
       {!tourDone && <Tour />}
       <TipBubble />
       <Toasts />

@@ -37,6 +37,13 @@ export interface SearchHit {
   score: number
 }
 
+export interface HistoryEntry {
+  /** "20261104T101500123" (UTC) */
+  versionId: string
+  time: string
+  size: number
+}
+
 export interface PdfOptions {
   pageSize: 'A4' | 'Letter'
   margin: 'narrow' | 'normal' | 'wide'
@@ -95,6 +102,12 @@ export interface KernelApi {
   }
   pdf: {
     export(id: string, options: PdfOptions): Promise<{ filePath: string } | { canceled: true }>
+  }
+  history: {
+    list(id: string): Promise<HistoryEntry[]>
+    /** Sürümün gövde Markdown'ı (frontmatter hariç) */
+    read(id: string, versionId: string): Promise<string>
+    restore(id: string, versionId: string): Promise<void>
   }
   settings: {
     get(): Promise<Settings>

@@ -30,6 +30,7 @@ const api: KernelApi = {
   attachments: { save: inv(IPC.attachmentsSave), fetchRemote: inv(IPC.attachmentsFetchRemote) } as KernelApi['attachments'],
   search: { query: inv(IPC.searchQuery), recent: inv(IPC.searchRecent) } as KernelApi['search'],
   pdf: { export: inv(IPC.pdfExport) } as KernelApi['pdf'],
+  history: { list: inv(IPC.historyList), read: inv(IPC.historyRead), restore: inv(IPC.historyRestore) } as KernelApi['history'],
   settings: { get: inv(IPC.settingsGet), set: inv(IPC.settingsSet) } as KernelApi['settings'],
   app: {
     onFlushRequest(cb) {

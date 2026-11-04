@@ -57,6 +57,13 @@ export function PageTree({ onRequestIcon, onRequestExport }: { onRequestIcon(id:
       { label: "Finder'da göster", onSelect: () => void kernel.vault.reveal(node.id) },
       { label: 'PDF olarak dışa aktar', onSelect: () => onRequestExport(node.id) },
       {
+        label: 'Sürüm geçmişi',
+        onSelect: () => {
+          s.openPage(node.id)
+          s.setOverlay('history')
+        }
+      },
+      {
         label: 'Çöp kutusuna taşı',
         danger: true,
         separatorBefore: true,

@@ -633,3 +633,86 @@ button {
   color: var(--text-3);
   text-align: right;
 }
+
+/* --- sürüm geçmişi --- */
+.history-panel {
+  display: flex;
+  width: min(1000px, calc(100vw - 40px));
+  height: min(680px, calc(100vh - 60px));
+  overflow: hidden;
+}
+.history-list {
+  width: 220px;
+  flex: none;
+  padding: 16px 8px;
+  overflow-y: auto;
+  border-right: 1px solid var(--border);
+}
+.history-list h3 {
+  margin: 0 8px 10px;
+  font-size: 15px;
+}
+.history-entry {
+  display: block;
+  width: 100%;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  text-align: left;
+  cursor: default;
+}
+.history-entry:hover {
+  background: var(--hover);
+}
+.history-entry.active {
+  background: var(--accent);
+  color: #fff;
+}
+.history-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  padding: 16px;
+}
+.history-legend {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 11px;
+}
+.history-legend span {
+  padding: 2px 8px;
+  border-radius: 5px;
+}
+.history-diff {
+  flex: 1;
+  overflow: auto;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--page);
+  user-select: text;
+}
+.history-diff pre {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  white-space: pre-wrap;
+}
+.history-diff .add,
+.history-legend .add {
+  background: rgba(46, 160, 67, 0.16);
+}
+.history-diff .del,
+.history-legend .del {
+  background: rgba(218, 54, 51, 0.16);
+  text-decoration: line-through;
+}
+.history-legend .del {
+  text-decoration: none;
+}
+.history-main .modal-actions {
+  margin-top: 12px;
+}

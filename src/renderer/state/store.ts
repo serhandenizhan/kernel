@@ -19,7 +19,10 @@ interface State {
   expanded: Record<string, boolean>
   renamingId: string | null
   toasts: Toast[]
-  overlay: 'search' | 'settings' | 'export' | 'guide' | null
+  overlay: 'search' | 'settings' | 'export' | 'guide' | 'history' | null
+  /** Sayfanın diskten yeniden okunmasını tetikler (örn. sürüm geri yükleme) */
+  reloadToken: number
+  reloadPage(): void
   init(): Promise<void>
   refreshTree(): Promise<void>
   openPage(id: string | null): void
@@ -56,6 +59,8 @@ export const useStore = create<State>((set, get) => ({
   renamingId: null,
   toasts: [],
   overlay: null,
+  reloadToken: 0,
+  reloadPage: () => set((s) => ({ reloadToken: s.reloadToken + 1 })),
 
   async init() {
     const info = await kernel.vault.info()

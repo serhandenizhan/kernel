@@ -8,6 +8,7 @@ import { PageHeader } from './PageHeader'
 // Seçili sayfa: başlık alanı + editör
 export function PageView() {
   const currentId = useStore((s) => s.currentId)
+  const reloadToken = useStore((s) => s.reloadToken)
   const [page, setPage] = useState<PageData | null>(null)
 
   useEffect(() => {
@@ -21,7 +22,7 @@ export function PageView() {
     return () => {
       alive = false
     }
-  }, [currentId])
+  }, [currentId, reloadToken])
 
   if (!currentId) {
     return (
@@ -36,7 +37,7 @@ export function PageView() {
   }
   if (!page || page.id !== currentId) return null
   return (
-    <article className="page" key={page.id}>
+    <article className="page" key={`${page.id}:${reloadToken}`}>
       {!page.readOnly && <PageHeader initialMeta={page.meta} />}
       <div className="page-column">
         <TitleField page={page} />

@@ -8,7 +8,7 @@ Kernel: lokal, açık kaynak, Markdown tabanlı macOS not uygulaması (Notion al
 ## KESİN KURAL: Kullanıcı notları asla repoya girmez
 - Kasa varsayılan olarak `~/Documents/Kernel` (repo dışında). Testler yalnızca `os.tmpdir()` altında geçici kasa kullanır (`KERNEL_VAULT` env).
 - `test/fixtures/private/` gitignore'lu (kullanıcının gerçek örnekleri).
-- Her commit öncesi `git status` ile not / görsel sızıntısı kontrol et. Notion token asla dosyaya yazılmaz.
+- Her commit öncesi `npm run check:private` (repo ↔ test/fixtures/private örtüşme taraması) temiz olmalı ve `git status` ile not / görsel sızıntısı kontrol edilmeli. Test verileri her zaman sıfırdan yazılır; kullanıcının notlarından satır kopyalanmaz. Notion token asla dosyaya yazılmaz.
 - Push yalnızca kullanıcı onayıyla.
 
 ## Komutlar

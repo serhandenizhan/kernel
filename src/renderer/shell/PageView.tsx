@@ -96,7 +96,12 @@ function TitleField({ page }: { page: PageData }) {
         if (e.key === 'Enter') {
           e.preventDefault()
           void commit(title)
-          activeEditor.editor?.commands.focus('start')
+          // TipTap'in focus komutu bir kare gecikir; hemen yazılan harf başlığa kaçmasın diye senkron odakla
+          const ed = activeEditor.editor
+          if (ed && !ed.isDestroyed) {
+            ed.view.focus()
+            ed.commands.setTextSelection(1)
+          }
         }
       }}
       onBlur={() => void commit(title)}

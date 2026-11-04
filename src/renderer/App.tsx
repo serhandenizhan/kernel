@@ -8,12 +8,7 @@ import { PageView } from './shell/PageView'
 import { SearchPalette } from './shell/SearchPalette'
 import { SettingsDialog } from './shell/SettingsDialog'
 import { TocPanel } from './shell/TocPanel'
-import './styles/tokens.css'
-import './styles/glass.css'
-import './styles/app.css'
-import './styles/editor.css'
-import './styles/blocks.css'
-import 'katex/dist/katex.min.css'
+import { ExportDialog } from './shell/ExportDialog'
 import { activeEditor } from './editor/Editor'
 
 function useTheme() {
@@ -109,6 +104,7 @@ export function App() {
       </main>
       {overlay === 'search' && <SearchPalette />}
       {overlay === 'settings' && <SettingsDialog />}
+      {overlay === 'export' && <ExportDialog />}
       <Toasts />
     </div>
   )

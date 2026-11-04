@@ -1,4 +1,4 @@
-import { BrowserWindow, dialog, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
 import { mkdir } from 'node:fs/promises'
 import { extname } from 'node:path'
 import { IPC } from '@shared/ipc'
@@ -12,6 +12,7 @@ import { SearchIndex } from './search'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { writeAtomic } from './vault/atomic'
+import { exportPdf } from './pdf'
 import { log } from './log'
 
 function broadcast(channel: string, ...args: unknown[]): void {
@@ -59,9 +60,21 @@ async function touchRecent(id: string): Promise<void> {
   if (root) await writeAtomic(join(root, '.kernel', 'recent.json'), JSON.stringify(recentIds))
 }
 
-// PDF servisi sonraki görevde buraya kanca atar
-export const hooks = {
-  pdf: async (_id: string, _o: PdfOptions): Promise<{ filePath: string } | { canceled: true }> => ({ canceled: true })
+async function exportPdfWithDialog(id: string, options: PdfOptions): Promise<{ filePath: string } | { canceled: true }> {
+  const vault = requireVault()
+  const { title } = await vault.read(id)
+  const name = `${title.replace(/[/:]/g, '-')}.pdf`
+  // testlerde kaydet diyaloğu yerine verilen klasöre yazılır
+  const testDir = process.env['KERNEL_TEST_PDF_DIR']
+  let target: string
+  if (testDir) {
+    target = join(testDir, name)
+  } else {
+    const res = await dialog.showSaveDialog({ defaultPath: join(app.getPath('documents'), name), filters: [{ name: 'PDF', extensions: ['pdf'] }] })
+    if (res.canceled || !res.filePath) return { canceled: true }
+    target = res.filePath
+  }
+  return { filePath: await exportPdf(vault, id, options, target) }
 }
 
 export function registerIpc(): void {
@@ -141,7 +154,7 @@ export function registerIpc(): void {
     }
     return out
   })
-  h(IPC.pdfExport, (id: string, o: PdfOptions) => hooks.pdf(id, o))
+  h(IPC.pdfExport, (id: string, o: PdfOptions) => exportPdfWithDialog(id, o))
 
   h(IPC.settingsGet, () => readSettings(requireVault().root))
   h(IPC.settingsSet, (patch: Partial<Settings>) => writeSettings(requireVault().root, patch))

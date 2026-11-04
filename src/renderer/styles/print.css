@@ -1,0 +1,125 @@
+/* PDF baskı görünümü (spec §8) */
+html.printing,
+html.printing body,
+html.printing #root {
+  height: auto;
+  overflow: visible;
+  background: var(--page) !important;
+  user-select: text;
+}
+.print-root {
+  color: var(--text);
+}
+.print-page.new-page {
+  break-before: page;
+}
+.print-cover {
+  height: 150px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+}
+.print-icon {
+  line-height: 1;
+  margin: 4px 0 6px;
+}
+.print-icon.over-cover {
+  margin-top: -36px;
+  margin-left: 12px;
+}
+.print-title {
+  margin: 0 0 14px;
+  font-family: var(--font-ui);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.2;
+  break-after: avoid;
+}
+.print-body.kernel-editor {
+  font-size: 14px;
+  line-height: 1.6;
+}
+.print-body .ProseMirror {
+  outline: none;
+}
+
+/* sayfa kırılımı */
+.print-body h1,
+.print-body h2,
+.print-body h3,
+.print-body h4,
+.print-body h5,
+.print-body h6 {
+  break-after: avoid;
+}
+.print-body .tiptap-mathematics-render,
+.print-body .image-block,
+.print-body .callout,
+.print-body tr,
+.print-body .code-chunk {
+  break-inside: avoid;
+}
+.print-body thead {
+  display: table-header-group;
+}
+
+/* toggle'lar açık basılır, düğmeler gizlenir */
+.print-body .details > button {
+  display: none;
+}
+.print-body [data-type='detailsContent'],
+.print-body .details [hidden] {
+  display: block !important;
+}
+
+/* görselde düzenleme araçları yok */
+.print-body .image-resize {
+  display: none;
+}
+.print-body .image-caption {
+  pointer-events: none;
+}
+.print-body .image-caption:placeholder-shown {
+  display: none;
+}
+.print-body .callout-icon {
+  pointer-events: none;
+}
+
+/* kod blokları: 25 satırlık parçalar */
+.print-body .code-block {
+  background: transparent;
+}
+.code-chunk {
+  margin: 0 0 2px;
+  padding: 6px 14px 10px;
+  border-radius: 8px;
+  background: var(--code-bg);
+}
+.code-chunk + .code-chunk {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+.code-chunk-label {
+  color: var(--text-3);
+  font-family: var(--font-ui);
+  font-size: 10px;
+}
+.code-chunk pre {
+  margin: 4px 0 0;
+  padding: 0;
+  background: transparent !important;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.code-chunk pre span {
+  color: var(--shiki-light);
+}
+:root[data-theme='dark'] .code-chunk pre span {
+  color: var(--shiki-dark);
+}
+.code-chunk pre.shiki {
+  color: var(--text);
+}

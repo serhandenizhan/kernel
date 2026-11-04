@@ -1,9 +1,16 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './App'
+import { PrintView } from './print/PrintView'
+import 'katex/dist/katex.min.css'
+import './styles/tokens.css'
+import './styles/glass.css'
+import './styles/app.css'
+import './styles/editor.css'
+import './styles/blocks.css'
+import './styles/print.css'
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>
-)
+// #/print: PDF için baskı görünümü; aksi halde uygulama
+const isPrint = location.hash.startsWith('#/print')
+
+createRoot(document.getElementById('root')!).render(<StrictMode>{isPrint ? <PrintView /> : <App />}</StrictMode>)

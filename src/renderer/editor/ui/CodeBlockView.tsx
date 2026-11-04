@@ -1,7 +1,34 @@
 import { useState } from 'react'
 import { NodeViewContent, NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
-import { SUPPORTED_LANGUAGES } from '@core/smart-paste/language'
-import { normalizeLanguage } from '@core/smart-paste/language'
+import { SUPPORTED_LANGUAGES, normalizeLanguage } from '@core/smart-paste/language'
+import { getLoadedHighlighter, HIGHLIGHT_LANGUAGES, THEMES } from '../../lib/shiki'
+
+const CHUNK_LINES = 25
+
+/** Baskı (salt okunur) için: kod 25 satırlık parçalar halinde, devam parçalarında etiket tekrarlanır */
+function StaticCode({ code, language }: { code: string; language: string }) {
+  const hl = getLoadedHighlighter()
+  const lines = code.split('\n')
+  const chunks: string[] = []
+  for (let i = 0; i < lines.length; i += CHUNK_LINES) chunks.push(lines.slice(i, i + CHUNK_LINES).join('\n'))
+  const name = language ? label(language) : 'Düz metin'
+  return (
+    <NodeViewWrapper className="code-block static" data-language={language || undefined}>
+      {chunks.map((chunk, i) => (
+        <div key={i} className="code-chunk">
+          <div className="code-chunk-label">{i === 0 ? name : `${name} · devam`}</div>
+          {hl ? (
+            <div dangerouslySetInnerHTML={{ __html: hl.codeToHtml(chunk, { lang: HIGHLIGHT_LANGUAGES.includes(language) ? language : 'text', themes: THEMES, defaultColor: false }) }} />
+          ) : (
+            <pre>{chunk}</pre>
+          )}
+        </div>
+      ))}
+      {/* ProseMirror içeriği için kap (gizli; aksi halde ham metin ikinci kez basılır) */}
+      <NodeViewContent<'code'> as="code" style={{ display: 'none' }} />
+    </NodeViewWrapper>
+  )
+}
 
 const LABELS: Record<string, string> = { cpp: 'C++', csharp: 'C#', javascript: 'JavaScript', typescript: 'TypeScript', html: 'HTML', css: 'CSS', json: 'JSON', yaml: 'YAML', sql: 'SQL', php: 'PHP' }
 const label = (l: string) => LABELS[l] ?? l.charAt(0).toUpperCase() + l.slice(1)
@@ -12,6 +39,7 @@ export function CodeBlockView({ node, updateAttributes, editor }: NodeViewProps)
   const lineNumbers = Boolean(node.attrs['lineNumbers'])
   const [copied, setCopied] = useState(false)
   const lines = node.textContent.split('\n').length
+  if (!editor.isEditable) return <StaticCode code={node.textContent} language={language} />
 
   return (
     <NodeViewWrapper className={`code-block${lineNumbers ? ' with-lines' : ''}`} data-language={language || undefined}>

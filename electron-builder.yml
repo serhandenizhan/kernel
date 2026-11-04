@@ -1,0 +1,25 @@
+# Kernel macOS paketi (yerel kullanım; Apple imzası yok, ad-hoc imzalı)
+appId: app.kernel.notes
+productName: Kernel
+copyright: Copyright © 2026 Kernel contributors
+directories:
+  output: release
+  buildResources: build
+files:
+  - out/**
+  - package.json
+  - "!**/*.map"
+asar: true
+mac:
+  category: public.app-category.productivity
+  icon: build/icon.icns
+  target:
+    - target: dir
+      arch: arm64
+    - target: dmg
+      arch: arm64
+  identity: "-"
+  hardenedRuntime: false
+  darkModeSupport: true
+dmg:
+  title: Kernel

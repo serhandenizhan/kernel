@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",
+    "@types/mdast": "^4.0.4",
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
@@ -29,10 +30,17 @@
     "vitest": "^5.1.0"
   },
   "dependencies": {
+    "@tiptap/core": "^3.32.2",
     "chokidar": "^6.0.0",
+    "mdast-util-to-markdown": "^2.2.2",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0",
+    "remark-parse": "^11.0.0",
+    "remark-stringify": "^11.0.0",
     "ulid": "^3.0.2",
+    "unified": "^11.0.5",
     "yaml": "^2.9.1"
   }
 }

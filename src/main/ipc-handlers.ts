@@ -81,7 +81,8 @@ export function registerIpc(): void {
     await saveVaultPath(path)
     return { path }
   })
-  h(IPC.vaultReveal, (id: string) => shell.showItemInFolder(requireVault().pathOf(id)))
+  // boş id: kasa klasörünü aç
+  h(IPC.vaultReveal, (id: string) => (id ? shell.showItemInFolder(requireVault().pathOf(id)) : void shell.openPath(requireVault().root)))
 
   h(IPC.pagesTree, () => requireVault().tree())
   h(IPC.pagesRead, async (id: string) => {

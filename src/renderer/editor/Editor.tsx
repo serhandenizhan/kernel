@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useEditor, EditorContent, type Editor as TiptapEditor } from '@tiptap/react'
+import { create } from 'zustand'
 import type { PageData, PageMeta } from '@shared/types'
 import { markdownToDoc } from '@core/markdown/parse'
 import { docToMarkdown } from '@core/markdown/serialize'
@@ -21,6 +22,9 @@ export const activeEditor: { flush: (() => Promise<void>) | null; editor: Tiptap
   meta: null,
   setMeta: null
 }
+
+/** Açık editör (içindekiler paneli gibi bileşenler için tepkisel) */
+export const useActiveEditor = create<{ editor: TiptapEditor | null }>(() => ({ editor: null }))
 
 const STATUS_TEXT: Record<SaveState, string> = { saved: 'Kaydedildi', dirty: 'Düzenleniyor', saving: 'Kaydediliyor', error: 'Kaydedilemedi' }
 
@@ -85,6 +89,7 @@ function LiveEditor({ page, initial }: { page: PageData; initial: ReturnType<typ
   useEffect(() => {
     activeEditor.flush = () => autosave.flush()
     activeEditor.editor = editor
+    useActiveEditor.setState({ editor })
     activeEditor.meta = metaRef.current
     activeEditor.setMeta = (m) => {
       metaRef.current = m
@@ -94,7 +99,10 @@ function LiveEditor({ page, initial }: { page: PageData; initial: ReturnType<typ
     return () => {
       void autosave.flush()
       autosave.dispose()
-      if (activeEditor.editor === editor) Object.assign(activeEditor, { flush: null, editor: null, meta: null, setMeta: null })
+      if (activeEditor.editor === editor) {
+        Object.assign(activeEditor, { flush: null, editor: null, meta: null, setMeta: null })
+        useActiveEditor.setState({ editor: null })
+      }
     }
   }, [autosave, editor])
 

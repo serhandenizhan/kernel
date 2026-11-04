@@ -85,6 +85,8 @@ export const useStore = create<State>((set, get) => ({
   },
 
   async setSettings(patch) {
+    // önce arayüzü güncelle (kontrollü bileşenler geri sıçramasın), sonra diske yaz
+    set((s) => ({ settings: { ...s.settings, ...patch } }))
     const settings = await kernel.settings.set(patch)
     set({ settings })
   },

@@ -6,6 +6,8 @@ import { VaultPicker } from './shell/VaultPicker'
 import { Toasts } from './shell/Toasts'
 import { PageView } from './shell/PageView'
 import { SearchPalette } from './shell/SearchPalette'
+import { SettingsDialog } from './shell/SettingsDialog'
+import { TocPanel } from './shell/TocPanel'
 import './styles/tokens.css'
 import './styles/glass.css'
 import './styles/app.css'
@@ -103,8 +105,10 @@ export function App() {
         <div className="page-surface">
           <PageView />
         </div>
+        <TocPanel />
       </main>
       {overlay === 'search' && <SearchPalette />}
+      {overlay === 'settings' && <SettingsDialog />}
       <Toasts />
     </div>
   )

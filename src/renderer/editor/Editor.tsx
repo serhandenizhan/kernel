@@ -10,6 +10,9 @@ import { createAutosave, type SaveState } from './autosave'
 import { ConflictDialog } from '../shell/ConflictDialog'
 import { MathPopover } from './ui/MathPopover'
 import { TableMenu } from './ui/TableMenu'
+import { SlashMenu } from './ui/SlashMenu'
+import { BubbleToolbar } from './ui/BubbleToolbar'
+import { BlockHandle } from './ui/BlockHandle'
 
 /** Uygulama kapanırken açık sayfanın bekleyen kaydını yapar */
 export const activeEditor: { flush: (() => Promise<void>) | null; editor: TiptapEditor | null; meta: PageMeta | null; setMeta: ((m: PageMeta) => void) | null } = {
@@ -46,6 +49,7 @@ export function PageEditor({ page }: { page: PageData }) {
 function LiveEditor({ page, initial }: { page: PageData; initial: ReturnType<typeof markdownToDoc> }) {
   const [status, setStatus] = useState<SaveState>('saved')
   const [conflict, setConflict] = useState(false)
+  const [wrap, setWrap] = useState<HTMLDivElement | null>(null)
   const metaRef = useRef<PageMeta>(page.meta)
   const editorRef = useRef<TiptapEditor | null>(null)
 
@@ -117,8 +121,13 @@ function LiveEditor({ page, initial }: { page: PageData; initial: ReturnType<typ
       <span className={`save-status ${status}`} data-testid="save-status">
         {STATUS_TEXT[status]}
       </span>
-      <EditorContent editor={editor} />
+      <div className="editor-wrap" ref={setWrap}>
+        <EditorContent editor={editor} />
+        {editor && <BlockHandle editor={editor} container={wrap} />}
+      </div>
       {editor && <TableMenu editor={editor} />}
+      {editor && <BubbleToolbar editor={editor} />}
+      <SlashMenu />
       <MathPopover editor={editor} />
       {conflict && (
         <ConflictDialog

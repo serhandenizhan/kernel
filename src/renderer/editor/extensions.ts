@@ -11,7 +11,8 @@ import { Callout } from './nodes/Callout'
 import { KernelImage } from './nodes/Image'
 import { SlashCommand } from './nodes/SlashCommand'
 import { SmartPaste } from './paste'
-import { WikiLink, PdfEmbedSchema } from './nodes/WikiLink'
+import { WikiLink } from './nodes/WikiLink'
+import { PdfEmbed } from './nodes/PdfEmbed'
 
 // Görev 6'daki Markdown şemasıyla birebir aynı düğüm/işaret adları
 
@@ -63,7 +64,7 @@ export function buildExtensions(opts: ExtensionOptions = {}): AnyExtension[] {
     Callout,
     KernelImage,
     WikiLink,
-    PdfEmbedSchema
+    PdfEmbed
   ]
   if (!opts.readOnly) list.push(SmartPaste, MathShortcuts, SlashCommand, Placeholder.configure({ placeholder: opts.placeholder ?? 'Yazmaya başla ya da / yaz' }))
   return list

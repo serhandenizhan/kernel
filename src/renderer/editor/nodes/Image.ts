@@ -13,12 +13,13 @@ const extOf = (f: File) => (f.type.split('/')[1] ?? f.name.split('.').pop() ?? '
 
 /** Görsel dosyalarını kasaya kaydedip belgeye ekler */
 export async function insertImageFiles(view: EditorView, files: File[], pos?: number): Promise<void> {
-  const type = view.state.schema.nodes['image']
-  if (!type) return
   let at = pos ?? view.state.selection.from
   for (const f of files) {
-    const src = await kernel.attachments.save(new Uint8Array(await f.arrayBuffer()), extOf(f), f.name.replace(/\.[^.]+$/, '') || 'image')
-    const node = type.create({ src, alt: '', width: null, caption: '' })
+    const isPdf = f.type === 'application/pdf' || /\.pdf$/i.test(f.name)
+    const type = view.state.schema.nodes[isPdf ? 'pdfEmbed' : 'image']
+    if (!type) continue
+    const src = await kernel.attachments.save(new Uint8Array(await f.arrayBuffer()), isPdf ? 'pdf' : extOf(f), f.name.replace(/\.[^.]+$/, '') || (isPdf ? 'belge' : 'image'))
+    const node = isPdf ? type.create({ src }) : type.create({ src, alt: '', width: null, caption: '' })
     const tr = view.state.tr.insert(Math.min(at, view.state.doc.content.size), node)
     view.dispatch(tr)
     at += node.nodeSize
@@ -44,7 +45,7 @@ export const KernelImage = Node.create({
         props: {
           // dosyadan sürükle-bırak
           handleDrop: (view, event) => {
-            const files = Array.from(event.dataTransfer?.files ?? []).filter((f) => f.type.startsWith('image/'))
+            const files = Array.from(event.dataTransfer?.files ?? []).filter((f) => f.type.startsWith('image/') || f.type === 'application/pdf')
             if (!files.length) return false
             event.preventDefault()
             const pos = view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos

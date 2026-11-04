@@ -10,10 +10,10 @@ export interface SlashItem {
   run(editor: Editor): void
 }
 
-function pickImages(editor: Editor): void {
+function pickFiles(editor: Editor, accept: string): void {
   const input = document.createElement('input')
   input.type = 'file'
-  input.accept = 'image/*'
+  input.accept = accept
   input.multiple = true
   input.onchange = () => void insertImageFiles(editor.view, Array.from(input.files ?? []))
   input.click()
@@ -72,7 +72,8 @@ export const SLASH_ITEMS: SlashItem[] = [
       setTimeout(() => useMathEdit.getState().open('inline', pos, ''), 0)
     }
   },
-  { id: 'image', label: 'Görsel', keywords: ['resim', 'gorsel', 'image', 'foto'], icon: '🖼', run: (e) => pickImages(e) },
+  { id: 'image', label: 'Görsel', keywords: ['resim', 'gorsel', 'image', 'foto'], icon: '🖼', run: (e) => pickFiles(e, 'image/*') },
+  { id: 'pdf', label: 'PDF', keywords: ['pdf', 'slayt', 'belge', 'dosya'], icon: '📄', run: (e) => pickFiles(e, 'application/pdf') },
   { id: 'table', label: 'Tablo', keywords: ['tablo', 'table'], icon: '▦', run: (e) => e.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run() },
   { id: 'divider', label: 'Ayırıcı', keywords: ['cizgi', 'ayirici', 'divider', 'hr'], icon: '—', run: (e) => e.chain().focus().setHorizontalRule().run() }
 ]

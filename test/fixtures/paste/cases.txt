@@ -1,0 +1,255 @@
+Sentetik akıllı yapıştırma örnekleri (gerçek kullanıcı verisi DEĞİL; Kernel geliştiricisi tarafından yazıldı).
+Biçim: "=== ad ===" ile başlayan bölümler; içinde "--- input ---" (veya "--- html ---" + "--- text ---") ve "--- expected ---".
+Beklenen çıktı anlamsal olarak karşılaştırılır: markdownToDoc(expected) === convertPaste(input).doc
+
+=== notebooklm-double-escape ===
+--- input ---
+- **Momentum korunumu:** \\(m_1 \vec{v}_1 + m_2 \vec{v}_2 = \text{sabit}\\). Çarpışmalarda geçerlidir.
+- **Kinetik enerji:** \\(E_k = \frac{1}{2} m v^2\\) ("hareket enerjisi").
+- **Örnek:** \\(2 \times 9 = \mathbf{18}\\) joule.
+--- expected ---
+- **Momentum korunumu:** $m_1 \vec{v}_1 + m_2 \vec{v}_2 = \text{sabit}$. Çarpışmalarda geçerlidir.
+- **Kinetik enerji:** $E_k = \frac{1}{2} m v^2$ ("hareket enerjisi").
+- **Örnek:** $2 \times 9 = \mathbf{18}$ joule.
+
+=== list-block-math ===
+--- input ---
+- **Isı denklemi:** Sıcaklık zamanla şöyle değişir:
+  \\[\frac{\partial u}{\partial t} = \alpha \nabla^2 u\\]
+- **Sınır koşulu:** uçlar sabit.
+--- expected ---
+- **Isı denklemi:** Sıcaklık zamanla şöyle değişir:
+
+  $$
+  \frac{\partial u}{\partial t} = \alpha \nabla^2 u
+  $$
+
+- **Sınır koşulu:** uçlar sabit.
+
+=== currency-and-math ===
+--- input ---
+Kahve 5$ ile 10$ arası; çemberin çevresi $2 \pi r$ olur.
+--- expected ---
+Kahve 5\$ ile 10\$ arası; çemberin çevresi $2 \pi r$ olur.
+
+=== align-env ===
+--- input ---
+Lineer sistem:
+
+\begin{align}
+2a + b &= 7 \\
+a - b &= 2
+\end{align}
+--- expected ---
+Lineer sistem:
+
+$$
+\begin{align}
+2a + b &= 7 \\
+a - b &= 2
+\end{align}
+$$
+
+=== bare-latex-line ===
+--- input ---
+Gradyan inişi güncellemesi:
+
+\theta_{k+1} = \theta_k - \eta \frac{\partial J}{\partial \theta} \sum_{j=1}^{m} x_j
+
+Öğrenme oranı küçük seçilmelidir.
+--- expected ---
+Gradyan inişi güncellemesi:
+
+$$
+\theta_{k+1} = \theta_k - \eta \frac{\partial J}{\partial \theta} \sum_{j=1}^{m} x_j
+$$
+
+Öğrenme oranı küçük seçilmelidir.
+
+=== text-tree ===
+--- input ---
+#### Sıralama Algoritmaları Haritası
+
+```text
+Sıralama
+│
+├── Karşılaştırmalı
+│   └── Hızlı sıralama (Quicksort)
+└── Karşılaştırmasız
+```
+--- expected ---
+#### Sıralama Algoritmaları Haritası
+
+```
+Sıralama
+│
+├── Karşılaştırmalı
+│   └── Hızlı sıralama (Quicksort)
+└── Karşılaştırmasız
+```
+
+=== code-fenced-tagged ===
+--- input ---
+```py
+# Fibonacci dizisi
+cache = {0: 0, 1: 1}
+print(cache[1])
+```
+--- expected ---
+```python
+# Fibonacci dizisi
+cache = {0: 0, 1: 1}
+print(cache[1])
+```
+
+=== code-fenced-untagged ===
+--- input ---
+```
+#include <stdio.h>
+
+int main(void) {
+    int n = 7;
+    printf("%d\n", n * n);
+    return 0;
+}
+```
+--- expected ---
+```c
+#include <stdio.h>
+
+int main(void) {
+    int n = 7;
+    printf("%d\n", n * n);
+    return 0;
+}
+```
+
+=== code-unfenced ===
+--- input ---
+Küçük bir program:
+
+#include <stdio.h>
+int main(void) {
+    printf("selam");
+    return 0;
+}
+
+Çıktı ekrana yazılır.
+--- expected ---
+Küçük bir program:
+
+```c
+#include <stdio.h>
+int main(void) {
+    printf("selam");
+    return 0;
+}
+```
+
+Çıktı ekrana yazılır.
+
+=== md-fence ===
+--- input ---
+```md
+# Taslak
+- öğe **önemli**
+```
+--- expected ---
+```markdown
+# Taslak
+- öğe **önemli**
+```
+
+=== gfm-table-aligned ===
+--- input ---
+| Algoritma | Ortalama | Not |
+| :--- | :---: | ---: |
+| **Quicksort** | O(n log n) | Yerinde (*in-place*) çalışır. |
+| **Mergesort** | O(n log n) | Kararlıdır. |
+--- expected ---
+| Algoritma | Ortalama | Not |
+| :--- | :---: | ---: |
+| **Quicksort** | O(n log n) | Yerinde (*in-place*) çalışır. |
+| **Mergesort** | O(n log n) | Kararlıdır. |
+
+=== task-list ===
+--- input ---
+- [x] **Newton yasaları:** üç yasayı özetle
+- [ ] **Termodinamik:** entropi örnekleri
+--- expected ---
+- [x] **Newton yasaları:** üç yasayı özetle
+- [ ] **Termodinamik:** entropi örnekleri
+
+=== deep-headings ===
+--- input ---
+### 2. Ünite
+
+#### Alt konu
+
+##### 2.1 Dalgalar (Waves)
+- **Frekans:** saniyedeki titreşim.
+--- expected ---
+### 2. Ünite
+
+#### Alt konu
+
+##### 2.1 Dalgalar (Waves)
+- **Frekans:** saniyedeki titreşim.
+
+=== citations ===
+--- input ---
+Işık hem dalga hem parçacıktır.[1] Foton kütlesizdir[2, 3]. Vektör [4, 5] korunur.
+--- expected ---
+Işık hem dalga hem parçacıktır. Foton kütlesizdir. Vektör [4, 5] korunur.
+
+=== inline-code-brackets ===
+--- input ---
+Liste `[3, 1, 2]` sıralanınca `[1, 2, 3]` olur; çağrı `sorted(xs, key=len)`.
+--- expected ---
+Liste `[3, 1, 2]` sıralanınca `[1, 2, 3]` olur; çağrı `sorted(xs, key=len)`.
+
+=== emoji-callout-like ===
+--- input ---
+- ⚠️ **Dikkat:** Birimleri her zaman SI sistemine çevir.
+
+💡 **Hatırlatma:** Serbest cisim diyagramı çizmeyi unutma!
+
+---
+--- expected ---
+- ⚠️ **Dikkat:** Birimleri her zaman SI sistemine çevir.
+
+💡 **Hatırlatma:** Serbest cisim diyagramı çizmeyi unutma!
+
+---
+
+=== chatgpt-katex ===
+--- html ---
+<p>Enerji <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">E = mc^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base">E=mc2</span></span></span> formülüdür.</p><div class="math math-display"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math display="block"><semantics><mrow></mrow><annotation encoding="application/x-tex">\int_0^1 x\,dx</annotation></semantics></math></span><span class="katex-html" aria-hidden="true">∫01xdx</span></span></span></div>
+--- text ---
+Enerji E=mc2 formülüdür. ∫01xdx
+--- expected ---
+Enerji $E = mc^2$ formülüdür.
+
+$$
+\int_0^1 x\,dx
+$$
+
+=== claude-code ===
+--- html ---
+<p>Örnek:</p><pre><code class="language-python">print("x")
+</code></pre>
+--- text ---
+Örnek:
+print("x")
+--- expected ---
+Örnek:
+
+```python
+print("x")
+```
+
+=== invalid-latex ===
+--- input ---
+Hatalı \\(\frac{a\\) burada.
+--- expected ---
+Hatalı \\(\\frac{a\\) burada.

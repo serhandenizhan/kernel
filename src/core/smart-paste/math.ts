@@ -1,13 +1,14 @@
 // Ham metindeki formülleri Kernel'in kanonik biçimine çevirir: blok → $$…$$ (kendi satırlarında), satır içi → $…$
-// Formül olmayan $ karakterleri \$ olarak kaçırılır.
+// Formül olmayan $ karakterleri \$ olarak kaçırılır. Metin kopyalanmadan, indeksle taranır (büyük yapıştırmalarda hızlı).
 
 const ENVS = 'equation\\*?|align\\*?|aligned|gather\\*?|gathered|multline\\*?|split|matrix|pmatrix|bmatrix|Bmatrix|vmatrix|Vmatrix|cases|array'
-const BEGIN_RE = new RegExp(`^\\\\begin\\{(${ENVS})\\}`)
+const BEGIN_RE = new RegExp(`\\\\begin\\{(${ENVS})\\}`, 'y')
 const LIST_MARKER_ONLY = /^\s*(?:[-*+]|\d+[.)])\s*$/
 
 interface Ctx {
   text: string
-  out: string
+  out: string[]
+  /** Çıktıda, mevcut satırın başlangıcından beri eklenen karakter sayısı */
 }
 
 function lineStart(text: string, i: number): number {
@@ -33,109 +34,152 @@ function dedent(s: string): string[] {
 }
 
 const oneLine = (s: string) => s.trim().replace(/\s*\n\s*/g, ' ')
+const hasBlankLine = (text: string, from: number, to: number) => /\n[ \t]*\n/.test(text.slice(from, to))
 
 export function extractMath(text: string): string {
-  const ctx: Ctx = { text, out: '' }
-  let i = 0
-  while (i < text.length) {
-    const rest = text.slice(i)
-    // zaten kaçırılmış dolar
-    if (rest.startsWith('\\$')) {
-      ctx.out += '\\$'
-      i += 2
-      continue
-    }
-    const env = BEGIN_RE.exec(rest)
-    if (env) {
-      const endTag = `\\end{${env[1]}}`
-      const end = rest.indexOf(endTag)
-      if (end !== -1) {
-        i = emitBlock(ctx, i, i + end + endTag.length, rest.slice(0, end + endTag.length))
-        continue
-      }
-    }
-    if (rest.startsWith('$$')) {
-      const end = rest.indexOf('$$', 2)
-      if (end > 2) {
-        i = emitBlockOrInline(ctx, i, i + end + 2, rest.slice(2, end))
-        continue
-      }
-    }
-    if (rest.startsWith('\\[')) {
-      const end = rest.indexOf('\\]', 2)
-      if (end > 2 && !/\n\s*\n/.test(rest.slice(2, end))) {
-        i = emitBlockOrInline(ctx, i, i + end + 2, rest.slice(2, end))
-        continue
-      }
-    }
-    if (rest.startsWith('\\(')) {
-      const end = rest.indexOf('\\)', 2)
-      if (end > 2 && !/\n\s*\n/.test(rest.slice(2, end))) {
-        ctx.out += `$${oneLine(rest.slice(2, end))}$`
-        i += end + 2
-        continue
-      }
-    }
-    if (rest[0] === '$') {
-      const m = inlineDollar(rest)
-      if (m !== null) {
-        ctx.out += `$${m}$`
-        i += m.length + 2
-      } else {
-        ctx.out += '\\$'
-        i += 1
-      }
-      continue
-    }
-    ctx.out += text[i]
-    i++
+  const out: string[] = []
+  // çıktıdaki mevcut satırın, kaynaktaki satır başından itibaren kopyalanmış kısmı (blok yerleştirirken geri almak için)
+  let lineBuf = ''
+  const emit = (s: string) => {
+    const nl = s.lastIndexOf('\n')
+    lineBuf = nl === -1 ? lineBuf + s : s.slice(nl + 1)
+    out.push(s)
   }
-  let out = ctx.out.replace(/\n{3,}/g, '\n\n')
-  if (!text.startsWith('\n')) out = out.replace(/^\n+/, '')
-  if (!text.endsWith('\n')) out = out.replace(/\n+$/, '')
-  return out
+  const retractLine = () => {
+    // son satırın çıktıya yazılmış kısmını geri al
+    let remaining = lineBuf.length
+    while (remaining > 0 && out.length) {
+      const last = out[out.length - 1]!
+      if (last.length <= remaining) {
+        out.pop()
+        remaining -= last.length
+      } else {
+        out[out.length - 1] = last.slice(0, last.length - remaining)
+        remaining = 0
+      }
+    }
+    lineBuf = ''
+  }
+
+  const block = (start: number, end: number, content: string): number => {
+    const ls = lineStart(text, start)
+    const line = text.slice(ls, lineEnd(text, start))
+    // satırın çıktıya yazılmış (dönüştürülmüş) hali; formülden önceki metin kendi satırında kalır
+    const before = lineBuf
+    const indent = contentIndent(line)
+    retractLine()
+    const prefix = before.trim() ? before.trimEnd() : ''
+    const body = dedent(content)
+      .map((l) => (l ? indent + l : ''))
+      .join('\n')
+    emit(`${prefix}\n${prefix ? '\n' : ''}${indent}$$\n${body}\n${indent}$$\n`)
+    const le = lineEnd(text, end)
+    return text.slice(end, le).trim() ? end : le
+  }
+
+  const blockOrInline = (start: number, end: number, content: string): number => {
+    const before = text.slice(lineStart(text, start), start)
+    const after = text.slice(end, lineEnd(text, end))
+    if ((!before.trim() || LIST_MARKER_ONLY.test(before)) && !after.trim()) return block(start, end, content)
+    emit(`$${oneLine(content)}$`)
+    return end
+  }
+
+  let i = 0
+  let plainFrom = 0
+  const flushPlain = (to: number) => {
+    if (to > plainFrom) emit(text.slice(plainFrom, to))
+  }
+
+  while (i < text.length) {
+    const ch = text.charCodeAt(i)
+    // yalnızca '\' ve '$' ilgi çekici
+    if (ch !== 92 /* \ */ && ch !== 36 /* $ */) {
+      i++
+      continue
+    }
+    let next = -1
+    let handled = false
+    flushPlain(i)
+    if (text.startsWith('\\$', i)) {
+      emit('\\$')
+      next = i + 2
+      handled = true
+    } else if (ch === 92) {
+      BEGIN_RE.lastIndex = i
+      const env = BEGIN_RE.exec(text)
+      if (env) {
+        const endTag = `\\end{${env[1]}}`
+        const end = text.indexOf(endTag, i)
+        if (end !== -1) {
+          next = block(i, end + endTag.length, text.slice(i, end + endTag.length))
+          handled = true
+        }
+      }
+      if (!handled && text.startsWith('\\[', i)) {
+        const end = text.indexOf('\\]', i + 2)
+        if (end > i + 2 && !hasBlankLine(text, i, end)) {
+          next = blockOrInline(i, end + 2, text.slice(i + 2, end))
+          handled = true
+        }
+      }
+      if (!handled && text.startsWith('\\(', i)) {
+        const end = text.indexOf('\\)', i + 2)
+        if (end > i + 2 && !hasBlankLine(text, i, end)) {
+          emit(`$${oneLine(text.slice(i + 2, end))}$`)
+          next = end + 2
+          handled = true
+        }
+      }
+      if (!handled) {
+        emit('\\')
+        next = i + 1
+        handled = true
+      }
+    } else if (text.startsWith('$$', i)) {
+      const end = text.indexOf('$$', i + 2)
+      if (end > i + 2) {
+        next = blockOrInline(i, end + 2, text.slice(i + 2, end))
+      } else {
+        emit('\\$\\$')
+        next = i + 2
+      }
+      handled = true
+    } else {
+      const m = inlineDollar(text, i)
+      if (m !== null) {
+        emit(`$${m}$`)
+        next = i + m.length + 2
+      } else {
+        emit('\\$')
+        next = i + 1
+      }
+      handled = true
+    }
+    i = next
+    plainFrom = i
+  }
+  flushPlain(text.length)
+
+  let result = out.join('').replace(/\n{3,}/g, '\n\n')
+  if (!text.startsWith('\n')) result = result.replace(/^\n+/, '')
+  if (!text.endsWith('\n')) result = result.replace(/\n+$/, '')
+  return result
 }
 
 /** Pandoc kuralı: açılıştan sonra boşluk yok, kapanıştan önce boşluk yok, kapanıştan sonra rakam yok, aynı satır */
-function inlineDollar(rest: string): string | null {
-  const next = rest[1]
+function inlineDollar(text: string, i: number): string | null {
+  const next = text[i + 1]
   if (!next || /\s|\$/.test(next)) return null
-  for (let j = 1; j < rest.length; j++) {
-    const ch = rest[j]
+  for (let j = i + 1; j < text.length; j++) {
+    const ch = text[j]
     if (ch === '\n') return null
-    if (ch === '$' && rest[j - 1] !== '\\') {
-      if (/\s/.test(rest[j - 1]!) || /\d/.test(rest[j + 1] ?? '')) return null
-      return rest.slice(1, j)
+    if (ch === '$' && text[j - 1] !== '\\') {
+      if (/\s/.test(text[j - 1]!) || /\d/.test(text[j + 1] ?? '')) return null
+      return text.slice(i + 1, j)
     }
   }
   return null
 }
 
-/** Kendi satırında duran formül blok olur; satır ortasındaki satır içi kalır */
-function emitBlockOrInline(ctx: Ctx, start: number, end: number, content: string): number {
-  const before = ctx.text.slice(lineStart(ctx.text, start), start)
-  const after = ctx.text.slice(end, lineEnd(ctx.text, end))
-  const alone = (!before.trim() || LIST_MARKER_ONLY.test(before)) && !after.trim()
-  if (alone) return emitBlock(ctx, start, end, content)
-  ctx.out += `$${oneLine(content)}$`
-  return end
-}
-
-function emitBlock(ctx: Ctx, start: number, end: number, content: string): number {
-  const ls = lineStart(ctx.text, start)
-  const line = ctx.text.slice(ls, lineEnd(ctx.text, start))
-  const before = ctx.text.slice(ls, start)
-  const indent = contentIndent(line)
-  // bu satırın formülden önceki kısmını çıktıdan geri al ve yeniden yerleştir
-  ctx.out = ctx.out.slice(0, ctx.out.length - before.length)
-  let prefix = ''
-  if (LIST_MARKER_ONLY.test(before)) prefix = before.trimEnd()
-  else if (before.trim()) prefix = before.trimEnd()
-  const body = dedent(content)
-    .map((l) => (l ? indent + l : ''))
-    .join('\n')
-  ctx.out += `${prefix}\n${prefix ? '\n' : ''}${indent}$$\n${body}\n${indent}$$\n`
-  // satırın geri kalanı boşsa satır sonuna kadar atla
-  const le = lineEnd(ctx.text, end)
-  return ctx.text.slice(end, le).trim() ? end : le
-}
+export type { Ctx }

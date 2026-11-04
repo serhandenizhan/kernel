@@ -8,6 +8,10 @@ import { watchVault } from './vault/watcher'
 import { readSettings, writeSettings } from './vault/settings'
 import { defaultVaultPath, saveVaultPath } from './config'
 import { requireVault, state } from './state'
+import { SearchIndex } from './search'
+import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
+import { writeAtomic } from './vault/atomic'
 import { log } from './log'
 
 function broadcast(channel: string, ...args: unknown[]): void {
@@ -20,18 +24,43 @@ export async function openVault(path: string): Promise<void> {
   const vault = new Vault(path)
   await vault.init()
   state.vault = vault
+  search = new SearchIndex()
+  void search.build(vault)
+  recentIds = await loadRecent(path)
   state.stopWatcher = await watchVault(vault, (e) => {
-    if (e.type === 'tree-changed') broadcast(IPC.eventTreeChanged)
-    else broadcast(IPC.eventPageChanged, e.id)
+    if (e.type === 'tree-changed') {
+      broadcast(IPC.eventTreeChanged)
+      void search?.build(vault)
+    } else {
+      broadcast(IPC.eventPageChanged, e.id)
+      void search?.update(vault, e.id)
+    }
   })
   log.info('Kasa açıldı', path)
 }
 
-// Ek servisler (arama, PDF) sonraki görevlerde buraya kanca atar
+let search: SearchIndex | null = null
+let recentIds: string[] = []
+const RECENT_MAX = 8
+
+async function loadRecent(root: string): Promise<string[]> {
+  try {
+    const v = JSON.parse(await readFile(join(root, '.kernel', 'recent.json'), 'utf8'))
+    return Array.isArray(v) ? v.map(String) : []
+  } catch {
+    return []
+  }
+}
+
+/** Son açılan sayfalar (.kernel/recent.json) */
+async function touchRecent(id: string): Promise<void> {
+  recentIds = [id, ...recentIds.filter((x) => x !== id)].slice(0, RECENT_MAX)
+  const root = state.vault?.root
+  if (root) await writeAtomic(join(root, '.kernel', 'recent.json'), JSON.stringify(recentIds))
+}
+
+// PDF servisi sonraki görevde buraya kanca atar
 export const hooks = {
-  afterWrite: async (_id: string) => {},
-  search: async (_q: string, _limit?: number) => [] as unknown[],
-  recent: async () => [] as unknown[],
   pdf: async (_id: string, _o: PdfOptions): Promise<{ filePath: string } | { canceled: true }> => ({ canceled: true })
 }
 
@@ -55,16 +84,31 @@ export function registerIpc(): void {
   h(IPC.vaultReveal, (id: string) => shell.showItemInFolder(requireVault().pathOf(id)))
 
   h(IPC.pagesTree, () => requireVault().tree())
-  h(IPC.pagesRead, (id: string) => requireVault().read(id))
+  h(IPC.pagesRead, async (id: string) => {
+    const page = await requireVault().read(id)
+    void touchRecent(id)
+    return page
+  })
   h(IPC.pagesWrite, async (id: string, input: { markdown: string; meta: PageMeta }) => {
     const res = await requireVault().write(id, input)
-    await hooks.afterWrite(id)
+    void search?.update(requireVault(), id)
     return res
   })
   h(IPC.pagesCreate, (parentId: string | null, title?: string) => requireVault().create(parentId, title))
-  h(IPC.pagesRename, (id: string, title: string) => requireVault().rename(id, title))
-  h(IPC.pagesMove, (id: string, parentId: string | null, index: number) => requireVault().move(id, parentId, index))
-  h(IPC.pagesTrash, (id: string) => requireVault().trash(id, (p) => shell.trashItem(p)))
+  h(IPC.pagesRename, async (id: string, title: string) => {
+    const node = await requireVault().rename(id, title)
+    void search?.build(requireVault())
+    return node
+  })
+  h(IPC.pagesMove, async (id: string, parentId: string | null, index: number) => {
+    await requireVault().move(id, parentId, index)
+    void search?.build(requireVault())
+  })
+  h(IPC.pagesTrash, async (id: string) => {
+    await requireVault().trash(id, (p) => shell.trashItem(p))
+    search?.remove(id)
+    recentIds = recentIds.filter((x) => x !== id)
+  })
 
   h(IPC.attachmentsSave, (bytes: Uint8Array, ext: string, nameHint?: string) => requireVault().saveAttachment(bytes, ext, nameHint))
   h(IPC.attachmentsFetchRemote, async (url: string) => {
@@ -82,8 +126,20 @@ export function registerIpc(): void {
     }
   })
 
-  h(IPC.searchQuery, (q: string, limit?: number) => hooks.search(q, limit))
-  h(IPC.searchRecent, () => hooks.recent())
+  h(IPC.searchQuery, (q: string, limit?: number) => search?.query(q, limit) ?? [])
+  h(IPC.searchRecent, async () => {
+    const vault = requireVault()
+    const out = []
+    for (const id of recentIds) {
+      try {
+        const p = await vault.read(id)
+        out.push({ id, title: p.title, path: p.path, icon: p.meta.icon, children: [] })
+      } catch {
+        // silinmiş sayfa
+      }
+    }
+    return out
+  })
   h(IPC.pdfExport, (id: string, o: PdfOptions) => hooks.pdf(id, o))
 
   h(IPC.settingsGet, () => readSettings(requireVault().root))

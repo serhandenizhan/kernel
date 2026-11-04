@@ -5,6 +5,7 @@ import { Sidebar } from './shell/Sidebar'
 import { VaultPicker } from './shell/VaultPicker'
 import { Toasts } from './shell/Toasts'
 import { PageView } from './shell/PageView'
+import { SearchPalette } from './shell/SearchPalette'
 import './styles/tokens.css'
 import './styles/glass.css'
 import './styles/app.css'
@@ -71,6 +72,7 @@ export function App() {
   const ready = useStore((s) => s.ready)
   const vaultPath = useStore((s) => s.vaultPath)
   const sidebarVisible = useStore((s) => s.sidebarVisible)
+  const overlay = useStore((s) => s.overlay)
   useTheme()
   useShortcuts()
 
@@ -102,6 +104,7 @@ export function App() {
           <PageView />
         </div>
       </main>
+      {overlay === 'search' && <SearchPalette />}
       <Toasts />
     </div>
   )

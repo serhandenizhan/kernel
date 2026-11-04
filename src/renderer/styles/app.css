@@ -285,3 +285,77 @@ button {
 .toast.error {
   color: var(--danger);
 }
+
+/* --- Cmd+K paleti --- */
+.palette-backdrop {
+  align-items: flex-start;
+  padding-top: 14vh;
+  background: rgba(10, 18, 24, 0.18);
+}
+.palette {
+  width: 600px;
+  max-width: calc(100vw - 32px);
+  padding: 8px;
+}
+.palette-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 17px;
+}
+.palette-section {
+  padding: 6px 12px 4px;
+  border-top: 1px solid var(--border);
+  color: var(--text-3);
+  font-size: 11px;
+  font-weight: 600;
+}
+.palette-list {
+  max-height: 50vh;
+  overflow-y: auto;
+}
+.palette-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  text-align: left;
+  cursor: default;
+}
+.palette-row.active {
+  background: var(--accent-soft);
+}
+.palette-icon {
+  flex: none;
+  width: 18px;
+}
+.palette-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.palette-title {
+  color: var(--text);
+  font-weight: 600;
+}
+.palette-snippet {
+  color: var(--text-2);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.palette-path {
+  color: var(--text-3);
+  font-size: 11px;
+}
+.palette-empty {
+  padding: 14px 12px;
+  color: var(--text-3);
+}

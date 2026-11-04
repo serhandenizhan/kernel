@@ -5,11 +5,9 @@ import type { EditorView } from '@tiptap/pm/view'
 import { kernel } from '../../lib/kernel'
 import { ImageView } from '../ui/ImageView'
 
-/** attachments/… yolunu kernel-file:// adresine çevirir; http(s) ve data: olduğu gibi kalır */
-export function toVaultUrl(src: string): string {
-  if (/^(https?:|data:|kernel-file:)/.test(src)) return src
-  return `kernel-file://vault/${src.split('/').map(encodeURIComponent).join('/')}`
-}
+import { toVaultUrl } from '@core/vault-url'
+
+export { toVaultUrl }
 
 const extOf = (f: File) => (f.type.split('/')[1] ?? f.name.split('.').pop() ?? 'png').replace('jpeg', 'jpg').replace('svg+xml', 'svg')
 

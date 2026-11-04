@@ -80,9 +80,7 @@ export function App() {
   useEffect(() => {
     void useStore.getState().init()
     // uygulama kapanırken bekleyen kaydı yap
-    kernel.app.onFlushRequest(async () => {
-      await activeEditor.flush?.()
-    })
+    kernel.app.onFlushRequest(async () => (activeEditor.flush ? activeEditor.flush() : true))
     const off = kernel.events.onTreeChanged(() => void useStore.getState().refreshTree())
     return off
   }, [])

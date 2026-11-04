@@ -88,6 +88,19 @@ export function registerIpc(): void {
     } else {
       const res = await dialog.showOpenDialog({ properties: ['openDirectory', 'createDirectory'], defaultPath: defaultVaultPath() })
       path = res.canceled ? undefined : res.filePaths[0]
+      // mevcut dosyalara kimlik yazmadan önce sor
+      const n = path ? await Vault.countFilesNeedingId(path) : 0
+      if (path && n > 0) {
+        const answer = await dialog.showMessageBox({
+          type: 'question',
+          buttons: ['Devam et', 'Vazgeç'],
+          defaultId: 0,
+          cancelId: 1,
+          message: `Bu klasördeki ${n} Markdown dosyasının başına küçük bir kimlik satırı eklenecek.`,
+          detail: 'Notların içeriği değişmez; Kernel sayfaları tanıyabilmek için yalnızca dosyanın en başına bir "id" alanı yazar. node_modules ve kod depoları (.git) atlanır.'
+        })
+        if (answer.response !== 0) return null
+      }
     }
     if (!path) return null
     await openVault(path)

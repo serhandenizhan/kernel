@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
 import { join } from 'node:path'
 import { IPC } from '@shared/ipc'
 
@@ -8,17 +8,17 @@ app.on('before-quit', () => {
   quitting = true
 })
 
-/** Arayüzden bekleyen kaydı yapmasını ister; en fazla 3 sn bekler */
-function requestFlush(win: BrowserWindow): Promise<void> {
+/** Arayüzden bekleyen kaydı yapmasını ister; en fazla 3 sn bekler. Her şey kaydedildiyse true */
+function requestFlush(win: BrowserWindow): Promise<boolean> {
   return new Promise((resolve) => {
-    const done = (e: Electron.IpcMainEvent) => {
+    const done = (e: Electron.IpcMainEvent, ok: unknown) => {
       if (e.sender !== win.webContents) return
       cleanup()
-      resolve()
+      resolve(ok === true)
     }
     const timer = setTimeout(() => {
       cleanup()
-      resolve()
+      resolve(false)
     }, FLUSH_TIMEOUT_MS)
     const cleanup = () => {
       clearTimeout(timer)
@@ -58,7 +58,22 @@ export function createMainWindow(): BrowserWindow {
   win.on('close', (event) => {
     if (flushed || win.webContents.isDestroyed()) return
     event.preventDefault()
-    void requestFlush(win).then(() => {
+    void requestFlush(win).then(async (ok) => {
+      if (!ok) {
+        // kayıt başarısız: kullanıcıya sormadan değişiklikleri kaybetme (spec §14)
+        const answer = await dialog.showMessageBox(win, {
+          type: 'warning',
+          buttons: ['Vazgeç', 'Yine de çık'],
+          defaultId: 0,
+          cancelId: 0,
+          message: 'Kaydedilmemiş değişiklikler var',
+          detail: 'Son değişiklikler diske yazılamadı. Çıkarsan kaybolabilirler.'
+        })
+        if (answer.response === 0) {
+          quitting = false
+          return
+        }
+      }
       flushed = true
       if (quitting) app.quit()
       else win.close()

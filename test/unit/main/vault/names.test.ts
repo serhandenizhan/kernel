@@ -32,6 +32,11 @@ describe('uniqueName', () => {
   it('çakışma yoksa adı korur', async () => {
     expect(await uniqueName(dir, 'Kimya', '.md')).toBe('Kimya')
   })
+  it('büyük I harfi APFS gibi i ile çakışır (Türkçe ı dönüşümüne kanmaz)', async () => {
+    writeFileSync(join(dir, 'introduction.md'), '')
+    expect(await uniqueName(dir, 'Introduction', '.md')).toBe('Introduction (2)')
+    expect(await uniqueName(dir, 'INTRODUCTION', '.md')).toBe('INTRODUCTION (2)')
+  })
   it('taken kümesini de dikkate alır', async () => {
     expect(await uniqueName(dir, 'Kimya', '.md', new Set(['kimya.md']))).toBe('Kimya (2)')
   })

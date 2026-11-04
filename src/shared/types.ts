@@ -25,6 +25,8 @@ export interface PageData {
   path: string
   meta: PageMeta
   markdown: string
+  /** Bozuk frontmatter ya da ikili veri: dosyayı korumak için düzenlenemez */
+  readOnly?: boolean
 }
 
 export interface SearchHit {
@@ -98,7 +100,8 @@ export interface KernelApi {
     get(): Promise<Settings>
     set(patch: Partial<Settings>): Promise<Settings>
   }
-  app: { onFlushRequest(cb: () => Promise<void>): void }
+  /** cb: kaydedilmemiş değişiklik kalmadıysa true */
+  app: { onFlushRequest(cb: () => Promise<boolean>): void }
   events: {
     onTreeChanged(cb: () => void): () => void
     onPageChangedExternally(cb: (id: string) => void): () => void

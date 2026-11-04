@@ -16,7 +16,10 @@ describe('frontmatter', () => {
   it('frontmatter yoksa tüm metin gövdedir', () => {
     expect(splitFrontmatter('frontmatter yok')).toEqual({ meta: {}, body: 'frontmatter yok' })
   })
-  it('bozuk YAML gövdeyi korur ve meta boş döner', () => {
-    expect(splitFrontmatter('---\n: : :\n  - [\n---\ngövde')).toEqual({ meta: {}, body: 'gövde' })
+  it('bozuk YAML gövdeyi korur, meta boş döner ve hatayı bildirir', () => {
+    expect(splitFrontmatter('---\n: : :\n  - [\n---\ngövde')).toEqual({ meta: {}, body: 'gövde', error: true })
+  })
+  it('bilinmeyen alanlar bilinenlerden sonra yazılır', () => {
+    expect(joinFrontmatter({ id: 'X', created: c, updated: u }, '', { aliases: ['a'], date: '2024' })).toBe(`---\nid: X\ncreated: ${c}\nupdated: ${u}\naliases:\n  - a\ndate: "2024"\n---\n`)
   })
 })

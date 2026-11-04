@@ -34,10 +34,11 @@ const api: KernelApi = {
   app: {
     onFlushRequest(cb) {
       ipcRenderer.on(IPC.appFlush, async () => {
+        let ok = false
         try {
-          await cb()
+          ok = await cb()
         } finally {
-          ipcRenderer.send(IPC.appFlushDone)
+          ipcRenderer.send(IPC.appFlushDone, ok)
         }
       })
     }

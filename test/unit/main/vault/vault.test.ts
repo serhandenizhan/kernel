@@ -55,6 +55,67 @@ describe('Vault', () => {
     expect((await v.read(tree[0]!.id)).markdown).toBe('a\u0000b')
   })
 
+  it('eşzamanlı reindex kimlikleri değiştirmez', async () => {
+    for (let i = 0; i < 20; i++) writeFileSync(join(root, `S${i}.md`), `sayfa ${i}`)
+    const v = new Vault(root)
+    await v.init()
+    const before = (await v.tree()).map((n) => n.id).sort()
+    await Promise.all([v.reindex(), v.reindex(), v.reindex()])
+    expect((await v.tree()).map((n) => n.id).sort()).toEqual(before)
+  })
+
+  it('kopyalanmış dosyada kimlik orijinalde kalır, kopyaya yeni kimlik verilir', async () => {
+    const v = new Vault(root)
+    await v.init()
+    const a = await v.create(null, 'Asıl')
+    writeFileSync(join(root, 'Asıl kopyası.md'), readFileSync(join(root, 'Asıl.md')))
+    await v.reindex()
+    expect((await v.read(a.id)).title).toBe('Asıl')
+    const ids = (await v.tree()).map((n) => n.id)
+    expect(new Set(ids).size).toBe(2)
+  })
+
+  it('tanımadığı frontmatter alanlarını açılışta ve kayıtta korur', async () => {
+    writeFileSync(join(root, 'Obsidian.md'), '---\naliases: [foo]\ndate: 2024-01-02\n---\ngövde\n')
+    const v = new Vault(root)
+    await v.init()
+    const id = (await v.tree())[0]!.id
+    let text = readFileSync(join(root, 'Obsidian.md'), 'utf8')
+    expect(text).toContain('aliases:')
+    expect(text).toContain('date: 2024-01-02')
+    await v.write(id, { markdown: 'yeni\n', meta: (await v.read(id)).meta })
+    text = readFileSync(join(root, 'Obsidian.md'), 'utf8')
+    expect(text).toContain('aliases:')
+    expect(text).toContain('date: 2024-01-02')
+    expect(text).toContain('yeni')
+  })
+
+  it('bozuk YAML içeren dosyayı asla değiştirmez, salt okunur verir', async () => {
+    const bad = '---\n: : :\n  - [\n---\ngövde\n'
+    writeFileSync(join(root, 'Bozuk.md'), bad)
+    const v = new Vault(root)
+    await v.init()
+    expect(readFileSync(join(root, 'Bozuk.md'), 'utf8')).toBe(bad)
+    const id = (await v.tree())[0]!.id
+    const page = await v.read(id)
+    expect(page.readOnly).toBe(true)
+    await expect(v.write(id, { markdown: 'x', meta: page.meta })).rejects.toThrow()
+    expect(readFileSync(join(root, 'Bozuk.md'), 'utf8')).toBe(bad)
+  })
+
+  it('node_modules ve iç içe git depolarını taramaz', async () => {
+    mkdirSync(join(root, 'node_modules', 'pkg'), { recursive: true })
+    writeFileSync(join(root, 'node_modules', 'pkg', 'README.md'), 'paket')
+    mkdirSync(join(root, 'proje', '.git'), { recursive: true })
+    writeFileSync(join(root, 'proje', 'README.md'), 'depo')
+    writeFileSync(join(root, 'Not.md'), 'not')
+    expect(await Vault.countFilesNeedingId(root)).toBe(1)
+    const v = new Vault(root)
+    await v.init()
+    expect(readFileSync(join(root, 'node_modules', 'pkg', 'README.md'), 'utf8')).toBe('paket')
+    expect(readFileSync(join(root, 'proje', 'README.md'), 'utf8')).toBe('depo')
+  })
+
   it('NFD dosya adını NFC başlık olarak verir', async () => {
     writeFileSync(join(root, 'Özdeğerler.md'), '')
     const v = new Vault(root)
@@ -82,6 +143,18 @@ describe('Vault', () => {
     expect(existsSync(join(root, 'C', 'B.md'))).toBe(true)
     expect(existsSync(join(root, 'A'))).toBe(false)
     expect((await v.read(b.id)).path).toBe('C/B.md')
+  })
+
+  it('create ve rename mevcut dosyanın üzerine asla yazmaz (I/i çakışması)', async () => {
+    writeFileSync(join(root, 'introduction.md'), 'ESKİ İÇERİK')
+    const v = new Vault(root)
+    await v.init()
+    const a = await v.create(null, 'Introduction')
+    expect(a.title).toBe('Introduction (2)')
+    const b = await v.create(null, 'B')
+    const r = await v.rename(b.id, 'INTRODUCTION')
+    expect(r.title).not.toBe('INTRODUCTION')
+    expect(readFileSync(join(root, 'introduction.md'), 'utf8')).toContain('ESKİ İÇERİK')
   })
 
   it('move büyük/küçük harf çakışmasında (2) ekler', async () => {

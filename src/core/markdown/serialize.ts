@@ -51,7 +51,9 @@ function block(n: JSONContent): BlockContent[] {
       return [{ type: 'blockquote', children: blocks(c) }]
     case 'callout': {
       const a = n.attrs ?? {}
-      const head = `[!${a['type'] ?? 'note'}${a['icon'] ? `|${a['icon']}` : ''}]${a['title'] ? ` ${a['title']}` : ''}`
+      // başlık ham HTML düğümü olarak yazılır: Markdown özel karakterleri kaçışlanır ki geri okununca aynı kalsın
+      const title = String(a['title'] ?? '').replace(/[\\`*_[\]<>#~=|$!&]/g, '\\$&')
+      const head = `[!${a['type'] ?? 'note'}${a['icon'] ? `|${a['icon']}` : ''}]${title ? ` ${title}` : ''}`
       return [{ type: 'blockquote', children: [{ type: 'html', value: head } as unknown as BlockContent, ...blocks(c)] }]
     }
     case 'details': {

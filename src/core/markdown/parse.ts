@@ -17,8 +17,29 @@ export function markdownToDoc(md: string): JSONContent {
   // "\=" kaçışlarını koru: remark onları "=" yapar ve == vurgusundan ayırt edilemez hale gelirdi
   const src = md.replace(/\\=/g, ESCAPED_EQ)
   const tree = processor.parse(src)
+  // referans linkleri/görselleri tanımlarından çözülür (tanımlar satır içi bağlantıya dönüşür)
+  resolveReferences(tree, collectDefinitions(tree))
   const content = convertBlocks(tree.children)
   return { type: 'doc', content: content.length ? content : [{ type: 'paragraph' }] }
+}
+
+type AnyNode = { type: string; children?: AnyNode[]; identifier?: string; url?: string; label?: string | null; alt?: string | null; title?: string | null; value?: string }
+
+function collectDefinitions(node: AnyNode, defs = new Map<string, { url: string; title: string | null }>()) {
+  if (node.type === 'definition' && node.identifier) defs.set(node.identifier.toLowerCase(), { url: node.url ?? '', title: node.title ?? null })
+  node.children?.forEach((c) => collectDefinitions(c, defs))
+  return defs
+}
+
+function resolveReferences(node: AnyNode, defs: Map<string, { url: string; title: string | null }>): void {
+  if (!node.children) return
+  node.children = node.children.map((c) => {
+    const def = c.identifier ? defs.get(c.identifier.toLowerCase()) : undefined
+    if (c.type === 'linkReference') return def ? { type: 'link', url: def.url, title: def.title, children: c.children ?? [] } : { type: 'text', value: `[${c.label ?? c.identifier}]` }
+    if (c.type === 'imageReference') return def ? { type: 'image', url: def.url, alt: c.alt ?? '', title: def.title } : { type: 'text', value: `![${c.alt ?? ''}][${c.label ?? c.identifier}]` }
+    return c
+  })
+  node.children.forEach((c) => resolveReferences(c, defs))
 }
 
 /** Satır içi Markdown parçasını (örn. <summary> içeriği) çevirir */
@@ -94,9 +115,23 @@ function convertBlock(node: RootContent): JSONContent[] {
       return [{ type: 'blockMath', attrs: { latex: restoreRaw(node.value) } }]
     case 'table':
       return [convertTable(node)]
+    case 'footnoteDefinition': {
+      // dipnot tanımı: içerik kaybolmasın, "[^1]: …" metni olarak korunur
+      const blocks = convertBlocks(node.children)
+      const label = `[^${node.label ?? node.identifier}]: `
+      const first = blocks[0]
+      if (first?.type === 'paragraph') first.content = [{ type: 'text', text: label }, ...(first.content ?? [])]
+      else blocks.unshift({ type: 'paragraph', content: [{ type: 'text', text: label.trim() }] })
+      return mergeParagraphText(blocks)
+    }
     default:
       return []
   }
+}
+
+function mergeParagraphText(blocks: JSONContent[]): JSONContent[] {
+  for (const b of blocks) if (b.type === 'paragraph' && b.content) b.content = mergeText(b.content)
+  return blocks
 }
 
 function withContent(node: JSONContent, content: JSONContent[]): JSONContent {
@@ -229,6 +264,9 @@ function walkInline(nodes: PhrasingContent[], marks: Mark[], htmlMarks: Mark[], 
       }
       case 'image':
         pushText(out, n.alt ?? '', [...marks, ...htmlMarks])
+        break
+      case 'footnoteReference':
+        pushText(out, `[^${n.label ?? n.identifier}]`, [...marks, ...htmlMarks])
         break
       default:
         break

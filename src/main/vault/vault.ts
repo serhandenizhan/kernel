@@ -4,8 +4,8 @@ import { basename, dirname, join, relative, sep } from 'node:path'
 import { createHash, randomBytes } from 'node:crypto'
 import { ulid } from 'ulid'
 import type { PageData, PageMeta, TreeNode } from '@shared/types'
-import { joinFrontmatter, splitFrontmatter } from './frontmatter'
-import { sanitizeTitle, uniqueName } from './names'
+import { extraKeys, joinFrontmatter, splitFrontmatter } from './frontmatter'
+import { foldKey, sanitizeTitle, uniqueName } from './names'
 import { writeAtomic } from './atomic'
 import { loadOrder, saveOrder, type Order } from './order'
 
@@ -13,13 +13,17 @@ const ROOT_KEY = 'root'
 const isHidden = (name: string) => name.startsWith('.')
 const titleOf = (file: string) => basename(file, '.md').normalize('NFC')
 const folderOf = (mdPath: string) => mdPath.slice(0, -3) // "X.md" → "X" (alt sayfa klasörü)
-const key = (s: string) => s.normalize('NFC').toLocaleLowerCase('tr')
+const key = foldKey
 
 interface Cached {
   id: string
   icon?: string
   mtimeMs: number
+  /** ikili veri ya da bozuk YAML: dosyaya asla yazılmaz */
+  readOnly?: boolean
 }
+
+const SKIP_DIRS = new Set(['node_modules'])
 
 // Kasa: düz Markdown dosyaları. X.md'nin alt sayfaları kardeş X/ klasöründedir.
 export class Vault {
@@ -39,17 +43,54 @@ export class Vault {
     await this.reindex()
   }
 
-  /** Tüm .md dosyalarını tarar; id'si olmayan ya da yinelenen dosyalara yeni id yazar */
-  async reindex(): Promise<void> {
-    this.byId.clear()
+  private reindexChain: Promise<void> = Promise.resolve()
+
+  /** Tüm .md dosyalarını tarar; id'si olmayan ya da yinelenen dosyalara yeni id yazar. Çağrılar sıraya alınır. */
+  reindex(): Promise<void> {
+    const run = this.reindexChain.then(() => this.doReindex())
+    this.reindexChain = run.catch(() => undefined)
+    return run
+  }
+
+  private async doReindex(): Promise<void> {
+    const prev = this.byId
+    const next = new Map<string, string>()
+    const needId: string[] = []
     for (const file of await this.allPages(this.root)) {
-      const meta = await this.metaOf(file)
-      if (!meta.id || this.byId.has(meta.id)) {
-        await this.assignId(file)
+      const id = (await this.metaOf(file)).id
+      if (!id) {
+        needId.push(file)
+        continue
+      }
+      const owner = next.get(id)
+      if (!owner) {
+        next.set(id, file)
+      } else if (prev.get(id) === file) {
+        // yinelenen kimlik (Finder'da kopyalanmış dosya): kimlik önceki sahibinde kalır
+        next.set(id, file)
+        needId.push(owner)
       } else {
-        this.byId.set(meta.id, file)
+        needId.push(file)
       }
     }
+    for (const file of needId) next.set(await this.assignId(file), file)
+    // tarama sırasında oluşturulan sayfaları kaybetme
+    const paths = new Set(next.values())
+    for (const [id, p] of this.byId) if (!next.has(id) && !paths.has(p) && existsSync(p)) next.set(id, p)
+    this.byId = next
+  }
+
+  /** Kasa olarak seçilmeden önce: kimlik eklenecek (yazılacak) dosya sayısı */
+  static async countFilesNeedingId(root: string): Promise<number> {
+    const probe = new Vault(root)
+    let n = 0
+    for (const file of await probe.allPages(root)) {
+      const text = await readFile(file, 'utf8')
+      if (text.includes('\u0000')) continue
+      const { meta, error } = splitFrontmatter(text)
+      if (!error && typeof meta['id'] !== 'string') n++
+    }
+    return n
   }
 
   private async allPages(dir: string): Promise<string[]> {
@@ -60,11 +101,13 @@ export class Vault {
     } catch {
       return out
     }
+    // iç içe git deposu (kod projesi) not kasası değildir
+    if (dir !== this.root && entries.some((e) => e.name === '.git')) return out
     for (const e of entries) {
       if (isHidden(e.name)) continue
       const p = join(dir, e.name)
       if (e.isDirectory()) {
-        if (dir === this.root && e.name === 'attachments') continue
+        if ((dir === this.root && e.name === 'attachments') || SKIP_DIRS.has(e.name)) continue
         out.push(...(await this.allPages(p)))
       } else if (e.name.endsWith('.md')) {
         out.push(p)
@@ -83,21 +126,20 @@ export class Vault {
     return entry
   }
 
-  private async assignId(file: string): Promise<void> {
+  /** Dosyaya kalıcı kimlik yazar ve döner; ikili ya da bozuk YAML dosyaya asla yazmaz (bellekte kimlik) */
+  private async assignId(file: string): Promise<string> {
     const text = await readFile(file, 'utf8')
-    if (text.includes('\u0000')) {
-      // ikili dosya asla değiştirilmez: yola bağlı, bellekte kalan bir kimlik ver
-      const id = `bin-${createHash('sha1').update(file).digest('hex').slice(0, 16)}`
-      this.byId.set(id, file)
-      this.cache.set(file, { id, mtimeMs: (await stat(file)).mtimeMs })
-      return
+    const { meta, body, error } = splitFrontmatter(text)
+    if (text.includes('\u0000') || error) {
+      const id = `ro-${createHash('sha1').update(file).digest('hex').slice(0, 16)}`
+      this.cache.set(file, { id, mtimeMs: (await stat(file)).mtimeMs, readOnly: true })
+      return id
     }
-    const { meta, body } = splitFrontmatter(text)
     const st = await stat(file)
     const full = this.normalizeMeta(meta, st)
     full.id = ulid()
-    await this.writeFile(file, joinFrontmatter(full, body))
-    this.byId.set(full.id, file)
+    await this.writeFile(file, joinFrontmatter(full, body, extraKeys(meta)))
+    return full.id
   }
 
   private normalizeMeta(meta: Record<string, unknown>, st: { birthtime: Date; mtime: Date }): PageMeta {
@@ -188,16 +230,22 @@ export class Vault {
   async read(id: string): Promise<PageData> {
     const abs = this.pathOf(id)
     const text = await readFile(abs, 'utf8')
-    const { meta, body } = splitFrontmatter(text)
+    const { meta, body, error } = splitFrontmatter(text)
     const full = this.normalizeMeta(meta, await stat(abs))
     full.id = id
-    return { id, title: titleOf(abs), path: this.rel(abs), meta: full, markdown: body }
+    const page: PageData = { id, title: titleOf(abs), path: this.rel(abs), meta: full, markdown: error ? text : body }
+    if (error || text.includes('\u0000')) page.readOnly = true
+    return page
   }
 
   async write(id: string, input: { markdown: string; meta: PageMeta }): Promise<{ updated: string }> {
     const abs = this.pathOf(id)
+    const current = await readFile(abs, 'utf8')
+    const { meta, error } = splitFrontmatter(current)
+    if (error || current.includes('\u0000')) throw new Error('Bu sayfa salt okunur: dosyanın başlık bilgisi (frontmatter) bozuk')
     const updated = new Date().toISOString()
-    await this.writeFile(abs, joinFrontmatter({ ...input.meta, id, updated }, input.markdown))
+    // Kernel'in tanımadığı alanlar (Obsidian vb.) korunur
+    await this.writeFile(abs, joinFrontmatter({ ...input.meta, id, updated }, input.markdown, extraKeys(meta)))
     return { updated }
   }
 
@@ -206,6 +254,7 @@ export class Vault {
     await mkdir(dir, { recursive: true })
     const name = await uniqueName(dir, sanitizeTitle(title ?? ''), '.md')
     const abs = join(dir, `${name}.md`)
+    if (existsSync(abs)) throw new Error(`Hedef dosya zaten var: ${name}.md`)
     const now = new Date().toISOString()
     const id = ulid()
     await this.writeFile(abs, joinFrontmatter({ id, created: now, updated: now }, ''))
@@ -229,6 +278,8 @@ export class Vault {
     }
     const nextAbs = join(targetDir, `${name}.md`)
     if (nextAbs === abs) return abs
+    // son güvence: aynı dosya değilse (yalnızca harf değişimi hariç) var olan dosyanın üzerine taşıma
+    if (existsSync(nextAbs) && !(sameDir && key(name) === key(titleOf(abs)))) throw new Error(`Hedef dosya zaten var: ${name}.md`)
     await mkdir(targetDir, { recursive: true })
     await rename(abs, nextAbs)
     const oldFolder = folderOf(abs)

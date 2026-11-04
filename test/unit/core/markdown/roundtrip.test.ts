@@ -48,6 +48,23 @@ describe('round-trip', () => {
     expect(docToMarkdown(docOf('  Merhaba '))).toBe('Merhaba\n')
     expect(docToMarkdown({ type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'a ' }, { type: 'text', text: 'b', marks: [{ type: 'bold' }] }, { type: 'text', text: ' ' }] }] })).toBe('a **b**\n')
   })
+  it('referans linkleri ve görselleri satır içi bağlantıya dönüşür, kaybolmaz', () => {
+    const md = 'Bkz. [belgeler][1] ve ![logo][img].\n\n[1]: https://example.com/docs\n[img]: attachments/logo.png\n'
+    const doc = markdownToDoc(md)
+    const out = docToMarkdown(doc)
+    expect(out).toContain('[belgeler](https://example.com/docs)')
+    expect(out).toContain('attachments/logo.png')
+  })
+  it('dipnotlar metin olarak korunur', () => {
+    const md = 'Bir iddia.[^1]\n\n[^1]: Kaynak açıklaması.\n'
+    const text = JSON.stringify(markdownToDoc(md))
+    expect(text).toContain('[^1]')
+    expect(text).toContain('Kaynak açıklaması.')
+  })
+  it('özel karakterli callout başlığı kayıpsız döner', () => {
+    const doc = { type: 'doc', content: [{ type: 'callout', attrs: { type: 'note', icon: null, title: 'Başlık *yıldız* [x]' }, content: [{ type: 'paragraph', content: [{ type: 'text', text: 'gövde' }] }] }] }
+    expect(markdownToDoc(docToMarkdown(doc))).toEqual(doc)
+  })
   it('dosya sonu tek satır sonu', () => {
     expect(docToMarkdown(markdownToDoc('a'))).toBe('a\n')
   })

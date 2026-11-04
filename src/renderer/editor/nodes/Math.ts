@@ -15,6 +15,18 @@ export const MathShortcuts = Extension.create({
 
   addInputRules() {
     return [
+      // "$x^2$" → satır içi formül. Para birimi koruması: açılıştan sonra / kapanıştan önce boşluk yok,
+      // açılış harf/rakam/$ veya \ ardından gelmez ("5$ ile 10$" metin kalır)
+      new InputRule({
+        find: /(?:^|[^\p{L}\p{N}$\\])\$([^\s$](?:[^$]*[^\s$\\])?)\$$/u,
+        handler: ({ state, range, match }) => {
+          const latex = match[1]
+          const type = state.schema.nodes['inlineMath']
+          if (!latex || !type) return null
+          const start = range.to - (latex.length + 2)
+          state.tr.replaceWith(start, range.to, type.create({ latex }))
+        }
+      }),
       // boş satırda "$$ " → boş blok formül ve düzenleme alanı
       new InputRule({
         find: /^\$\$\s$/,

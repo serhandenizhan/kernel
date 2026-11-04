@@ -2,7 +2,13 @@ export type SaveState = 'saved' | 'dirty' | 'saving' | 'error'
 
 export interface Autosave {
   schedule(): void
-  flush(): Promise<void>
+  /** Bekleyen kaydı hemen yapar; sonunda her şey kaydedildiyse true */
+  flush(): Promise<boolean>
+  /** Kaydı askıya alır (örn. çakışma penceresi açıkken dış değişikliğin üzerine yazılmasın) */
+  pause(): void
+  resume(): void
+  /** Bekleyen değişikliği kaydetmeden atar (içerik diskten yeniden yüklendiğinde) */
+  reset(): void
   readonly state: SaveState
   dispose(): void
 }
@@ -15,6 +21,8 @@ export function createAutosave(save: () => Promise<void>, delayMs = 500, onState
   let timer: ReturnType<typeof setTimeout> | null = null
   let running: Promise<void> | null = null
   let pendingAgain = false
+  let paused = false
+  let disposed = false
 
   const setState = (s: SaveState) => {
     if (s === state) return
@@ -27,8 +35,14 @@ export function createAutosave(save: () => Promise<void>, delayMs = 500, onState
     timer = null
   }
 
+  const arm = (ms: number) => {
+    clear()
+    if (!paused && !disposed) timer = setTimeout(() => void run(), ms)
+  }
+
   const run = async (): Promise<void> => {
     clear()
+    if (paused) return
     if (running) {
       // kayıt sürerken yeni değişiklik geldi: bittikten sonra tekrar kaydet
       pendingAgain = true
@@ -41,7 +55,7 @@ export function createAutosave(save: () => Promise<void>, delayMs = 500, onState
         setState(pendingAgain ? 'dirty' : 'saved')
       } catch {
         setState('error')
-        timer = setTimeout(() => void run(), RETRY_MS)
+        arm(RETRY_MS)
       } finally {
         running = null
       }
@@ -56,19 +70,33 @@ export function createAutosave(save: () => Promise<void>, delayMs = 500, onState
   return {
     schedule() {
       if (running) pendingAgain = true
-      else setState('dirty')
-      clear()
-      timer = setTimeout(() => void run(), delayMs)
+      else if (state !== 'error') setState('dirty')
+      arm(delayMs)
     },
     async flush() {
-      if (state === 'saved' && !running) return
+      if (paused) return state === 'saved'
       if (running) await running
       if (state !== 'saved' || timer) await run()
+      return state === 'saved'
+    },
+    pause() {
+      paused = true
+      clear()
+    },
+    resume() {
+      paused = false
+      if (state !== 'saved') arm(delayMs)
+    },
+    reset() {
+      clear()
+      pendingAgain = false
+      setState('saved')
     },
     get state() {
       return state
     },
     dispose() {
+      disposed = true
       clear()
     }
   }

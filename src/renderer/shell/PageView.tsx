@@ -37,7 +37,7 @@ export function PageView() {
   if (!page || page.id !== currentId) return null
   return (
     <article className="page" key={page.id}>
-      <PageHeader initialMeta={page.meta} />
+      {!page.readOnly && <PageHeader initialMeta={page.meta} />}
       <div className="page-column">
         <TitleField page={page} />
         <PageEditor page={page} />

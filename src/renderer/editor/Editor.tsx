@@ -16,7 +16,7 @@ import { BubbleToolbar } from './ui/BubbleToolbar'
 import { BlockHandle } from './ui/BlockHandle'
 
 /** Uygulama kapanırken açık sayfanın bekleyen kaydını yapar */
-export const activeEditor: { flush: (() => Promise<void>) | null; editor: TiptapEditor | null; meta: PageMeta | null; setMeta: ((m: PageMeta) => void) | null } = {
+export const activeEditor: { flush: (() => Promise<boolean>) | null; editor: TiptapEditor | null; meta: PageMeta | null; setMeta: ((m: PageMeta) => void) | null } = {
   flush: null,
   editor: null,
   meta: null,
@@ -30,12 +30,13 @@ const STATUS_TEXT: Record<SaveState, string> = { saved: 'Kaydedildi', dirty: 'D�
 
 export function PageEditor({ page }: { page: PageData }) {
   const parsed = useMemo(() => {
+    if (page.readOnly) return { doc: null, error: 'dosyanın başlık bilgisi bozuk ya da ikili veri içeriyor' }
     try {
       return { doc: markdownToDoc(page.markdown), error: null as string | null }
     } catch (e) {
       return { doc: null, error: e instanceof Error ? e.message : 'Dosya okunamadı' }
     }
-  }, [page.markdown])
+  }, [page.markdown, page.readOnly])
 
   if (!parsed.doc) {
     return (
@@ -56,19 +57,25 @@ function LiveEditor({ page, initial }: { page: PageData; initial: ReturnType<typ
   const [wrap, setWrap] = useState<HTMLDivElement | null>(null)
   const metaRef = useRef<PageMeta>(page.meta)
   const editorRef = useRef<TiptapEditor | null>(null)
+  // son belge anlık görüntüsü: editör yok edildikten sonra da (sayfa değişimi) kaydedilebilsin
+  const docRef = useRef<ReturnType<TiptapEditor['getJSON']> | null>(null)
 
   const autosave = useMemo(
     () =>
       createAutosave(
         async () => {
           const ed = editorRef.current
-          if (!ed || ed.isDestroyed) return
-          const markdown = docToMarkdown(ed.getJSON())
+          const doc = ed && !ed.isDestroyed ? ed.getJSON() : docRef.current
+          if (!doc) return
+          const markdown = docToMarkdown(doc)
           const { updated } = await kernel.pages.write(page.id, { markdown, meta: metaRef.current })
           metaRef.current = { ...metaRef.current, updated }
         },
         500,
-        setStatus
+        (s) => {
+          setStatus(s)
+          if (s === 'error') useStore.getState().toast('Sayfa kaydedilemedi; tekrar deneniyor. Uygulamayı kapatmadan önce kontrol et.', 'error')
+        }
       ),
     [page.id]
   )
@@ -79,7 +86,10 @@ function LiveEditor({ page, initial }: { page: PageData; initial: ReturnType<typ
       content: initial,
       autofocus: false,
       editorProps: { attributes: { class: 'kernel-editor', 'data-testid': 'editor', spellcheck: 'true' } },
-      onUpdate: () => autosave.schedule()
+      onUpdate: ({ editor: ed }) => {
+        docRef.current = ed.getJSON()
+        autosave.schedule()
+      }
     },
     [page.id]
   )
@@ -112,6 +122,7 @@ function LiveEditor({ page, initial }: { page: PageData; initial: ReturnType<typ
       if (id !== page.id || !editorRef.current) return
       if (autosave.state === 'saved') {
         const fresh = await kernel.pages.read(page.id)
+        if (fresh.readOnly) return
         metaRef.current = fresh.meta
         try {
           editorRef.current.commands.setContent(markdownToDoc(fresh.markdown), { emitUpdate: false })
@@ -119,6 +130,8 @@ function LiveEditor({ page, initial }: { page: PageData; initial: ReturnType<typ
           useStore.getState().toast('Dosya dışarıda değişti ama okunamadı', 'error')
         }
       } else {
+        // karar verilene kadar kaydetme: dış değişikliğin üzerine yazılmasın
+        autosave.pause()
         setConflict(true)
       }
     })
@@ -141,6 +154,7 @@ function LiveEditor({ page, initial }: { page: PageData; initial: ReturnType<typ
         <ConflictDialog
           onKeepMine={async () => {
             setConflict(false)
+            autosave.resume()
             autosave.schedule()
             await autosave.flush()
           }}
@@ -149,6 +163,9 @@ function LiveEditor({ page, initial }: { page: PageData; initial: ReturnType<typ
             const fresh = await kernel.pages.read(page.id)
             metaRef.current = fresh.meta
             editorRef.current?.commands.setContent(markdownToDoc(fresh.markdown), { emitUpdate: false })
+            docRef.current = editorRef.current?.getJSON() ?? null
+            autosave.reset()
+            autosave.resume()
           }}
         />
       )}

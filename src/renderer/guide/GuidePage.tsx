@@ -8,9 +8,9 @@ import { SLASH_ITEMS } from '../editor/slash-items'
 import { useStore } from '../state/store'
 import { SHORTCUTS } from './shortcuts'
 
-const SAMPLE = `- **Formül:** \\\\(\\vec{v} \\approx \\lambda \\vec{u}\\\\) olur.
-  \\\\[h_t = f(x_t, h_{t-1})\\\\]
-- Çıktı boyutu \\\\(256 \\times 2 = 512\\\\)`
+const SAMPLE = `- **Momentum:** \\\\(p = m \\vec{v}\\\\) korunur.
+  \\\\[F = \\frac{dp}{dt}\\\\]
+- Örnek: \\\\(3 \\times 4 = 12\\\\) newton`
 
 /** Canlı örnek: ham NotebookLM metni → Kernel'in dönüşümü (uygulamanın kendi bileşenleriyle) */
 function PasteDemo() {

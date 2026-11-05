@@ -30,6 +30,17 @@ interface ImportState {
   report: Pick<ImportReport, 'failedFiles' | 'unsupported' | 'mismatches' | 'notes' | 'failedPages'>
 }
 
+/** Süreli imzalı (S3) linkin geçici anahtarlarını atar; rapora yalnızca dosyanın adresi yazılır */
+export function withoutSignature(url: string): string {
+  if (!/[?&]X-Amz-/i.test(url)) return url
+  try {
+    const u = new URL(url)
+    return u.origin + u.pathname
+  } catch {
+    return url.split('?')[0]!
+  }
+}
+
 const emptyReport = (): ImportState['report'] => ({ failedFiles: [], unsupported: [], mismatches: [], notes: [], failedPages: [] })
 
 /** 401 ve kalıcı ağ kopması aktarımı durdurur; diğer Notion hataları yalnızca o sayfayı/bloğu etkiler */
@@ -151,7 +162,8 @@ export class NotionImporter {
       return
     }
     if (this.files.has(url)) return
-    const local = await this.deps.download(url, hintOf(url))
+    // tek seferlik ağ/S3 aksaklıklarına karşı bir kez daha denenir
+    const local = (await this.deps.download(url, hintOf(url))) ?? (await this.deps.download(url, hintOf(url)))
     if (local) {
       this.files.set(url, local)
       if (this.state) this.state.files[key] = local
@@ -294,7 +306,7 @@ export class NotionImporter {
           pageTitle: (nid) => targets.get(nid) ?? null,
           report: (e) => {
             explained = true
-            if (e.kind === 'file-failed') report.failedFiles.push({ page: title, url: e.detail })
+            if (e.kind === 'file-failed') report.failedFiles.push({ page: title, url: withoutSignature(e.detail) })
             else if (e.kind === 'unsupported') report.unsupported.push({ page: title, type: e.detail })
             else report.notes.push(`${title}: sütun düzeni alt alta dizildi`)
           }

@@ -145,4 +145,23 @@ describe('NotionImporter', () => {
     const second = readFileSync(join(vault.root, `${ROOT} (2).md`), 'utf8')
     expect(second).toContain(`[[${ROOT} (2)/Notion aktarım raporu]]`)
   })
+  it('ilk denemede inemeyen dosya bir kez daha denenir', async () => {
+    const tries = new Map<string, number>()
+    const flaky = async (url: string, hint: string) => {
+      tries.set(url, (tries.get(url) ?? 0) + 1)
+      return url.includes('bozuk') || tries.get(url) === 1 ? null : vault.saveAttachment(new Uint8Array([1]), 'png', hint)
+    }
+    const report = await new NotionImporter({ client: new FixtureNotionClient(fixture()), vault, download: flaky, today: TODAY, onProgress: () => {} }).run(['pg-root'])
+    expect(tries.get('https://dosya/ok.png')).toBe(2)
+    expect(report.files).toBe(1)
+    expect(report.failedFiles).toEqual([{ page: 'Gezegenler', url: 'https://dosya/bozuk.png' }])
+  })
+  it('raporda süreli imzalı linkin geçici anahtarları yazılmaz', async () => {
+    const signed = 'https://prod-files-secure.s3.us-west-2.amazonaws.com/ws/blk/gorsel.png?X-Amz-Algorithm=AWS4&X-Amz-Security-Token=GIZLI&X-Amz-Signature=abc'
+    const data = fixture()
+    data.blocks['pg-root'] = [B.image(signed.replace('gorsel', 'bozuk'))]
+    const report = await make(new FixtureNotionClient(data)).run(['pg-root'])
+    expect(report.failedFiles).toEqual([{ page: 'Gezegenler', url: 'https://prod-files-secure.s3.us-west-2.amazonaws.com/ws/blk/bozuk.png' }])
+    expect(readFileSync(join(vault.root, ROOT, 'Notion aktarım raporu.md'), 'utf8')).not.toContain('GIZLI')
+  })
 })

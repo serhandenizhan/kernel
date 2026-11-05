@@ -69,7 +69,8 @@ function convertOne(b: NotionBlock, ctx: ConvertContext): JSONContent[] {
       return [para(richTextToInline(rt(b), ctx)), ...children()]
     case 'heading_1':
     case 'heading_2':
-    case 'heading_3': {
+    case 'heading_3':
+    case 'heading_4': {
       const level = Number(b.type.slice(-1))
       const inline = richTextToInline(rt(b), ctx)
       if (d['is_toggleable']) {
@@ -152,7 +153,9 @@ function convertOne(b: NotionBlock, ctx: ConvertContext): JSONContent[] {
     default:
       if (IGNORED.has(b.type)) return []
       ctx.report({ kind: 'unsupported', detail: b.type })
-      return [para([{ type: 'text', text: `[Desteklenmeyen Notion bloğu: ${b.type}]` }])]
+      // bilinmeyen blokta metin varsa paragraf olarak korunur (içerik kaybolmasın)
+      if (rt(b)?.length) return [para(richTextToInline(rt(b), ctx)), ...children()]
+      return [para([{ type: 'text', text: `[Desteklenmeyen Notion bloğu: ${b.type}]` }]), ...children()]
   }
 }
 

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { convertBlocks, countBlocks, countDocBlocks, pageMeta, type ConvertContext } from '@core/notion/convert'
+import { docToMarkdown } from '@core/markdown/serialize'
 import * as B from '../../../fixtures/notion/builders'
 
 function ctx(files: Record<string, string> = {}, titles: Record<string, string> = {}) {
@@ -94,6 +95,25 @@ describe('convertBlocks', () => {
       { kind: 'flattened', detail: 'column_list' },
       { kind: 'unsupported', detail: 'ai_block' }
     ])
+  })
+})
+
+describe('yeni ve bilinmeyen Notion blokları', () => {
+  it('heading_4 dördüncü seviye başlık olur (açılır olanı başlıklı toggle), raporlanmaz ve Markdown\'a #### yazılır', () => {
+    const { c, events } = ctx()
+    const out = convertBlocks([B.block('heading_4', { rich_text: [B.t('Yörünge hızı')], is_toggleable: false, color: 'default' }), B.block('heading_4', { rich_text: [B.t('Ayrıntı')], is_toggleable: true, color: 'default' }, [B.para(B.t('iç'))])], c)
+    expect(out).toEqual([
+      { type: 'heading', attrs: { level: 4 }, content: [txt('Yörünge hızı')] },
+      { type: 'details', attrs: { card: false, heading: 4 }, content: [{ type: 'detailsSummary', content: [txt('Ayrıntı')] }, { type: 'detailsContent', content: [p(txt('iç'))] }] }
+    ])
+    expect(events).toEqual([])
+    expect(docToMarkdown({ type: 'doc', content: [out[0]!] })).toBe('#### Yörünge hızı\n')
+  })
+  it('bilinmeyen ama metni olan blokta metin ve alt bloklar kaybolmaz; yine de raporlanır', () => {
+    const { c, events } = ctx()
+    const out = convertBlocks([B.block('heading_9', { rich_text: [B.t('Satürn', { bold: true })] }, [B.para(B.t('halkalar'))])], c)
+    expect(out).toEqual([p(txt('Satürn', [{ type: 'bold' }])), p(txt('halkalar'))])
+    expect(events).toEqual([{ kind: 'unsupported', detail: 'heading_9' }])
   })
 })
 

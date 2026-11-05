@@ -6,7 +6,7 @@ import { pageTitleOf } from '@core/notion/convert'
 import { NotionClient, NotionError } from './client'
 import { FixtureNotionClient, type NotionApi } from './fixture-client'
 import { NotionImporter, type ImportProgress } from './importer'
-import { clearToken, loadToken, saveToken, type SecretStore } from '../secrets'
+import { clearToken, loadToken, saveToken } from '../secrets'
 import { requireVault } from '../state'
 import { log } from '../log'
 import { mainLang, mainT } from '../i18n'
@@ -14,13 +14,6 @@ import { mainLang, mainT } from '../i18n'
 const DOWNLOAD_TIMEOUT_MS = 30_000
 const MAX_BYTES = 50 * 1024 * 1024
 const EXT: Record<string, string> = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/gif': 'gif', 'image/webp': 'webp', 'image/svg+xml': 'svg', 'application/pdf': 'pdf' }
-
-/** Testlerde Keychain penceresi açılmasın diye basit (güvensiz) saklama; uygulamada safeStorage */
-function store(): SecretStore | undefined {
-  if (!process.env['KERNEL_TEST']) return undefined
-  const xor = (b: Buffer) => Buffer.from([...b].map((x) => x ^ 0x37))
-  return { file: join(app.getPath('userData'), 'notion-token.bin'), encrypt: (s) => xor(Buffer.from(s)), decrypt: (b) => xor(b).toString() }
-}
 
 /** Gerçek istemci ya da (test) sentetik veriden yanıt veren istemci */
 function clientFor(token: string): NotionApi {
@@ -58,7 +51,7 @@ export function registerNotionIpc(broadcast: (channel: string, ...args: unknown[
   const progress = (p: ImportProgress) => broadcast(IPC.notionProgress, p)
 
   const importer = async () => {
-    const token = await loadToken(store())
+    const token = await loadToken()
     if (!token) throw new Error(mainT('notionErr.connectFirst'))
     running = new NotionImporter({ client: clientFor(token), vault: requireVault(), download, onProgress: progress, lang: mainLang() })
     return running
@@ -74,16 +67,16 @@ export function registerNotionIpc(broadcast: (channel: string, ...args: unknown[
   h(IPC.notionConnect, async (token: string) => {
     try {
       const { workspaceName } = await clientFor(token.trim()).me()
-      await saveToken(token.trim(), store())
+      await saveToken(token.trim())
       return { ok: true, workspace: workspaceName }
     } catch (e) {
       return { ok: false, error: e instanceof NotionError ? e.message : mainT('notionErr.connectFailed') }
     }
   })
-  h(IPC.notionConnected, async () => (await loadToken(store())) !== null)
-  h(IPC.notionDisconnect, () => clearToken(store()))
+  h(IPC.notionConnected, async () => (await loadToken()) !== null)
+  h(IPC.notionDisconnect, () => clearToken())
   h(IPC.notionPages, async () => {
-    const token = await loadToken(store())
+    const token = await loadToken()
     if (!token) return []
     const client = clientFor(token)
     const all = []

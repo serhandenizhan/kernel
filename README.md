@@ -15,7 +15,7 @@
 
 ## Özellikler (Faz 2)
 
-- **Notion'dan aktarım:** Sihirbazla bağlan, sayfaları seç; ikon, kapak, görsel, formül, toggle, callout, tablo, alt sayfa ve sayfa bağlantıları (`[[wiki link]]`) gelir. Dosyalar anında indirilir, aktarım yarıda kalırsa kaldığı yerden sürer, sonunda doğrulama raporu oluşur. Token yalnızca macOS Anahtar Zinciri'nde şifreli tutulur.
+- **Notion'dan aktarım:** Sihirbazla bağlan, sayfaları seç; ikon, kapak, görsel, formül, toggle, callout, tablo, alt sayfa ve sayfa bağlantıları (`[[wiki link]]`) gelir. Dosyalar anında indirilir, aktarım yarıda kalırsa kaldığı yerden sürer, sonunda doğrulama raporu oluşur. Token yalnızca Kernel açıkken bellekte tutulur; diske ya da Anahtar Zinciri'ne yazılmaz.
 - **Sürüm geçmişi:** En fazla 5 dakikada bir sürüm; farkları gör, tek tıkla geri dön.
 - **Otomatik yedek:** Kasanın günlük zip yedeği seçtiğin klasöre (son 14 yedek).
 - **Şablonlar:** "Ders notu" gibi şablonlardan sayfa; kendi şablonunu kaydet.

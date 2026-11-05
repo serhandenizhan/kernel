@@ -6,6 +6,7 @@ import { openVault, registerIpc } from './ipc-handlers'
 import { resolveVaultPath } from './config'
 import { Menu } from 'electron'
 import { buildAppMenu } from './menu'
+import { removeLegacyTokenFile } from './secrets'
 import { mainLang, onMainLanguageChange } from './i18n'
 
 // Testlerde uygulama ayarları geçici klasörde tutulur
@@ -13,10 +14,13 @@ if (process.env['KERNEL_USER_DATA']) app.setPath('userData', process.env['KERNEL
 
 installCrashLogging()
 registerVaultScheme()
+// Chromium'un kendi şifreleme anahtarı için Anahtar Zinciri'ne gitmesin (Kernel gizli bilgi saklamaz; parola penceresi açılmaz)
+app.commandLine.appendSwitch('use-mock-keychain')
 
 app.whenReady().then(async () => {
   log.info('Kernel başlatılıyor', app.getVersion())
   handleVaultProtocol()
+  void removeLegacyTokenFile(app.getPath('userData')).catch(() => undefined)
   registerIpc()
   const vaultPath = await resolveVaultPath()
   if (vaultPath) {

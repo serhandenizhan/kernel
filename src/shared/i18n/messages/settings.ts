@@ -37,7 +37,7 @@ export const settings = {
   'settings.backup.last': ['Son yedek: {when}', 'Last backup: {when}', 'Letzte Sicherung: {when}'],
   'settings.backup.justNow': ['az önce', 'just now', 'gerade eben'],
   'settings.backup.never': ['henüz yok', 'none yet', 'noch keine'],
-  'settings.notion.hint': ["Bu Mac'te kayıtlı bir Notion token'ı var.", 'A Notion token is saved on this Mac.', 'Auf diesem Mac ist ein Notion-Token gespeichert.'],
+  'settings.notion.hint': ['Bu oturumda Notion\'a bağlısın (token yalnızca bellekte).', 'You are connected to Notion in this session (token in memory only).', 'Du bist in dieser Sitzung mit Notion verbunden (Token nur im Arbeitsspeicher).'],
   'settings.notion.disconnect': ['Notion bağlantısını sil', 'Remove Notion connection', 'Notion-Verbindung entfernen'],
   'settings.notion.disconnected': ['Notion bağlantısı silindi', 'Notion connection removed', 'Notion-Verbindung entfernt']
 } as const

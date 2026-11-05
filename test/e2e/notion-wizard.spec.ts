@@ -44,6 +44,8 @@ test('Notion sihirbazı: bağlan, sayfa seç, aktar, rapor; token sonunda silini
   await expect(win.getByTestId('notion-workspace')).toContainText('Deneme Çalışma Alanı')
   await expect(win.getByTestId('notion-page')).toHaveCount(2) // yalnızca üst seviye sayfalar listelenir
   await win.getByTestId('notion-select-all').check()
+  // token hiçbir an diske yazılmaz (yalnızca bellekte)
+  expect(existsSync(join(userData, 'notion-token.bin'))).toBe(false)
   await win.getByTestId('notion-start').click()
   await expect(win.getByTestId('notion-report')).toBeVisible({ timeout: 20_000 })
   await expect(win.getByTestId('notion-report')).toContainText('3 sayfa')

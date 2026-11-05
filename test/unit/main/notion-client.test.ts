@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { mkdtempSync, readFileSync, existsSync } from 'node:fs'
+import { mkdtempSync, writeFileSync, existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { NotionClient, NotionError } from '../../../src/main/notion/client'
-import { saveToken, loadToken, clearToken, type SecretStore } from '../../../src/main/secrets'
+import { saveToken, loadToken, clearToken, removeLegacyTokenFile } from '../../../src/main/secrets'
 
 const TOKEN = 'secret_TEST_TOKEN_123'
 
@@ -64,18 +64,17 @@ describe('NotionClient', () => {
   })
 })
 
-describe('secrets', () => {
-  const store = (): SecretStore => {
+describe('secrets (yalnızca bellek)', () => {
+  it('kaydet, oku, sil; hiçbir dosya yazılmaz', async () => {
+    await saveToken(TOKEN)
+    expect(await loadToken()).toBe(TOKEN)
+    await clearToken()
+    expect(await loadToken()).toBeNull()
+  })
+  it('eski sürümün şifreli token dosyası açılmadan silinir', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'kernel-sec-'))
-    return { file: join(dir, 'notion-token.bin'), encrypt: (s) => Buffer.from([...Buffer.from(s)].map((b) => b ^ 0x5a)), decrypt: (b) => Buffer.from([...b].map((x) => x ^ 0x5a)).toString() }
-  }
-  it('kaydet, oku, sil; dosya düz metin token içermez', async () => {
-    const s = store()
-    await saveToken(TOKEN, s)
-    expect(await loadToken(s)).toBe(TOKEN)
-    expect(readFileSync(s.file).toString()).not.toContain(TOKEN)
-    await clearToken(s)
-    expect(existsSync(s.file)).toBe(false)
-    expect(await loadToken(s)).toBeNull()
+    writeFileSync(join(dir, 'notion-token.bin'), Buffer.from([1, 2, 3]))
+    await removeLegacyTokenFile(dir)
+    expect(existsSync(join(dir, 'notion-token.bin'))).toBe(false)
   })
 })

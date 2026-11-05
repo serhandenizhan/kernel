@@ -58,7 +58,7 @@ Faz 2–3'te eklenecekler: `@notionhq/client`, `mermaid`, `pdfjs-dist`, `d3-forc
 │   ├─ search-index: kasa dizini (arka planda)                   │
 │   ├─ pdf-export  : gizli pencere + printToPDF                  │
 │   ├─ notion-import (F2), history (F2), backup (F2)             │
-│   └─ secrets     : Keychain (safeStorage)                      │
+│   └─ secrets     : token yalnızca bellekte (oturum)            │
 │                                                                │
 │  Köprü (preload, contextIsolation) — tipli IPC API             │
 │                                                                │
@@ -282,7 +282,7 @@ Kernel'in temel farkı. Saf fonksiyon: `convertPaste({ text, html }) → { doc, 
 ## 10. Notion aktarımı (Faz 2)
 
 - **Sihirbaz:** Adım adım, görsellerle: (1) `notion.so/my-integrations` → yeni internal integration, (2) token'ı kopyala, (3) Notion'da ana sayfalarda "Connections → Kernel" ile paylaş, (4) token'ı Kernel'e yapıştır → bağlantı testi → bulunan sayfa listesi (seçilebilir) → aktar.
-- **Token:** `safeStorage` ile macOS Keychain'de şifreli. Kasaya, ayarlara, loglara asla yazılmaz. Aktarım sonunda "token'ı sil" seçeneği.
+- **Token:** Yalnızca Kernel açıkken ana süreç belleğinde tutulur; diske, Anahtar Zinciri'ne, kasaya, ayarlara ve loglara asla yazılmaz; aktarım bitince unutulur. (2026-11-05 değişikliği: ad-hoc imzalı uygulamada her yeni sürümde Anahtar Zinciri parola penceresi tekrar açılıyordu. Bedeli: aktarım yarıda kalıp uygulama kapanırsa devam ederken token yeniden girilir.)
 - **Tarama:** `search` ile paylaşılan sayfalar; her sayfa için `blocks.children.list` özyinelemeli, sayfalı. İstek sınırı: saniyede en fazla 3 istek, 429 / 5xx'te üstel geri çekilmeli tekrar.
 - **Eşleme:**
 

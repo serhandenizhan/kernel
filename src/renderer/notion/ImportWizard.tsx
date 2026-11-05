@@ -17,7 +17,6 @@ export function ImportWizard({ resume = false }: { resume?: boolean }) {
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [progress, setProgress] = useState<ImportProgress | null>(null)
   const [report, setReport] = useState<ImportReport | null>(null)
-  const [deleteToken, setDeleteToken] = useState(true)
   const [busy, setBusy] = useState(false)
   const close = () => useStore.getState().setOverlay(null)
   const t = useT()
@@ -73,7 +72,8 @@ export function ImportWizard({ resume = false }: { resume?: boolean }) {
   }
 
   const finish = async () => {
-    if (deleteToken) await kernel.notion.disconnect()
+    // token yalnızca bellekteydi; aktarım bitince hemen unutulur
+    await kernel.notion.disconnect()
     await useStore.getState().refreshTree()
     if (report?.rootPageId) useStore.getState().openPage(report.rootPageId)
     close()
@@ -215,10 +215,6 @@ export function ImportWizard({ resume = false }: { resume?: boolean }) {
                 <p>{t('notion.problems', { failed: report.failedFiles.length, unsupported: report.unsupported.length })}</p>
               )}
             </div>
-            <label className="setting-check">
-              <input type="checkbox" checked={deleteToken} onChange={(e) => setDeleteToken(e.target.checked)} />
-              {t('notion.deleteToken')}
-            </label>
             <div className="modal-actions">
               <button className="btn primary" data-testid="notion-finish" onClick={() => void finish()}>
                 {t('notion.finish')}

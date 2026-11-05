@@ -37,7 +37,12 @@
 - **Sayfa linkleri** hedef sayfanın ikonuyla görünür; tek başına duran link (Notion alt sayfa listeleri) sayfa satırı olur.
 - **Diller:** Türkçe, English, Deutsch (Ayarlar → Dil; yeniden başlatma gerekmez, notlar çevrilmez).
 
-Faz 4 (`[[` seçici, geri bağlantılar, graf, etiketler, sekmeler, flashcard'lar…) için: [`docs/superpowers/specs/2026-11-04-kernel-design.md`](docs/superpowers/specs/2026-11-04-kernel-design.md).
+## Özellikler (Faz 4)
+
+- `[[` sayfa seçici, geri bağlantılar; yeniden adlandırınca linkler kasa genelinde güncellenir
+- `#etiket`ler ve etiket paneli, graf görünümü (genel ve yerel)
+- Sekmeler (⌘ tık, ⌘W) ve yan yana bölünmüş ekran, komut paleti (⌘P), odak modu (⌘⇧F)
+- Flashcard'lar (`Soru :: Cevap` ya da kart olarak işaretlenen toggle), FSRS ile aralıklı tekrar, sınav modu, ana sayfada "Bugünün tekrarı"
 
 ## Kurulum
 

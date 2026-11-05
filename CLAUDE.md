@@ -4,6 +4,7 @@ Kernel: lokal, açık kaynak, Markdown tabanlı macOS not uygulaması (Notion al
 
 - Spec: `docs/superpowers/specs/2026-11-04-kernel-design.md`
 - Faz 1 planı: `docs/superpowers/plans/2026-11-04-kernel-phase-1-core.md`
+- Faz 4 planı: `docs/superpowers/plans/2026-11-05-kernel-phase-4-knowledge.md`
 
 ## KESİN KURAL: Kullanıcı notları asla repoya girmez
 - Kasa varsayılan olarak `~/Documents/Kernel` (repo dışında). Testler yalnızca `os.tmpdir()` altında geçici kasa kullanır (`KERNEL_VAULT` env).
@@ -43,6 +44,12 @@ Kernel: lokal, açık kaynak, Markdown tabanlı macOS not uygulaması (Notion al
 - Ayar şeması 2: `language`, `startView`; eski ayarlar bir kerelik SF Pro'ya göçer. Ayar yazımları sıraya alınır.
 - e2e yardımcısı ayarlara `language: 'tr'` ve `startView: 'last'` yazar; ana sayfa testleri `launch(vault, {}, { home: true })`.
 - Görünüm token'ları `src/renderer/styles/tokens.css` (`--paper-top/bottom`, `--aurora`, `--side-*`); kontrast testi `test/unit/renderer/tokens-contrast.test.ts`.
+
+## Notlar (Faz 4)
+- Bilgi ağı: `src/core/links.ts` (link / etiket çıkarımı, `renameLinks`), `src/core/wiki.ts` (`filterPages`, `linkTargetFor`), `src/core/graph.ts`, `src/core/cards.ts`. Ana süreçte `LinkIndex` (`src/main/links.ts`) geri bağlantı, graf, etiket ve kartları besler; yeniden adlandırma / taşımada `rewriteLinksAfterRelocate` kasadaki linkleri günceller. Olay `links.changed` 500 ms içinde birleştirilir.
+- Flashcard: `SrsStore` (`src/main/srs.ts`, `ts-fsrs`) → `.kernel/srs.json`; bozuk dosya `srs.json.corrupt-<zaman>` olarak yedeklenir; yetim kart verisi 30 gün tutulur. Sınav modu vadeleri değiştirmez.
+- Sekmeler renderer `localStorage`'ında (userData, kasa başına) tutulur. Bölünmüş ekranın ikinci editörü `activeEditor`'a dokunmaz; kaydı `extraFlushes` / `flushAll` ile yazılır. Aynı sayfa iki bölmede açılmaz.
+- Cmd+W menüde `close-tab` komutudur (pencere: Cmd+Shift+W).
 
 ## Mimari
 - `src/main` — Electron ana süreç (pencere, kasa, arama, PDF)

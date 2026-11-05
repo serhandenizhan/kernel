@@ -171,6 +171,13 @@ export function GuidePage() {
           <p>{t('guide.lang.body')}</p>
         </section>
 
+        {(['links', 'tags', 'tabs', 'cards'] as const).map((k) => (
+          <section className="guide-section" key={k} data-testid={`guide-${k}`}>
+            <h2>{t(`guide.${k}.title`)}</h2>
+            <p dangerouslySetInnerHTML={{ __html: t(`guide.${k}.body`) }} />
+          </section>
+        ))}
+
         <section className="guide-section">
           <h2>{t('guide.shortcuts.title')}</h2>
           <input className="picker-search shortcut-search" data-testid="shortcut-search" placeholder={t('guide.shortcuts.search')} value={q} onChange={(e) => setQ(e.target.value)} />

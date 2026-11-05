@@ -30,6 +30,8 @@ button {
 .app {
   display: flex;
   height: 100%;
+  /* hareketsiz aurora zemin (kenar çubuğunun içinden de görünür) */
+  background-image: var(--aurora);
 }
 
 /* --- kenar çubuğu --- */
@@ -40,6 +42,9 @@ button {
   min-width: 260px;
   height: 100%;
   padding: 0 8px 10px;
+  /* yarı saydam: macOS vibrancy ve aurora içinden görünür */
+  background: linear-gradient(180deg, var(--side-top), var(--side-bottom));
+  border-right: 0.5px solid var(--border);
 }
 .sidebar-drag {
   height: 52px;
@@ -206,9 +211,25 @@ button {
   height: 100%;
   overflow-y: auto;
   border-radius: var(--page-radius);
-  background: var(--page);
-  box-shadow: 0 1px 3px rgba(20, 35, 43, 0.08), 0 0 0 0.5px var(--border);
+  /* yazı alanı degradesi pencereye sabit: uzun notta aşağı kaydırınca metnin arkası koyulaşmaz */
+  background: linear-gradient(180deg, color-mix(in srgb, var(--paper-top) var(--paper-alpha), transparent), color-mix(in srgb, var(--paper-bottom) var(--paper-alpha), transparent)) fixed;
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(140%);
+  box-shadow: 0 10px 40px rgba(20, 35, 43, 0.1), 0 0 0 0.5px var(--border);
   user-select: text;
+}
+@media (prefers-reduced-transparency: reduce) {
+  .app {
+    background-image: none;
+  }
+  .sidebar {
+    background: var(--bg);
+  }
+  .page-surface {
+    background: var(--paper-top);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 .empty-state {
   display: flex;

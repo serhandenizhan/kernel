@@ -123,3 +123,11 @@ html.printing #root {
 .code-chunk pre.shiki {
   color: var(--text);
 }
+
+/* aurora, degrade ve cam efektleri baskıya girmez */
+html.printing .app,
+html.printing .page-surface {
+  background: var(--page) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}

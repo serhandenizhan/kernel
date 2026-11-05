@@ -10,7 +10,7 @@
   --accent-text: #0e6e60;
   --text: #14232b;
   --text-2: #455862;
-  --text-3: #7d8e97;
+  --text-3: #56656e;
   --border: rgba(20, 35, 43, 0.1);
   --border-strong: rgba(20, 35, 43, 0.18);
   --hover: rgba(20, 35, 43, 0.06);
@@ -23,9 +23,20 @@
   --glass-edge: rgba(20, 35, 43, 0.12);
   --glass-shadow: 0 12px 40px rgba(20, 35, 43, 0.18), 0 2px 8px rgba(20, 35, 43, 0.08);
   --font-ui: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
-  --font-body: ui-serif, 'New York', Georgia, serif;
+  --font-body: var(--font-ui);
+  --font-serif: ui-serif, 'New York', Georgia, serif;
+  --font-display: -apple-system, 'SF Pro Display', BlinkMacSystemFont, sans-serif;
+  --font-rounded: ui-rounded, 'SF Pro Rounded', -apple-system, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
   --page-width: 720px;
+  /* Faz 3 (spec §18.1): yazı alanı degradesi (opak uçlar; saydamlık --paper-alpha ile) */
+  --paper-top: #ffffff;
+  --paper-bottom: #e5e9ee;
+  --paper-alpha: 95%;
+  /* pencere zemininde hareketsiz "aurora" */
+  --aurora: radial-gradient(900px 620px at 8% 4%, rgba(14, 124, 107, 0.2), transparent 62%), radial-gradient(820px 640px at 92% 18%, rgba(70, 130, 220, 0.18), transparent 60%), radial-gradient(900px 700px at 55% 108%, rgba(150, 110, 220, 0.17), transparent 62%);
+  --side-top: rgba(255, 255, 255, 0.34);
+  --side-bottom: rgba(255, 255, 255, 0.16);
   color-scheme: light;
 }
 
@@ -38,7 +49,7 @@
   --accent-text: #5fd3bd;
   --text: #e6edf1;
   --text-2: #a7b6be;
-  --text-3: #6f8089;
+  --text-3: #96a4ad;
   --border: rgba(230, 237, 241, 0.1);
   --border-strong: rgba(230, 237, 241, 0.18);
   --hover: rgba(230, 237, 241, 0.06);
@@ -50,11 +61,16 @@
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-edge: rgba(0, 0, 0, 0.4);
   --glass-shadow: 0 12px 40px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.3);
+  --paper-top: #14191f;
+  --paper-bottom: #2a313a;
+  --aurora: radial-gradient(900px 620px at 8% 4%, rgba(63, 191, 168, 0.22), transparent 62%), radial-gradient(820px 640px at 92% 18%, rgba(84, 140, 232, 0.18), transparent 60%), radial-gradient(900px 700px at 55% 108%, rgba(158, 118, 230, 0.17), transparent 62%);
+  --side-top: rgba(22, 30, 38, 0.4);
+  --side-bottom: rgba(18, 24, 31, 0.28);
   color-scheme: dark;
 }
 
-:root[data-body-font='sans'] {
-  --font-body: var(--font-ui);
+:root[data-body-font='serif'] {
+  --font-body: var(--font-serif);
 }
 :root[data-page-width='narrow'] {
   --page-width: 600px;

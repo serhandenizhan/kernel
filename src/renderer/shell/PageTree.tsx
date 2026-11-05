@@ -53,6 +53,7 @@ export function PageTree({ onRequestIcon, onRequestExport }: { onRequestIcon(id:
     const s = useStore.getState()
     return [
       { label: tNow('tree.newChild'), onSelect: () => void s.createPage(node.id) },
+      { label: s.pins.includes(node.id) ? tNow('tree.unpin') : tNow('tree.pin'), onSelect: () => void s.togglePin(node.id) },
       { label: tNow('tree.rename'), onSelect: () => s.setRenaming(node.id) },
       { label: tNow('tree.changeIcon'), onSelect: () => onRequestIcon(node.id) },
       { label: tNow('tree.reveal'), onSelect: () => void kernel.vault.reveal(node.id) },

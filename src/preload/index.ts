@@ -43,6 +43,7 @@ const api: KernelApi = {
     pendingResume: inv(IPC.notionPending),
     onProgress: (cb: (p: never) => void) => on(IPC.notionProgress, cb)
   } as KernelApi['notion'],
+  pins: { list: inv(IPC.pinsList), set: inv(IPC.pinsSet) } as KernelApi['pins'],
   templates: { list: inv(IPC.templatesList), create: inv(IPC.templatesCreate), saveAs: inv(IPC.templatesSaveAs) } as KernelApi['templates'],
   backup: { now: inv(IPC.backupNow), status: inv(IPC.backupStatus), chooseFolder: inv(IPC.backupChooseFolder) } as KernelApi['backup'],
   settings: { get: inv(IPC.settingsGet), set: inv(IPC.settingsSet) } as KernelApi['settings'],

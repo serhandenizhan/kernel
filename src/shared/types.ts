@@ -152,6 +152,11 @@ export interface KernelApi {
     pendingResume(): Promise<boolean>
     onProgress(cb: (p: ImportProgress) => void): () => void
   }
+  /** sabitlenen sayfalar (.kernel/pins.json) */
+  pins: {
+    list(): Promise<string[]>
+    set(ids: string[]): Promise<void>
+  }
   templates: {
     list(): Promise<string[]>
     create(parentId: string | null, name: string): Promise<TreeNode>

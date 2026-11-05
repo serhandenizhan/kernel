@@ -2,7 +2,7 @@ import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
 import { mkdir } from 'node:fs/promises'
 import { extname } from 'node:path'
 import { IPC } from '@shared/ipc'
-import type { PageMeta, PdfOptions, Settings } from '@shared/types'
+import type { PageMeta, PdfOptions, Settings, TreeNode } from '@shared/types'
 import { Vault } from './vault/vault'
 import { watchVault } from './vault/watcher'
 import { readSettings, writeSettings } from './vault/settings'
@@ -21,6 +21,7 @@ import { exportHtml, exportMarkdownZip } from './export'
 import { registerNotionIpc } from './notion/service'
 import { splitFrontmatter } from './vault/frontmatter'
 import { log } from './log'
+import { PinStore } from './pins'
 
 function broadcast(channel: string, ...args: unknown[]): void {
   for (const w of BrowserWindow.getAllWindows()) w.webContents.send(channel, ...args)
@@ -215,6 +216,15 @@ export function registerIpc(): void {
     await vault.write(id, { markdown: body, meta: current.meta })
     void search?.update(vault, id)
   })
+  // sabitlenenler: ağaçta olmayan (silinmiş) sayfalar listeden düşer
+  h(IPC.pinsList, async () => {
+    const vault = requireVault()
+    const ids = new Set<string>()
+    const walk = (ns: TreeNode[]) => ns.forEach((n) => (ids.add(n.id), walk(n.children)))
+    walk(await vault.tree())
+    return new PinStore(vault.root).list(ids)
+  })
+  h(IPC.pinsSet, (ids: string[]) => new PinStore(requireVault().root).set(ids))
   h(IPC.templatesList, async () => {
     const t = new TemplateStore(requireVault().root, undefined, mainLang())
     await t.ensureDefault()

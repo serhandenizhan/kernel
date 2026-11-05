@@ -7,6 +7,7 @@ import { useStore } from '../state/store'
 import { tNow } from '../lib/i18n'
 import { IconPicker } from './IconPicker'
 import { CoverPicker } from './CoverPicker'
+import { Icon } from '../assets/icons'
 
 const isImagePath = (icon: string) => icon.startsWith('attachments/')
 
@@ -16,6 +17,7 @@ export function PageIcon({ icon, size }: { icon: string; size: number }) {
 
 // Sayfa başlığının üstü: kapak ve ikon (spec §5)
 export function PageHeader({ initialMeta }: { initialMeta: PageMeta }) {
+  const pinned = useStore((s) => s.pins.includes(initialMeta.id))
   const [meta, setMeta] = useState<PageMeta>(initialMeta)
   const [iconPicker, setIconPicker] = useState<DOMRect | null>(null)
   const [coverPicker, setCoverPicker] = useState<DOMRect | null>(null)
@@ -116,6 +118,14 @@ export function PageHeader({ initialMeta }: { initialMeta: PageMeta }) {
               ▭ {tNow('header.addCover')}
             </button>
           )}
+          <button
+            className={`ghost-btn pin-btn${pinned ? ' on' : ''}`}
+            data-testid="pin-toggle"
+            aria-pressed={pinned}
+            onClick={() => void useStore.getState().togglePin(initialMeta.id)}
+          >
+            <Icon name="pin" size={13} /> {pinned ? tNow('header.unpin') : tNow('header.pin')}
+          </button>
         </div>
       </div>
       {iconPicker && (

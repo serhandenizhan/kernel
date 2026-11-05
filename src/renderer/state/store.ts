@@ -30,6 +30,10 @@ interface State {
   openPage(id: string | null): void
   /** ana sayfayı açar (görünüm Task 12'de; şimdilik etkisiz) */
   openHome(): void
+  /** sabitlenen sayfa kimlikleri (kullanıcı sırası) */
+  pins: string[]
+  togglePin(id: string): Promise<void>
+  setPins(ids: string[]): Promise<void>
   createPage(parentId: string | null): Promise<void>
   setSettings(patch: Partial<Settings>): Promise<void>
   toggleSidebar(): void
@@ -74,14 +78,14 @@ export const useStore = create<State>((set, get) => ({
       set({ ready: true, vaultPath: null })
       return
     }
-    const [settings, tree] = await Promise.all([kernel.settings.get(), kernel.pages.tree()])
-    set({ ready: true, vaultPath: info.path, settings, tree, currentId: tree[0]?.id ?? null })
+    const [settings, tree, pins] = await Promise.all([kernel.settings.get(), kernel.pages.tree(), kernel.pins.list()])
+    set({ ready: true, vaultPath: info.path, settings, tree, pins, currentId: tree[0]?.id ?? null })
   },
 
   async refreshTree() {
-    const tree = await kernel.pages.tree()
+    const [tree, pins] = await Promise.all([kernel.pages.tree(), kernel.pins.list()])
     const { currentId } = get()
-    set({ tree, currentId: currentId && findNode(tree, currentId) ? currentId : (tree[0]?.id ?? null) })
+    set({ tree, pins, currentId: currentId && findNode(tree, currentId) ? currentId : (tree[0]?.id ?? null) })
   },
 
   openPage(id) {
@@ -108,6 +112,15 @@ export const useStore = create<State>((set, get) => ({
   setRenaming: (id) => set({ renamingId: id }),
   setOverlay: (overlay) => set({ overlay }),
   openHome: () => undefined,
+  pins: [],
+  async togglePin(id) {
+    const pins = get().pins
+    await get().setPins(pins.includes(id) ? pins.filter((p) => p !== id) : [...pins, id])
+  },
+  async setPins(ids) {
+    set({ pins: ids })
+    await kernel.pins.set(ids)
+  },
 
   toast(message, kind = 'info') {
     const id = ++toastSeq

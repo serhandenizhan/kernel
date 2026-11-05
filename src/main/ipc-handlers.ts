@@ -10,6 +10,7 @@ import { mainLang, mainT, setMainLanguage } from './i18n'
 import { defaultVaultPath, saveVaultPath } from './config'
 import { requireVault, state } from './state'
 import { SearchIndex } from './search'
+import { LinkIndex, rewriteLinksAfterRelocate } from './links'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { writeAtomic } from './vault/atomic'
@@ -35,6 +36,16 @@ function notifyHome(): void {
   }, 500)
 }
 
+// link dizini değişince geri bağlantı paneli / graf / etiketler tek olayla yenilenir
+let linksTimer: ReturnType<typeof setTimeout> | null = null
+function notifyLinks(): void {
+  if (linksTimer) clearTimeout(linksTimer)
+  linksTimer = setTimeout(() => {
+    linksTimer = null
+    broadcast(IPC.eventLinksChanged)
+  }, 500)
+}
+
 function broadcast(channel: string, ...args: unknown[]): void {
   for (const w of BrowserWindow.getAllWindows()) w.webContents.send(channel, ...args)
 }
@@ -47,6 +58,8 @@ export async function openVault(path: string): Promise<void> {
   state.vault = vault
   search = new SearchIndex()
   void search.build(vault)
+  links = new LinkIndex()
+  void links.build(vault).then(notifyLinks)
   const interval = process.env['KERNEL_TEST_HISTORY_INTERVAL_MS']
   history = new HistoryStore(path, undefined, interval !== undefined ? Number(interval) : undefined)
   void history.prune()
@@ -60,9 +73,11 @@ export async function openVault(path: string): Promise<void> {
     if (e.type === 'tree-changed') {
       broadcast(IPC.eventTreeChanged)
       void search?.build(vault)
+      void links?.build(vault).then(notifyLinks)
     } else {
       broadcast(IPC.eventPageChanged, e.id)
       void search?.update(vault, e.id)
+      void links?.update(vault, e.id).then(notifyLinks)
     }
     notifyHome()
   })
@@ -75,6 +90,18 @@ export async function openVault(path: string): Promise<void> {
 }
 
 let search: SearchIndex | null = null
+let links: LinkIndex | null = null
+
+/** Yeniden adlandırma / taşıma sonrası: kasadaki linkleri güncelle, dizinleri yenile, açık sayfalara haber ver */
+async function relinkAfter(vault: Vault, id: string, before: TreeNode[]): Promise<void> {
+  const changed = await rewriteLinksAfterRelocate(vault, id, before).catch((e) => {
+    log.warn('Linkler güncellenemedi', e)
+    return [] as string[]
+  })
+  for (const c of changed) broadcast(IPC.eventPageChanged, c)
+  void search?.build(vault)
+  void links?.build(vault).then(notifyLinks)
+}
 let history: HistoryStore | null = null
 let activity: ActivityStore | null = null
 let backupSettings: Settings | null = null
@@ -167,6 +194,7 @@ export function registerIpc(): void {
     }
     const res = await vault.write(id, input)
     void search?.update(vault, id)
+    void links?.update(vault, id).then(notifyLinks)
     // ana sayfa ısı haritası: bugün düzenlenen sayfalar
     void activity?.record(id).catch((e) => log.warn('Etkinlik kaydedilemedi', e))
     notifyHome()
@@ -178,23 +206,33 @@ export function registerIpc(): void {
     return node
   })
   h(IPC.pagesRename, async (id: string, title: string) => {
-    const node = await requireVault().rename(id, title)
-    void search?.build(requireVault())
+    const vault = requireVault()
+    const before = await vault.tree()
+    const node = await vault.rename(id, title)
+    await relinkAfter(vault, id, before)
     notifyHome()
     return node
   })
   h(IPC.pagesMove, async (id: string, parentId: string | null, index: number) => {
-    await requireVault().move(id, parentId, index)
-    void search?.build(requireVault())
+    const vault = requireVault()
+    const before = await vault.tree()
+    await vault.move(id, parentId, index)
+    await relinkAfter(vault, id, before)
     notifyHome()
   })
   h(IPC.pagesTrash, async (id: string) => {
     await requireVault().trash(id, (p) => shell.trashItem(p))
     search?.remove(id)
+    void links?.build(requireVault()).then(notifyLinks)
     recentIds = recentIds.filter((x) => x !== id)
     await new PinStore(requireVault().root).remove(id).catch((e) => log.warn('Sabitleme kaldırılamadı', e))
     notifyHome()
   })
+
+  h(IPC.linksBacklinks, (id: string) => links?.backlinks(id) ?? [])
+  h(IPC.linksGraph, () => links?.graph() ?? { nodes: [], links: [] })
+  h(IPC.tagsList, () => links?.tags() ?? [])
+  h(IPC.tagsPages, (tag: string) => links?.pagesWithTag(tag) ?? [])
 
   h(IPC.attachmentsSave, (bytes: Uint8Array, ext: string, nameHint?: string) => requireVault().saveAttachment(bytes, ext, nameHint))
   h(IPC.attachmentsFetchRemote, async (url: string) => {

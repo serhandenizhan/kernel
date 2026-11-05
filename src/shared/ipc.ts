@@ -47,5 +47,10 @@ export const IPC = {
   appLocale: 'app:locale',
   appFlushDone: 'app:flush-done',
   eventTreeChanged: 'event:tree-changed',
-  eventPageChanged: 'event:page-changed'
+  eventPageChanged: 'event:page-changed',
+  linksBacklinks: 'links:backlinks',
+  linksGraph: 'links:graph',
+  tagsList: 'tags:list',
+  tagsPages: 'tags:pages',
+  eventLinksChanged: 'event:links-changed'
 } as const

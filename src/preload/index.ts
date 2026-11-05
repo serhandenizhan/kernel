@@ -45,6 +45,8 @@ const api: KernelApi = {
   } as KernelApi['notion'],
   pins: { list: inv(IPC.pinsList), set: inv(IPC.pinsSet) } as KernelApi['pins'],
   home: { data: inv(IPC.homeData) } as KernelApi['home'],
+  links: { backlinks: inv(IPC.linksBacklinks), graph: inv(IPC.linksGraph) } as KernelApi['links'],
+  tags: { list: inv(IPC.tagsList), pages: inv(IPC.tagsPages) } as KernelApi['tags'],
   templates: { list: inv(IPC.templatesList), create: inv(IPC.templatesCreate), saveAs: inv(IPC.templatesSaveAs) } as KernelApi['templates'],
   backup: { now: inv(IPC.backupNow), status: inv(IPC.backupStatus), chooseFolder: inv(IPC.backupChooseFolder) } as KernelApi['backup'],
   settings: { get: inv(IPC.settingsGet), set: inv(IPC.settingsSet) } as KernelApi['settings'],
@@ -66,7 +68,8 @@ const api: KernelApi = {
     onPageChangedExternally: (cb) => on(IPC.eventPageChanged, cb),
     onToast: (cb) => on(IPC.eventToast, cb),
     onMenuCommand: (cb) => on(IPC.eventMenuCommand, cb),
-    onHomeChanged: (cb) => on(IPC.eventHomeChanged, cb)
+    onHomeChanged: (cb) => on(IPC.eventHomeChanged, cb),
+    onLinksChanged: (cb) => on(IPC.eventLinksChanged, cb)
   }
 }
 

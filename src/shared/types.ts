@@ -196,6 +196,15 @@ export interface KernelApi {
     pendingResume(): Promise<boolean>
     onProgress(cb: (p: ImportProgress) => void): () => void
   }
+  /** [[link]] dizini (spec §12) */
+  links: {
+    backlinks(id: string): Promise<Backlink[]>
+    graph(): Promise<GraphData>
+  }
+  tags: {
+    list(): Promise<TagCount[]>
+    pages(tag: string): Promise<{ id: string; title: string }[]>
+  }
   /** ana sayfa verisi (spec §18.2) */
   home: { data(): Promise<HomeData> }
   /** sabitlenen sayfalar (.kernel/pins.json) */
@@ -230,7 +239,26 @@ export interface KernelApi {
     onToast(cb: (message: string, kind: 'info' | 'error') => void): () => void
     /** ana sayfa verisi değişti (500 ms içinde birleştirilmiş) */
     onHomeChanged(cb: () => void): () => void
+    /** link / etiket dizini değişti (500 ms içinde birleştirilmiş) */
+    onLinksChanged(cb: () => void): () => void
     /** uygulama menüsünden gelen komut */
     onMenuCommand(cb: (cmd: 'settings' | 'toggle-sidebar' | 'toggle-toc') => void): () => void
   }
+}
+
+/** Bir sayfaya bağlanan sayfa ve linkin geçtiği cümle */
+export interface Backlink {
+  id: string
+  title: string
+  context: string
+}
+
+export interface GraphData {
+  nodes: { id: string; title: string; folder: string; tags: string[] }[]
+  links: { source: string; target: string }[]
+}
+
+export interface TagCount {
+  tag: string
+  count: number
 }

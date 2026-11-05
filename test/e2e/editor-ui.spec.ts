@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { launch } from './helpers/app'
+import { launch, SELECT_WORD_LEFT } from './helpers/app'
 
 const bodyOf = (vault: string, file: string) => readFileSync(join(vault, file), 'utf8').replace(/^---[\s\S]*?---\n/, '')
 
@@ -34,7 +34,7 @@ test('metin seçince biçim araç çubuğu çıkar ve kalın uygular', async () 
   const { app, win, vault } = await launch()
   await newPage(win, vault, 'Bubble')
   await win.keyboard.type('önemli kelime')
-  await win.keyboard.press('Shift+Alt+ArrowLeft')
+  await win.keyboard.press(SELECT_WORD_LEFT)
   await expect(win.getByTestId('bubble-toolbar')).toBeVisible()
   await win.getByTestId('bubble-bold').click()
   await expect.poll(() => bodyOf(vault, 'Bubble.md'), { timeout: 5000 }).toBe('önemli **kelime**\n')

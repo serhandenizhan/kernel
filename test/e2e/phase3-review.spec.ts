@@ -26,6 +26,8 @@ test('"Son açık sayfa" açılışta gerçekten son açılan sayfayı açar', a
 })
 
 test('uygulama menüsünde pencere kapatma (⌘W) ve standart macOS öğeleri var', async () => {
+  // macOS menü rolleri yalnızca Mac'te (Windows menüsü menu-template birim testinde)
+  test.skip(process.platform !== 'darwin', 'yalnızca macOS menüsü')
   const { app } = await launch()
   const roles = await app.evaluate(({ Menu }) => {
     const out: string[] = []

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { launch, tmpVault } from './helpers/app'
+import { launch, tmpVault, keyText } from './helpers/app'
 
 test('Cmd+P komut paletini açar; aranan komut kısayoluyla görünür ve çalışır', async () => {
   const vault = tmpVault()
@@ -13,7 +13,7 @@ test('Cmd+P komut paletini açar; aranan komut kısayoluyla görünür ve çalı
   await win.getByTestId('command-input').fill('odak')
   const row = win.getByTestId('command-row').first()
   await expect(row).toContainText('Odak modu')
-  await expect(row).toContainText('⌘⇧F')
+  await expect(row).toContainText(keyText('⌘⇧F'))
   await win.keyboard.press('Enter')
   await expect(win.getByTestId('command-palette')).toBeHidden()
   await expect(win.locator('.app')).toHaveClass(/focus-mode/)

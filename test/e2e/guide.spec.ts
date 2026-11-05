@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
-import { launch, tmpVault } from './helpers/app'
+import { launch, tmpVault, keyText } from './helpers/app'
 
 test('ilk açılışta tur görünür, Atla sonrası yeniden başlatmada da görünmez', async () => {
   const vault = tmpVault()
@@ -27,7 +27,7 @@ test('Cmd+/ rehberi açar, kısayol tablosu aranır, canlı yapıştırma örne�
   await win.getByTestId('shortcut-search').fill('pdf')
   const rows = win.getByTestId('shortcut-row')
   await expect(rows).toHaveCount(1)
-  await expect(rows.first()).toContainText('⌘E')
+  await expect(rows.first()).toContainText(keyText('⌘E'))
   await win.keyboard.press('Escape')
   await expect(win.getByTestId('guide')).toHaveCount(0)
   await app.close()

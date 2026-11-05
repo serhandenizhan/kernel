@@ -2,6 +2,7 @@ import { _electron as electron, type ElectronApplication, type Page } from '@pla
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { keyLabel } from '../../../src/core/keys'
 
 // Testler kullanıcının kasasına asla dokunmaz: her test geçici bir kasa kullanır
 export function tmpVault(): string {
@@ -38,3 +39,10 @@ export async function launch(vault = tmpVault(), extraEnv: Record<string, string
   await win.waitForLoadState('domcontentloaded')
   return { app, win, vault }
 }
+
+// Platforma göre tuş ve etiketler (testler macOS ve Windows'ta çalışır)
+export const isMacOS = process.platform === 'darwin'
+/** Arayüzde gösterilen kısayol etiketi: Mac'te ⌘⇧F, Windows'ta Ctrl+Shift+F */
+export const keyText = (label: string): string => keyLabel(label, isMacOS)
+/** İmlecin solundaki kelimeyi seçen tuş */
+export const SELECT_WORD_LEFT = isMacOS ? 'Shift+Alt+ArrowLeft' : 'Shift+Control+ArrowLeft'

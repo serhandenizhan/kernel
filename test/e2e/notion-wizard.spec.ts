@@ -26,9 +26,17 @@ function writeFixture(): string {
   return file
 }
 
+// Windows'ta çalışan uygulamanın kilitli tuttuğu dosyalar (Chromium veritabanları) okunamaz: atlanır
+const readSafe = (p: string): string => {
+  try {
+    return readFileSync(p, 'utf8')
+  } catch {
+    return ''
+  }
+}
 const allText = (dir: string): string =>
   readdirSync(dir, { withFileTypes: true })
-    .map((e) => (e.isDirectory() ? allText(join(dir, e.name)) : statSync(join(dir, e.name)).size < 2_000_000 ? readFileSync(join(dir, e.name), 'utf8') : ''))
+    .map((e) => (e.isDirectory() ? allText(join(dir, e.name)) : statSync(join(dir, e.name)).size < 2_000_000 ? readSafe(join(dir, e.name)) : ''))
     .join('\n')
 
 test('Notion sihirbazı: bağlan, sayfa seç, aktar, rapor; token sonunda silinir ve hiçbir dosyaya yazılmaz', async () => {

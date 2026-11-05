@@ -51,7 +51,7 @@ test('açık sekmedeki sayfa çöpe atılınca o sekme kapanır, komşu sekme a�
   await win.getByTestId('tab').nth(1).click()
   await expect(win.getByTestId('page-title')).toHaveValue('Beta')
   await win.getByTestId('tree-row').filter({ hasText: 'Beta' }).click({ button: 'right' })
-  await win.getByRole('menuitem', { name: 'Çöp kutusuna taşı' }).click()
+  await win.getByRole('menuitem', { name: /Çöp kutusuna taşı|Geri Dönüşüm Kutusu'na taşı/ }).click()
   await expect(win.getByTestId('tab')).toHaveText([/Alfa/, /Gama/])
   await expect(win.getByTestId('page-title')).not.toHaveValue('Beta')
   const title = await win.getByTestId('page-title').inputValue()

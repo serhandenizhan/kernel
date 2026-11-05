@@ -15,7 +15,10 @@ function feed(version: string): string {
       tag_name: `v${version}`,
       html_url: `${base}/tag/v${version}`,
       body: 'Yeni özellikler',
-      assets: [{ name: `Kernel-${version}-arm64.dmg`, browser_download_url: `${base}/download/v${version}/Kernel-${version}-arm64.dmg` }]
+      assets: [
+        { name: `Kernel-${version}-arm64.dmg`, browser_download_url: `${base}/download/v${version}/Kernel-${version}-arm64.dmg` },
+        { name: `Kernel-Setup-${version}.exe`, browser_download_url: `${base}/download/v${version}/Kernel-Setup-${version}.exe` }
+      ]
     })
   )
   return file
@@ -35,7 +38,7 @@ test('yeni sürüm varsa açılışta sorar; İndir dosyayı tarayıcıda açar'
   await win.getByTestId('update-download').click()
   await expect(prompt).toBeHidden()
   const opened = await app.evaluate(() => (globalThis as unknown as { __opened?: string }).__opened)
-  expect(opened).toMatch(/Kernel-99\.0\.0-arm64\.dmg$/)
+  expect(opened).toMatch(process.platform === 'win32' ? /Kernel-Setup-99\.0\.0\.exe$/ : /Kernel-99\.0\.0-arm64\.dmg$/)
   await app.close()
 })
 

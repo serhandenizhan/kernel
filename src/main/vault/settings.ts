@@ -21,13 +21,18 @@ function sanitize(s: Settings): Settings {
   return s
 }
 
+function sanitizeUpdates(u: Settings['updates']): Settings['updates'] {
+  return { check: u.check !== false, skipped: typeof u.skipped === 'string' ? u.skipped : null }
+}
+
 function merge(base: Settings, patch: Partial<Settings>): Settings {
   return sanitize({
     ...base,
     ...patch,
     paste: { ...base.paste, ...(patch.paste ?? {}) },
     tips: { ...base.tips, ...(patch.tips ?? {}) },
-    backup: { ...base.backup, ...(patch.backup ?? {}) }
+    backup: { ...base.backup, ...(patch.backup ?? {}) },
+    updates: sanitizeUpdates({ ...base.updates, ...(patch.updates ?? {}) })
   })
 }
 

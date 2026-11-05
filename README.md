@@ -39,6 +39,7 @@ Kernel, ders notları ve kişisel bilgi için yapılmış bir not uygulaması. H
 - **Dışa aktarma** — PDF, Markdown ve HTML; gömülü PDF'ler.
 - **Güvence** — otomatik kayıt, sürüm geçmişi, otomatik yedek.
 - **Türkçe, İngilizce ve Almanca** arayüz; açık ve koyu tema.
+- **Güncelleme bildirimi** — yeni sürüm çıkınca açılışta sorar.
 
 <p align="center">
   <img src="docs/screenshots/editor.png" width="49%" alt="Editör">
@@ -62,7 +63,7 @@ npm run dist
 
 ### Notların nerede?
 
-İlk açılışta bir **kasa** klasörü seçersin (önerilen: `~/Documents/Kernel`). Her sayfa bir `.md` dosyasıdır; alt sayfalar aynı adlı klasörde, görseller `attachments/` içindedir. Kernel'in ayarları kasadaki gizli `.kernel/` klasöründedir. Hiçbir veri uzak bir sunucuya gönderilmez.
+İlk açılışta bir **kasa** klasörü seçersin (önerilen: `~/Documents/Kernel`). Her sayfa bir `.md` dosyasıdır; alt sayfalar aynı adlı klasörde, görseller `attachments/` içindedir. Kernel'in ayarları kasadaki gizli `.kernel/` klasöründedir. Notların hiçbir uzak sunucuya gönderilmez. Kernel açılışta yalnızca GitHub'daki son sürüm numarasını okur ve yeni sürüm varsa indirmek isteyip istemediğini sorar; bunu Ayarlar'dan kapatabilirsin.
 
 ---
 
@@ -82,6 +83,7 @@ Kernel is a note app built for lecture notes and personal knowledge. Every page 
 - **Export** — PDF, Markdown and HTML; embedded PDFs.
 - **Peace of mind** — autosave, version history, automatic backups.
 - **Turkish, English and German** interface; light and dark themes.
+- **Update notice** — asks on launch when a new version is out.
 
 ### Install
 
@@ -91,7 +93,7 @@ Kernel is a note app built for lecture notes and personal knowledge. Every page 
 
 ### Where are my notes?
 
-On first launch you pick a **vault** folder (suggested: `~/Documents/Kernel`). Each page is a `.md` file; subpages live in a folder with the same name, images in `attachments/`. Kernel's own settings are in the hidden `.kernel/` folder. Nothing is sent to a remote server.
+On first launch you pick a **vault** folder (suggested: `~/Documents/Kernel`). Each page is a `.md` file; subpages live in a folder with the same name, images in `attachments/`. Kernel's own settings are in the hidden `.kernel/` folder. Your notes are never sent to a remote server. On launch Kernel only reads the latest version number on GitHub and asks whether you want to download a new version; you can turn this off in Settings.
 
 ---
 

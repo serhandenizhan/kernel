@@ -1147,3 +1147,41 @@ button {
 .split-drop.over {
   background: color-mix(in srgb, var(--accent-soft) 90%, transparent);
 }
+
+/* --- güncelleme bildirimi (sağ üst köşe, çalışmayı bölmez) --- */
+.update-prompt {
+  position: fixed;
+  top: 46px;
+  right: 18px;
+  z-index: 1750;
+  width: 320px;
+  padding: 14px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+.update-prompt p {
+  margin: 0;
+  color: var(--text-2);
+}
+.update-prompt summary {
+  cursor: pointer;
+  font-size: 12px;
+}
+.update-notes {
+  max-height: 140px;
+  overflow: auto;
+  margin: 6px 0 0;
+  white-space: pre-wrap;
+  font: inherit;
+  font-size: 12px;
+}
+.update-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+.update-actions .spacer {
+  flex: 1;
+}

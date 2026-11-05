@@ -27,6 +27,8 @@ import { log } from './log'
 import { PinStore } from './pins'
 import { ActivityStore } from './activity'
 import { computeHome, localDay } from '@core/home'
+import { RELEASES_PREFIX, shouldOffer } from '@core/update'
+import { fetchLatestRelease } from './updates'
 
 // ana sayfa canlı yenilemesi: değişiklikler 500 ms içinde tek olayda birleştirilir
 let homeTimer: ReturnType<typeof setTimeout> | null = null
@@ -391,4 +393,14 @@ export function registerIpc(): void {
     return backupSettings
   })
   h(IPC.appLocale, () => app.getLocale())
+  h(IPC.updatesCheck, async () => {
+    const { updates } = await readSettings(requireVault().root)
+    if (!updates.check) return null
+    const info = await fetchLatestRelease()
+    return info && shouldOffer(info, app.getVersion(), updates.skipped) ? { ...info, current: app.getVersion() } : null
+  })
+  h(IPC.updatesOpen, async (url: string) => {
+    // yalnızca bu deponun sürüm adresleri açılır
+    if (typeof url === 'string' && url.startsWith(RELEASES_PREFIX)) await shell.openExternal(url)
+  })
 }

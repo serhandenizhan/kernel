@@ -132,6 +132,8 @@ export interface Settings {
   language: Lang | 'system'
   /** açılışta ana sayfa ya da son açık sayfa */
   startView: 'home' | 'last'
+  /** açılışta GitHub'daki son sürümü denetle; skipped: "Bu sürümü atla" denen sürüm */
+  updates: { check: boolean; skipped: string | null }
   /** ayar dosyası şema sürümü (göçler için) */
   schema: number
 }
@@ -146,7 +148,18 @@ export const DEFAULT_SETTINGS: Settings = {
   backup: { enabled: false, folder: null, keep: 14 },
   language: 'system',
   startView: 'home',
+  updates: { check: true, skipped: null },
   schema: 2
+}
+
+/** Yeni sürüm bilgisi (GitHub releases) */
+export interface UpdateOffer {
+  version: string
+  url: string
+  page: string
+  notes: string
+  /** çalışan sürüm */
+  current: string
 }
 
 export interface KernelApi {
@@ -235,6 +248,12 @@ export interface KernelApi {
     set(patch: Partial<Settings>): Promise<Settings>
   }
   /** cb: kaydedilmemiş değişiklik kalmadıysa true */
+  updates: {
+    /** yeni ve atlanmamış sürüm varsa bilgisi, yoksa null */
+    check(): Promise<UpdateOffer | null>
+    /** indirme adresini varsayılan tarayıcıda açar (yalnızca bu deponun sürüm adresleri) */
+    open(url: string): Promise<void>
+  }
   app: {
     onFlushRequest(cb: () => Promise<boolean>): void
     /** macOS sistem dili (örn. "tr-TR") */

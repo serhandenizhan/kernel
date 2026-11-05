@@ -113,6 +113,20 @@ export function SettingsDialog() {
           </button>
         </section>
 
+        <section>
+          <h4>{t('settings.updates')}</h4>
+          <label className="setting-check">
+            <input
+              type="checkbox"
+              data-testid="setting-update-check"
+              checked={settings.updates.check}
+              onChange={(e) => set({ updates: { ...settings.updates, check: e.target.checked } })}
+            />
+            {t('settings.updates.check')}
+          </label>
+          <p className="setting-hint">{t('settings.updates.hint')}</p>
+        </section>
+
         <BackupSection />
 
         <NotionSection />

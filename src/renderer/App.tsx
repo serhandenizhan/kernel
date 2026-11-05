@@ -4,6 +4,7 @@ import { kernel } from './lib/kernel'
 import { Sidebar } from './shell/Sidebar'
 import { VaultPicker } from './shell/VaultPicker'
 import { Toasts } from './shell/Toasts'
+import { UpdatePrompt } from './shell/UpdatePrompt'
 import { PageView } from './shell/PageView'
 import { SearchPalette } from './shell/SearchPalette'
 import { CommandPalette } from './shell/CommandPalette'
@@ -198,6 +199,7 @@ export function App() {
       )}
       {!tourDone && <Tour />}
       <TipBubble />
+      <UpdatePrompt />
       <Toasts />
     </div>
   )

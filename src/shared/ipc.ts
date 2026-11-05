@@ -56,5 +56,7 @@ export const IPC = {
   studyDecks: 'study:decks',
   studySession: 'study:session',
   studyReview: 'study:review',
-  studyDueCount: 'study:due-count'
+  studyDueCount: 'study:due-count',
+  updatesCheck: 'updates:check',
+  updatesOpen: 'updates:open'
 } as const

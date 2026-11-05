@@ -43,3 +43,13 @@ describe('ayar doğrulama', () => {
     expect(await writeSettings(root, { language: 'xx' as never })).toMatchObject({ language: 'system' })
   })
 })
+
+describe('güncelleme ayarı', () => {
+  it('varsayılan açık; elle bozulmuş değer güvenli değere döner, kısmi yazım diğer alanı korur', async () => {
+    expect((await readSettings(root)).updates).toEqual({ check: true, skipped: null })
+    writeFileSync(join(root, '.kernel', 'settings.json'), JSON.stringify({ schema: 2, updates: { check: 'evet', skipped: 5 } }))
+    expect((await readSettings(root)).updates).toEqual({ check: true, skipped: null })
+    await writeSettings(root, { updates: { check: false, skipped: null } })
+    expect((await writeSettings(root, { updates: { skipped: '0.5.0' } as never })).updates).toEqual({ check: false, skipped: '0.5.0' })
+  })
+})

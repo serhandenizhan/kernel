@@ -19,10 +19,10 @@ function findNode(nodes: TreeNode[], id: string): TreeNode | null {
 }
 
 /** [[Hedef]] linkini açar; sayfa yoksa oluşturur (spec §12). "Üst/Ad" biçiminde üst sayfa varsa altına açılır. */
-export async function openWikiTarget(target: string): Promise<void> {
+export async function openWikiTarget(target: string, newTab = false): Promise<void> {
   const s = useStore.getState()
   const id = resolveWikiTarget(s.tree, target)
-  if (id) return s.openPage(id)
+  if (id) return newTab ? s.openInNewTab(id) : s.openPage(id)
   const parts = target.split('/').map((p) => p.trim()).filter(Boolean)
   const title = parts.pop()
   if (!title) return s.toast(tNow('editor.pageNotFound', { target }), 'error')
@@ -101,7 +101,7 @@ export const WikiLink = Node.create({
       dom.addEventListener('mousedown', (e) => e.preventDefault())
       dom.addEventListener('click', (e) => {
         e.preventDefault()
-        void openWikiTarget(target)
+        void openWikiTarget(target, e.metaKey)
       })
       return { dom, destroy: unsubscribe }
     }

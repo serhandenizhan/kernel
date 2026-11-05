@@ -250,7 +250,7 @@ export interface KernelApi {
     /** link / etiket dizini değişti (500 ms içinde birleştirilmiş) */
     onLinksChanged(cb: () => void): () => void
     /** uygulama menüsünden gelen komut */
-    onMenuCommand(cb: (cmd: 'settings' | 'toggle-sidebar' | 'toggle-toc' | 'toggle-focus' | 'palette') => void): () => void
+    onMenuCommand(cb: (cmd: 'settings' | 'toggle-sidebar' | 'toggle-toc' | 'toggle-focus' | 'palette' | 'close-tab') => void): () => void
   }
 }
 

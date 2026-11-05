@@ -1045,3 +1045,105 @@ button {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/* --- sekmeler ve bölünmüş ekran --- */
+.tab-bar {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  gap: 4px;
+  height: 30px;
+  margin: 0 0 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-app-region: no-drag;
+}
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 200px;
+  padding: 0 6px 0 10px;
+  border-radius: 8px;
+  color: var(--text-2);
+  font-size: 12.5px;
+  cursor: default;
+  user-select: none;
+}
+.tab:hover {
+  background: var(--hover);
+}
+.tab.active {
+  background: color-mix(in srgb, var(--page) 80%, transparent);
+  color: var(--text);
+  box-shadow: 0 0 0 0.5px var(--border);
+}
+.tab-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tab-close {
+  border: 0;
+  background: none;
+  color: var(--text-3);
+  font-size: 15px;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 5px;
+  opacity: 0;
+}
+.tab:hover .tab-close,
+.tab.active .tab-close {
+  opacity: 1;
+}
+.tab-close:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.surfaces {
+  position: relative;
+  display: flex;
+  gap: var(--page-inset);
+  height: 100%;
+}
+.tab-bar + .surfaces {
+  height: calc(100% - 36px);
+}
+.surfaces > .page-surface {
+  flex: 1;
+  min-width: 0;
+}
+.split-pane {
+  position: relative;
+}
+.split-close {
+  position: sticky;
+  top: 10px;
+  float: right;
+  margin: 10px 10px 0 0;
+  z-index: 3;
+}
+.split-drop {
+  position: absolute;
+  inset: 0 0 0 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--page-radius);
+  border: 2px dashed color-mix(in srgb, var(--accent) 50%, transparent);
+  background: color-mix(in srgb, var(--accent-soft) 60%, transparent);
+  color: var(--accent-text);
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+.dragging-tab .split-drop {
+  opacity: 1;
+  pointer-events: auto;
+}
+.split-drop.over {
+  background: color-mix(in srgb, var(--accent-soft) 90%, transparent);
+}

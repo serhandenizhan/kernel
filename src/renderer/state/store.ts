@@ -30,6 +30,15 @@ interface State {
   init(): Promise<void>
   refreshTree(): Promise<void>
   openPage(id: string | null): void
+  /** açık sekmeler (sayfa kimlikleri) ve etkin sekme; tek sekmede çubuk gizli */
+  tabs: string[]
+  activeTab: number
+  /** bölünmüş ekranın sağ bölmesindeki sayfa */
+  split: string | null
+  openInNewTab(id: string): void
+  selectTab(i: number): void
+  closeTab(i: number): void
+  openSplit(id: string | null): void
   /** sayfa alanında ne gösterilir: ana sayfa ya da açık sayfa */
   view: 'home' | 'page' | 'tag' | 'graph' | 'study'
   /** çalışma ekranı açılınca doğrudan başlatılacak deste */
@@ -58,6 +67,21 @@ interface State {
 }
 
 let toastSeq = 0
+
+const TABS_KEY = (vault: string) => `kernel.tabs:${vault}`
+/** Sekmeler oturumlar arası hatırlanır (userData'daki tarayıcı deposu; kasaya yazılmaz) */
+function loadTabs(vault: string, tree: TreeNode[]): { tabs: string[]; activeTab: number } | null {
+  try {
+    const raw = JSON.parse(localStorage.getItem(TABS_KEY(vault)) ?? 'null') as { tabs?: unknown; activeTab?: unknown } | null
+    if (!raw || !Array.isArray(raw.tabs)) return null
+    const tabs = raw.tabs.filter((x): x is string => typeof x === 'string' && findNode(tree, x) !== null)
+    if (tabs.length < 2) return null
+    const activeTab = typeof raw.activeTab === 'number' ? Math.max(0, Math.min(raw.activeTab, tabs.length - 1)) : 0
+    return { tabs, activeTab }
+  } catch {
+    return null
+  }
+}
 
 function findNode(nodes: TreeNode[], id: string): TreeNode | null {
   for (const n of nodes) {
@@ -95,7 +119,9 @@ export const useStore = create<State>((set, get) => ({
     const [settings, tree, pins, recent] = await Promise.all([kernel.settings.get(), kernel.pages.tree(), kernel.pins.list().catch(() => []), kernel.search.recent().catch(() => [])])
     // son açık sayfa: son açılanlardan ağaçta hâlâ var olan ilki, yoksa ilk sayfa
     const last = recent.find((r) => findNode(tree, r.id))?.id
-    set({ ready: true, vaultPath: info.path, settings, tree, pins, currentId: last ?? tree[0]?.id ?? null, view: settings.startView === 'home' ? 'home' : 'page' })
+    const saved = loadTabs(info.path, tree)
+    const currentId = saved ? saved.tabs[saved.activeTab]! : (last ?? tree[0]?.id ?? null)
+    set({ ready: true, vaultPath: info.path, settings, tree, pins, currentId, ...(saved ?? {}), view: settings.startView === 'home' ? 'home' : 'page' })
   },
 
   async refreshTree() {
@@ -107,6 +133,29 @@ export const useStore = create<State>((set, get) => ({
   openPage(id) {
     set({ currentId: id, view: 'page' })
   },
+
+  tabs: [],
+  activeTab: 0,
+  split: null,
+  openInNewTab(id) {
+    set((s) => {
+      const base = s.tabs.length ? s.tabs : s.currentId ? [s.currentId] : []
+      return { tabs: [...base, id], activeTab: base.length, currentId: id, view: 'page' }
+    })
+  },
+  selectTab(i) {
+    const id = get().tabs[i]
+    if (id) set({ activeTab: i, currentId: id, view: 'page', split: get().split === id ? null : get().split })
+  },
+  closeTab(i) {
+    const s = get()
+    if (s.tabs.length <= 1) return
+    const tabs = s.tabs.filter((_, k) => k !== i)
+    const activeTab = Math.min(i < s.activeTab ? s.activeTab - 1 : s.activeTab, tabs.length - 1)
+    set({ tabs, activeTab, currentId: tabs[activeTab] ?? null, view: 'page' })
+  },
+  // aynı sayfa iki bölmede birden açılmaz (iki otomatik kayıt birbirini ezmesin)
+  openSplit: (id) => set((s) => ({ split: id && id !== s.currentId ? id : null })),
 
   async createPage(parentId) {
     const node = await kernel.pages.create(parentId)
@@ -156,3 +205,29 @@ export const useStore = create<State>((set, get) => ({
 }))
 
 export { findNode }
+
+// Etkin sekme açık sayfayı izler; silinen sayfaların sekmeleri kapanır; sekmeler kaydedilir
+useStore.subscribe((s, prev) => {
+  if (s.currentId !== prev.currentId && s.currentId && s.tabs.length && s.tabs[s.activeTab] !== s.currentId) {
+    const tabs = [...s.tabs]
+    tabs[s.activeTab] = s.currentId
+    useStore.setState({ tabs, split: s.split === s.currentId ? null : s.split })
+    return
+  }
+  if (s.tree !== prev.tree && s.tabs.length) {
+    const tabs = s.tabs.filter((id) => findNode(s.tree, id) !== null)
+    if (tabs.length !== s.tabs.length) {
+      useStore.setState({ tabs: tabs.length > 1 ? tabs : [], activeTab: Math.min(s.activeTab, Math.max(0, tabs.length - 1)) })
+      return
+    }
+  }
+  if (s.split && s.tree !== prev.tree && !findNode(s.tree, s.split)) useStore.setState({ split: null })
+  if ((s.tabs !== prev.tabs || s.activeTab !== prev.activeTab) && s.vaultPath) {
+    try {
+      localStorage.setItem(TABS_KEY(s.vaultPath), JSON.stringify({ tabs: s.tabs, activeTab: s.activeTab }))
+    } catch {
+      // depo kapalıysa sekmeler yalnızca bu oturumda kalır
+    }
+  }
+})
+

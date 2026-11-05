@@ -3,7 +3,7 @@ import type { Lang } from '@shared/types'
 import { t } from '@shared/i18n'
 import { IPC } from '@shared/ipc'
 
-export type MenuCommand = 'settings' | 'toggle-sidebar' | 'toggle-toc' | 'toggle-focus' | 'palette'
+export type MenuCommand = 'settings' | 'toggle-sidebar' | 'toggle-toc' | 'toggle-focus' | 'palette' | 'close-tab'
 
 // Menü komutu arayüze gönderilir (kısayolların asıl sahibi arayüzdür; menü yalnızca gösterir ve tetikler)
 const send = (cmd: MenuCommand) => () => BrowserWindow.getFocusedWindow()?.webContents.send(IPC.eventMenuCommand, cmd)
@@ -63,7 +63,9 @@ export function buildAppMenu(lang: Lang): Menu {
         { role: 'minimize', label: L('menu.minimize') },
         { role: 'zoom', label: L('menu.zoom') },
         { type: 'separator' },
-        { role: 'close', label: L('menu.close') },
+        // Cmd+W sekmeyi kapatır (arayüz karar verir: son sekmede pencere kapanır); pencere için Cmd+Shift+W
+        { label: L('menu.closeTab'), ...shown('Cmd+W'), click: send('close-tab') },
+        { role: 'close', label: L('menu.close'), accelerator: 'Cmd+Shift+W' },
         { role: 'front', label: L('menu.front') }
       ]
     }

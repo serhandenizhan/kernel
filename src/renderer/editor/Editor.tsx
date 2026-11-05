@@ -33,12 +33,20 @@ export const activeEditor: { flush: (() => Promise<boolean>) | null; editor: Tip
   setMeta: null
 }
 
+/** Bölünmüş ekranın ikinci editörünün bekleyen kaydı (kapanışta, dışa aktarmada hepsi yazılır) */
+export const extraFlushes = new Set<() => Promise<boolean>>()
+/** Tüm açık editörlerin bekleyen kaydını yazar; hepsi kaydedildiyse true */
+export async function flushAll(): Promise<boolean> {
+  const results = await Promise.all([activeEditor.flush ? activeEditor.flush() : true, ...[...extraFlushes].map((f) => f())])
+  return results.every(Boolean)
+}
+
 /** Açık editör (içindekiler paneli gibi bileşenler için tepkisel) */
 export const useActiveEditor = create<{ editor: TiptapEditor | null }>(() => ({ editor: null }))
 
 const STATUS_KEY: Record<SaveState, MessageKey> = { saved: 'editor.status.saved', dirty: 'editor.status.dirty', saving: 'editor.status.saving', error: 'editor.status.error' }
 
-export function PageEditor({ page }: { page: PageData }) {
+export function PageEditor({ page, secondary = false }: { page: PageData; secondary?: boolean }) {
   const parsed = useMemo(() => {
     if (page.readOnly) return { doc: null, error: tNow('editor.readOnlyBroken') }
     try {
@@ -58,10 +66,10 @@ export function PageEditor({ page }: { page: PageData }) {
       </div>
     )
   }
-  return <LiveEditor page={page} initial={parsed.doc} />
+  return <LiveEditor page={page} initial={parsed.doc} secondary={secondary} />
 }
 
-function LiveEditor({ page, initial }: { page: PageData; initial: ReturnType<typeof markdownToDoc> }) {
+function LiveEditor({ page, initial, secondary }: { page: PageData; initial: ReturnType<typeof markdownToDoc>; secondary: boolean }) {
   const [status, setStatus] = useState<SaveState>('saved')
   const [conflict, setConflict] = useState(false)
   const [wrap, setWrap] = useState<HTMLDivElement | null>(null)
@@ -108,6 +116,15 @@ function LiveEditor({ page, initial }: { page: PageData; initial: ReturnType<typ
 
   // sayfa değişince ya da bileşen kapanınca bekleyen kaydı yap
   useEffect(() => {
+    if (secondary) {
+      const f = () => autosave.flush()
+      extraFlushes.add(f)
+      return () => {
+        extraFlushes.delete(f)
+        void autosave.flush()
+        autosave.dispose()
+      }
+    }
     activeEditor.flush = () => autosave.flush()
     activeEditor.editor = editor
     useActiveEditor.setState({ editor })
@@ -125,7 +142,7 @@ function LiveEditor({ page, initial }: { page: PageData; initial: ReturnType<typ
         useActiveEditor.setState({ editor: null })
       }
     }
-  }, [autosave, editor])
+  }, [autosave, editor, secondary])
 
   // dış değişiklik
   useEffect(() => {
@@ -160,8 +177,9 @@ function LiveEditor({ page, initial }: { page: PageData; initial: ReturnType<typ
       </div>
       {editor && <TableMenu editor={editor} />}
       {editor && <BubbleToolbar editor={editor} />}
-      <SlashMenu />
-      <WikiMenu />
+      {/* menüler ortak durumdan çizilir: yalnızca ana bölme çizer (ikinci bölmede de çalışır) */}
+      {!secondary && <SlashMenu />}
+      {!secondary && <WikiMenu />}
       <MathPopover editor={editor} />
       {conflict && (
         <ConflictDialog

@@ -134,7 +134,7 @@ function Row({
         aria-expanded={hasChildren ? open : undefined}
         style={{ paddingLeft: 4 + depth * 14 }}
         draggable={!renaming}
-        onClick={() => useStore.getState().openPage(node.id)}
+        onClick={(e) => (e.metaKey ? useStore.getState().openInNewTab(node.id) : useStore.getState().openPage(node.id))}
         onDoubleClick={() => useStore.getState().setRenaming(node.id)}
         onContextMenu={(e) => {
           e.preventDefault()

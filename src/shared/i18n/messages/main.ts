@@ -67,6 +67,7 @@ export const main = {
   'menu.view': ['Görünüm', 'View', 'Darstellung'],
   'menu.sidebar': ['Kenar çubuğu', 'Sidebar', 'Seitenleiste'],
   'study.allCards': ['Tüm kartlar', 'All cards', 'Alle Karten'],
+  'menu.closeTab': ['Sekmeyi kapat', 'Close Tab', 'Tab schließen'],
   'menu.focus': ['Odak modu', 'Focus Mode', 'Fokusmodus'],
   'menu.palette': ['Komut paleti…', 'Command Palette…', 'Befehlspalette…'],
   'menu.toc': ['İçindekiler', 'Contents', 'Inhalt'],

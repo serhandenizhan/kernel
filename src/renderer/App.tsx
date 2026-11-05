@@ -15,7 +15,8 @@ import { HistoryPanel } from './shell/HistoryPanel'
 import { ImportWizard } from './notion/ImportWizard'
 import { Tour, TipBubble } from './guide/Tour'
 import './guide/tips'
-import { activeEditor } from './editor/Editor'
+import { flushAll } from './editor/Editor'
+import { SplitDrop, TabBar } from './shell/TabBar'
 import { tNow, useLang } from './lib/i18n'
 import { HomePage } from './home/HomePage'
 import { TagPage } from './shell/TagPage'
@@ -38,6 +39,14 @@ function useTheme() {
     mq.addEventListener('change', apply)
     return () => mq.removeEventListener('change', apply)
   }, [settings.theme, settings.bodyFont, settings.pageWidth])
+}
+
+/** Cmd+W: önce bölme, sonra sekme; tek sekme kaldıysa pencere kapanır */
+function closeTabOrWindow() {
+  const s = useStore.getState()
+  if (s.split && s.view === 'page') s.openSplit(null)
+  else if (s.tabs.length > 1) s.closeTab(s.activeTab)
+  else window.close()
 }
 
 function useShortcuts() {
@@ -70,6 +79,9 @@ function useShortcuts() {
       } else if (k === 't' && e.shiftKey) {
         e.preventDefault()
         s.toggleToc()
+      } else if (k === 'w' && !e.shiftKey) {
+        e.preventDefault()
+        closeTabOrWindow()
       } else if (k === 'p' && !e.shiftKey) {
         e.preventDefault()
         s.setOverlay(s.overlay === 'palette' ? null : 'palette')
@@ -90,6 +102,7 @@ export function App() {
   const vaultPath = useStore((s) => s.vaultPath)
   const sidebarVisible = useStore((s) => s.sidebarVisible)
   const focusMode = useStore((s) => s.focusMode)
+  const split = useStore((s) => s.split)
   const overlay = useStore((s) => s.overlay)
   const view = useStore((s) => s.view)
   const tourDone = useStore((s) => s.settings.tourDone)
@@ -105,7 +118,7 @@ export function App() {
   useEffect(() => {
     void useStore.getState().init()
     // uygulama kapanırken bekleyen kaydı yap
-    kernel.app.onFlushRequest(async () => (activeEditor.flush ? activeEditor.flush() : true))
+    kernel.app.onFlushRequest(flushAll)
     const off = kernel.events.onTreeChanged(() => void useStore.getState().refreshTree())
     void kernel.notion.pendingResume().then(setPendingImport).catch(() => undefined)
     const offToast = kernel.events.onToast((m, kind) => useStore.getState().toast(m, kind))
@@ -115,6 +128,7 @@ export function App() {
       else if (cmd === 'toggle-sidebar') s.toggleSidebar()
       else if (cmd === 'toggle-focus') s.toggleFocus()
       else if (cmd === 'palette') s.setOverlay('palette')
+      else if (cmd === 'close-tab') closeTabOrWindow()
       else s.toggleToc()
     })
     return () => {
@@ -138,11 +152,25 @@ export function App() {
       {sidebarVisible && !focusMode && <Sidebar />}
       <main className="main">
         <div className="main-drag" />
-        <div className="page-surface">
-          {/* hata olursa sayfa görünümüne düşer; görünüm değişince yeniden dener */}
-          <ErrorBoundary resetKey={`${view}:${overlay}`} fallback={<PageView />}>
-            {overlay === 'guide' ? <GuidePage /> : view === 'home' ? <HomePage /> : view === 'tag' ? <TagPage /> : view === 'graph' ? <GraphView /> : view === 'study' ? <StudyPage /> : <PageView />}
-          </ErrorBoundary>
+        {!focusMode && <TabBar />}
+        <div className="surfaces">
+          <div className="page-surface">
+            {/* hata olursa sayfa görünümüne düşer; görünüm değişince yeniden dener */}
+            <ErrorBoundary resetKey={`${view}:${overlay}`} fallback={<PageView />}>
+              {overlay === 'guide' ? <GuidePage /> : view === 'home' ? <HomePage /> : view === 'tag' ? <TagPage /> : view === 'graph' ? <GraphView /> : view === 'study' ? <StudyPage /> : <PageView />}
+            </ErrorBoundary>
+          </div>
+          {split && view === 'page' && !overlay && (
+            <div className="page-surface split-pane" data-testid="split-pane">
+              <button className="glass-btn split-close" data-testid="split-close" aria-label={tNow('tabs.closeSplit')} onClick={() => useStore.getState().openSplit(null)}>
+                ×
+              </button>
+              <ErrorBoundary resetKey={split} fallback={null}>
+                <PageView pageId={split} secondary />
+              </ErrorBoundary>
+            </div>
+          )}
+          {view === 'page' && !split && <SplitDrop />}
         </div>
         {!focusMode && <TocPanel />}
       </main>

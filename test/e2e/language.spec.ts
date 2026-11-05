@@ -21,7 +21,7 @@ test('dil yeniden başlatmadan değişir; Almanca etiketler taşmaz', async () =
 
 test('not yazı tipi ve açılış görünümü segment kontrolleriyle değişir', async () => {
   const { app, win } = await launch()
-  await win.keyboard.press('Meta+,')
+  await win.keyboard.press('ControlOrMeta+,')
   await win.getByTestId('setting-font-serif').click()
   await expect(win.locator('html')).toHaveAttribute('data-body-font', 'serif')
   await win.getByTestId('setting-start-home').click()

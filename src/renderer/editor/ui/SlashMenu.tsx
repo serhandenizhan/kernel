@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { useEffect, useRef } from 'react'
 import { useSlash } from './slash-state'
 import { tNow } from '../../lib/i18n'
@@ -13,7 +14,8 @@ export function SlashMenu() {
 
   if (!open || !rect) return null
   const top = rect.bottom + 6 + 320 > window.innerHeight ? Math.max(8, rect.top - 326) : rect.bottom + 6
-  return (
+  // body'ye çizilir: sayfa yüzeyinin cam efekti (backdrop-filter) sabit konumlu menüleri kaydırmasın
+  return createPortal(
     <div className="slash-menu glass glass-pop" data-testid="slash-menu" style={{ left: rect.left, top }} onMouseDown={(e) => e.preventDefault()}>
       {items.length === 0 ? (
         <div className="slash-empty">{tNow('slash.noMatch')}</div>
@@ -34,6 +36,7 @@ export function SlashMenu() {
           ))}
         </div>
       )}
-    </div>
+    </div>,
+    document.body
   )
 }

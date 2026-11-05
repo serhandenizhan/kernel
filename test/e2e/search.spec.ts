@@ -8,7 +8,7 @@ test('Cmd+K ile içerik aranır ve sayfa açılır', async () => {
   writeFileSync(join(vault, 'Özdeğerler.md'), 'karakteristik polinom kökleri\n')
   writeFileSync(join(vault, 'Fizik.md'), 'Newton yasaları\n')
   const { app, win } = await launch(vault)
-  await win.keyboard.press('Meta+k')
+  await win.keyboard.press('ControlOrMeta+k')
   const input = win.getByTestId('search-input')
   await expect(input).toBeFocused()
   await input.fill('KARAKTERISTIK')
@@ -18,7 +18,7 @@ test('Cmd+K ile içerik aranır ve sayfa açılır', async () => {
   await expect(win.getByTestId('page-title')).toHaveValue('Özdeğerler')
   await expect(win.getByTestId('search-input')).toHaveCount(0)
   // boş sorguda son açılanlar
-  await win.keyboard.press('Meta+k')
+  await win.keyboard.press('ControlOrMeta+k')
   await expect(win.getByTestId('search-result').first()).toContainText('Özdeğerler')
   await win.keyboard.press('Escape')
   await expect(win.getByTestId('search-input')).toHaveCount(0)

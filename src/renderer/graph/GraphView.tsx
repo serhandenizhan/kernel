@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { forceCenter, forceCollide, forceLink, forceManyBody, forceSimulation, type SimulationLinkDatum, type SimulationNodeDatum } from 'd3-force'
+import { forceCenter, forceCollide, forceLink, forceManyBody, forceSimulation, forceX, forceY, type SimulationLinkDatum, type SimulationNodeDatum } from 'd3-force'
 import type { GraphData } from '@shared/types'
 import { folderColorIndex, localGraph } from '@core/graph'
 import { kernel } from '../lib/kernel'
@@ -105,10 +105,14 @@ export function GraphView() {
     }
 
     const sim = forceSimulation(nodes)
-      .force('link', forceLink<SimNode, SimLink>(links).id((n) => n.id).distance(60))
-      .force('charge', forceManyBody().strength(-140))
+      // etiketler düğümün altında yazılır: düğümler etiketler çakışmayacak kadar aralıklı dursun
+      .force('link', forceLink<SimNode, SimLink>(links).id((n) => n.id).distance(110))
+      .force('charge', forceManyBody().strength(-320))
       .force('center', forceCenter(0, 0))
-      .force('collide', forceCollide<SimNode>((n) => radius(n) + 4))
+      // bağlantısız sayfalar kenarlara savrulmasın
+      .force('x', forceX<SimNode>(0).strength(0.07))
+      .force('y', forceY<SimNode>(0).strength(0.07))
+      .force('collide', forceCollide<SimNode>((n) => radius(n) + 22))
       .on('tick', draw)
 
     const toWorld = (e: MouseEvent) => {

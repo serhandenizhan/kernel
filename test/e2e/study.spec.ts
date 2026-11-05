@@ -46,7 +46,7 @@ test('çalışırken arama paletinde boşluk yazılabilir ve rakamlar kartı de�
   await expect(win.getByTestId('card-question')).toHaveText('S1')
   await win.keyboard.press('Space')
   await expect(win.getByTestId('card-answer')).toBeVisible()
-  await win.keyboard.press('Meta+k')
+  await win.keyboard.press('ControlOrMeta+k')
   await win.getByTestId('search-input').pressSequentially('a b 3')
   await expect(win.getByTestId('search-input')).toHaveValue('a b 3')
   await win.keyboard.press('Escape')

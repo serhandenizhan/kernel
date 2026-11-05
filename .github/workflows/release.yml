@@ -1,0 +1,45 @@
+# v* etiketi gönderilince macOS (.dmg) ve Windows (.exe) paketleri derlenip GitHub sürümüne yüklenir
+name: Release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  create:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # sürüm zaten varsa (elle oluşturulduysa) dokunulmaz
+      - run: gh release view "$GITHUB_REF_NAME" || gh release create "$GITHUB_REF_NAME" --title "Kernel ${GITHUB_REF_NAME#v}" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+  build:
+    needs: create
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            dist: dist
+            files: release/*.dmg
+          - os: windows-latest
+            dist: dist:win
+            files: release/*.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run ${{ matrix.dist }} -- --publish never
+        env:
+          # electron-builder kendi başına yayımlamasın; yüklemeyi aşağıdaki adım yapar
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - run: gh release upload "$GITHUB_REF_NAME" ${{ matrix.files }} --clobber
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}

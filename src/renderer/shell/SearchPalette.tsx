@@ -4,6 +4,7 @@ import { kernel } from '../lib/kernel'
 import { useStore } from '../state/store'
 import { PageIcon } from './PageHeader'
 import { tNow } from '../lib/i18n'
+import { Icon } from '../assets/icons'
 
 interface Row {
   id: string
@@ -64,7 +65,7 @@ export function SearchPalette() {
         <div className="palette-list">
           {rows.map((r, i) => (
             <button key={r.id} data-testid="search-result" className={`palette-row${i === index ? ' active' : ''}`} onMouseEnter={() => setIndex(i)} onClick={() => open(r)}>
-              <span className="palette-icon">{r.icon ? <PageIcon icon={r.icon} size={16} /> : '📄'}</span>
+              <span className="palette-icon">{r.icon ? <PageIcon icon={r.icon} size={16} /> : <Icon name="doc" size={14} />}</span>
               <span className="palette-text">
                 <span className="palette-title">{r.title}</span>
                 {r.snippet && <span className="palette-snippet">{r.snippet}</span>}

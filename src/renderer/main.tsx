@@ -11,6 +11,9 @@ import './styles/blocks.css'
 import './styles/home.css'
 import './styles/print.css'
 
+// platforma özgü stiller için (Windows'ta opak zemin, trafik ışığı boşluğu yok)
+document.documentElement.dataset['platform'] = window.kernel?.app.platform ?? 'darwin'
+
 // #/print: PDF için baskı görünümü; aksi halde uygulama
 const isPrint = location.hash.startsWith('#/print')
 

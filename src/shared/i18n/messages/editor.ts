@@ -80,6 +80,8 @@ export const editor = {
   'code.diagram': ['Diyagram', 'Diagram', 'Diagramm'],
   'image.resize': ['Boyutlandır', 'Resize', 'Größe ändern'],
   'image.caption': ['Alt yazı ekle', 'Add caption', 'Bildunterschrift hinzufügen'],
+  'math.finishBlock': ['⌘↵ ile bitir', 'Finish with ⌘↵', 'Mit ⌘↵ abschließen'],
+  'math.finishInline': ['↵ ile bitir', 'Finish with ↵', 'Mit ↵ abschließen'],
   'math.invalid': ['Geçersiz formül', 'Invalid formula', 'Ungültige Formel'],
   'math.placeholder': ['LaTeX yaz, örn. \\frac{a}{b}', 'Type LaTeX, e.g. \\frac{a}{b}', 'LaTeX eingeben, z. B. \\frac{a}{b}'],
   'diagram.error': ['Diyagram hatası: {error}', 'Diagram error: {error}', 'Diagrammfehler: {error}'],

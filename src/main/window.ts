@@ -1,4 +1,5 @@
-import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, nativeTheme, shell } from 'electron'
+import { windowOptions } from './window-options'
 import { join } from 'node:path'
 import { IPC } from '@shared/ipc'
 import { mainT } from './i18n'
@@ -30,7 +31,7 @@ function requestFlush(win: BrowserWindow): Promise<boolean> {
   })
 }
 
-// Ana pencere: macOS trafik ışıkları kenar çubuğunun içinde, kenar çubuğu vibrancy kullanır
+// Ana pencere: görünüm platforma göre (window-options.ts)
 export function createMainWindow(): BrowserWindow {
   const win = new BrowserWindow({
     width: 1280,
@@ -39,11 +40,7 @@ export function createMainWindow(): BrowserWindow {
     minHeight: 600,
     show: false,
     title: 'Kernel',
-    titleBarStyle: 'hiddenInset',
-    trafficLightPosition: { x: 18, y: 18 },
-    vibrancy: 'sidebar',
-    visualEffectState: 'followWindow',
-    backgroundColor: '#00000000',
+    ...windowOptions(process.platform, nativeTheme.shouldUseDarkColors),
     webPreferences: {
       preload: join(__dirname, '../preload/index.cjs'),
       contextIsolation: true,

@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { normalizeTr } from '@core/normalize-tr'
 import { EMOJI_TR } from '../assets/emoji-tr'
@@ -43,13 +44,20 @@ export function IconPicker({ anchor, onPick, onRemove, onClose }: { anchor: DOMR
 
   const results = useMemo(() => {
     const q = normalizeTr(query.trim())
-    if (!q) return POPULAR.concat(all.slice(0, 160).map((e) => e.unicode).filter((u) => !POPULAR.includes(u)))
+    if (!q)
+      return POPULAR.concat(
+        all
+          .slice(0, 160)
+          .map((e) => e.unicode)
+          .filter((u) => !POPULAR.includes(u))
+      )
     const tr = POPULAR.filter((u) => normalizeTr(EMOJI_TR[u]!).includes(q))
     const en = all.filter((e) => normalizeTr(e.label).includes(q) || e.tags?.some((t) => normalizeTr(t).includes(q))).map((e) => e.unicode)
     return [...new Set([...tr, ...en])].slice(0, 200)
   }, [query, all])
 
-  return (
+  // body'ye çizilir: sayfa yüzeyinin cam efekti (backdrop-filter) sabit konumlu menüleri kaydırmasın
+  return createPortal(
     <div ref={ref} className="icon-picker glass" style={{ left: anchor.left, top: anchor.bottom + 6 }}>
       <div className="picker-head">
         <input className="picker-search" data-testid="icon-search" autoFocus placeholder={tNow('icon.search')} value={query} onChange={(e) => setQuery(e.target.value)} />
@@ -80,6 +88,7 @@ export function IconPicker({ anchor, onPick, onRemove, onClose }: { anchor: DOMR
         ))}
         {!results.length && <div className="picker-empty">{tNow('icon.noResults')}</div>}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

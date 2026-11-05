@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useStore } from '../state/store'
 import { useT } from '../lib/i18n'
 import { COMMANDS, filterCommands } from '../commands'
+import { keys } from '../lib/platform'
 
 // Cmd+P: komut paleti (arama paletiyle aynı cam görünüm)
 export function CommandPalette() {
@@ -45,7 +46,7 @@ export function CommandPalette() {
           {rows.map((c, i) => (
             <button key={c.id} data-testid="command-row" className={`palette-row command-row${i === index ? ' active' : ''}`} onMouseEnter={() => setIndex(i)} onClick={() => run(i)}>
               <span className="palette-title">{t(c.label)}</span>
-              {c.keys && <kbd className="command-keys">{c.keys}</kbd>}
+              {c.keys && <kbd className="command-keys">{keys(c.keys)}</kbd>}
             </button>
           ))}
           {!rows.length && <div className="palette-empty">{t('cmd.noMatch')}</div>}

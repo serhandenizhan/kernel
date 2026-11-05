@@ -343,7 +343,16 @@
 
 /* --- Çalışma ekranı --- */
 .study-page {
-  padding-bottom: 48px;
+  min-height: 100%;
+  padding: 56px 64px 48px;
+  box-sizing: border-box;
+}
+.study-page .home-column {
+  max-width: 820px;
+  gap: 24px;
+}
+.study-page .home-header h1 {
+  margin-bottom: 6px;
 }
 .study-hint {
   color: var(--text-2);

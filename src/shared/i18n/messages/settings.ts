@@ -26,6 +26,7 @@ export const settings = {
   'settings.tips.reset': ['İpuçlarını ve turu sıfırla', 'Reset tips and tour', 'Tipps und Tour zurücksetzen'],
   'settings.vault': ['Kasa', 'Vault', 'Tresor'],
   'settings.vault.reveal': ["Finder'da göster", 'Show in Finder', 'Im Finder zeigen'],
+  'settings.vault.revealWin': ["Dosya Gezgini'nde göster", 'Show in File Explorer', 'Im Explorer zeigen'],
   'settings.vault.choose': ['Başka bir kasa seç', 'Choose another vault', 'Anderen Tresor wählen'],
   'settings.updates': ['Güncellemeler', 'Updates', 'Updates'],
   'settings.updates.check': ['Açılışta yeni sürüm olup olmadığını denetle', 'Check for a new version on launch', 'Beim Start nach einer neuen Version suchen'],

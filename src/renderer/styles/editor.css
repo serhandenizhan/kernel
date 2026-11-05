@@ -7,6 +7,10 @@
   max-width: calc(var(--page-width) + 96px);
   padding: 0 48px;
 }
+/* başlık şeridi olmayan sayfa (bölünmüş ekranın sağ bölmesi, salt okunur sayfa): başlık üst kenara yapışmasın */
+.page:not(.tag-page) > .page-column:first-child {
+  padding-top: 84px;
+}
 .page-column {
   position: relative;
   max-width: var(--page-width);

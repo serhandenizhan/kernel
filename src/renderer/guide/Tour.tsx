@@ -4,6 +4,7 @@ import { TIPS, useTip } from './tips'
 import logo from '../assets/logo.svg'
 import { tNow, useT } from '../lib/i18n'
 import type { MessageKey } from '@shared/i18n'
+import { keys } from '../lib/platform'
 
 const CARDS: { title: MessageKey; body: MessageKey; visual: string }[] = [
   { title: 'tour.1.title', body: 'tour.1.body', visual: '📁' },
@@ -22,7 +23,7 @@ export function Tour() {
   return (
     <div className="modal-backdrop tour-backdrop">
       <div className="tour glass" data-testid="tour" role="dialog" aria-label={t('tour.label')}>
-        <div className="tour-visual">{i === 0 ? <img src={logo} width={64} height={64} alt="" /> : <span>{card.visual}</span>}</div>
+        <div className="tour-visual">{i === 0 ? <img src={logo} width={64} height={64} alt="" /> : <span>{keys(card.visual)}</span>}</div>
         <h3>{t(card.title)}</h3>
         <p>{t(card.body)}</p>
         <div className="tour-dots">

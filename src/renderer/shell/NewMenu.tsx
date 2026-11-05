@@ -6,6 +6,7 @@ import { useStore } from '../state/store'
 import { currentLang, useT } from '../lib/i18n'
 import { Icon, type IconName } from '../assets/icons'
 import { ContextMenu } from './ContextMenu'
+import { keys } from '../lib/platform'
 
 interface Item {
   id: string
@@ -135,7 +136,7 @@ function NewMenuPanel({ anchor, items, onClose }: { anchor: HTMLElement; items: 
         >
           <Icon name={it.icon} />
           <span className="new-item-label">{it.label}</span>
-          {it.hint && <span className="new-item-hint">{it.hint}</span>}
+          {it.hint && <span className="new-item-hint">{keys(it.hint)}</span>}
         </button>
       ))}
     </div>,

@@ -5,6 +5,8 @@ import { tNow } from '../lib/i18n'
 import { kernel } from '../lib/kernel'
 import { ContextMenu, type MenuItem } from './ContextMenu'
 import { PageIcon } from './PageHeader'
+import { isMac, modKey } from '../lib/platform'
+import { Icon } from '../assets/icons'
 
 type DropZone = 'before' | 'inside' | 'after'
 
@@ -56,7 +58,7 @@ export function PageTree({ onRequestIcon, onRequestExport }: { onRequestIcon(id:
       { label: s.pins.includes(node.id) ? tNow('tree.unpin') : tNow('tree.pin'), onSelect: () => void s.togglePin(node.id) },
       { label: tNow('tree.rename'), onSelect: () => s.setRenaming(node.id) },
       { label: tNow('tree.changeIcon'), onSelect: () => onRequestIcon(node.id) },
-      { label: tNow('tree.reveal'), onSelect: () => void kernel.vault.reveal(node.id) },
+      { label: tNow(isMac ? 'tree.reveal' : 'tree.revealWin'), onSelect: () => void kernel.vault.reveal(node.id) },
       { label: tNow('tree.exportPdf'), onSelect: () => onRequestExport(node.id) },
       {
         label: tNow('tree.saveTemplate'),
@@ -134,7 +136,7 @@ function Row({
         aria-expanded={hasChildren ? open : undefined}
         style={{ paddingLeft: 4 + depth * 14 }}
         draggable={!renaming}
-        onClick={(e) => (e.metaKey ? useStore.getState().openInNewTab(node.id) : useStore.getState().openPage(node.id))}
+        onClick={(e) => (modKey(e) ? useStore.getState().openInNewTab(node.id) : useStore.getState().openPage(node.id))}
         onDoubleClick={() => useStore.getState().setRenaming(node.id)}
         onContextMenu={(e) => {
           e.preventDefault()
@@ -169,7 +171,7 @@ function Row({
         >
           {hasChildren ? '▶' : ''}
         </span>
-        <span className="tree-icon">{node.icon ? <PageIcon icon={node.icon} size={16} /> : '📄'}</span>
+        <span className="tree-icon">{node.icon ? <PageIcon icon={node.icon} size={16} /> : <Icon name="doc" size={14} />}</span>
         {renaming ? (
           <RenameInput node={node} />
         ) : (

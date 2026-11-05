@@ -21,7 +21,7 @@ test('ilk açılışta tur görünür, Atla sonrası yeniden başlatmada da gör
 
 test('Cmd+/ rehberi açar, kısayol tablosu aranır, canlı yapıştırma örneği render edilir', async () => {
   const { app, win } = await launch()
-  await win.keyboard.press('Meta+/')
+  await win.keyboard.press('ControlOrMeta+/')
   await expect(win.getByTestId('guide')).toBeVisible()
   await expect(win.getByTestId('guide-paste-demo').locator('.katex').first()).toBeVisible()
   await win.getByTestId('shortcut-search').fill('pdf')
@@ -58,7 +58,7 @@ test('ilk yapıştırmada ipucu bir kez görünür', async () => {
 
 test('rehberde Faz 2 bölümleri var; canlı Mermaid demosu çizilir; Notion butonu sihirbazı açar', async () => {
   const { app, win } = await launch()
-  await win.keyboard.press('Meta+/')
+  await win.keyboard.press('ControlOrMeta+/')
   const guide = win.getByTestId('guide')
   for (const title of ["Notion'dan aktarma", 'Sürüm geçmişi ve yedek', 'Şablonlar', 'Diyagram ve PDF']) await expect(guide.getByRole('heading', { name: title })).toBeVisible()
   await expect(win.getByTestId('guide-mermaid-demo').locator('svg')).toBeVisible({ timeout: 15_000 })
@@ -69,15 +69,15 @@ test('rehberde Faz 2 bölümleri var; canlı Mermaid demosu çizilir; Notion but
 
 test('Rehber Faz 3 bölümleri: ana sayfa, sabitleme, dil ve görünüm (üç dilde)', async () => {
   const { app, win } = await launch()
-  await win.keyboard.press('Meta+/')
+  await win.keyboard.press('ControlOrMeta+/')
   const guide = win.getByTestId('guide')
   for (const title of ['Ana sayfa', 'Sabitleme', 'Dil ve görünüm']) await expect(guide.getByRole('heading', { name: title })).toBeVisible()
   await expect(guide.getByTestId('guide-home-demo').locator('.heat-cell')).toHaveCount(21)
   await win.keyboard.press('Escape')
-  await win.keyboard.press('Meta+,')
+  await win.keyboard.press('ControlOrMeta+,')
   await win.getByTestId('setting-language-en').click()
   await win.keyboard.press('Escape')
-  await win.keyboard.press('Meta+/')
+  await win.keyboard.press('ControlOrMeta+/')
   for (const title of ['Home', 'Pinning', 'Language and appearance']) await expect(win.getByTestId('guide').getByRole('heading', { name: title })).toBeVisible()
   await app.close()
 })

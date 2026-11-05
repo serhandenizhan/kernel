@@ -258,6 +258,8 @@ export interface KernelApi {
     onFlushRequest(cb: () => Promise<boolean>): void
     /** macOS sistem dili (örn. "tr-TR") */
     locale(): Promise<string>
+    /** process.platform (darwin / win32 / linux) */
+    platform: string
   }
   events: {
     onTreeChanged(cb: () => void): () => void

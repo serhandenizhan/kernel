@@ -1,8 +1,10 @@
+import { createPortal } from 'react-dom'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import katex from 'katex'
 import type { Editor } from '@tiptap/react'
 import { useMathEdit } from './math-state'
 import { tNow } from '../../lib/i18n'
+import { modKey } from '../../lib/platform'
 
 function validate(latex: string, display: boolean): string | null {
   try {
@@ -65,7 +67,8 @@ export function MathPopover({ editor }: { editor: Editor | null }) {
   }
 
   if (!kind || !rect) return null
-  return (
+  // body'ye çizilir: sayfa yüzeyinin cam efekti (backdrop-filter) sabit konumlu menüleri kaydırmasın
+  return createPortal(
     <div className="math-popover glass" style={{ left: rect.left, top: rect.top }} onMouseDown={(e) => e.stopPropagation()}>
       <textarea
         ref={ref}
@@ -81,7 +84,7 @@ export function MathPopover({ editor }: { editor: Editor | null }) {
           if (v.trim() && !validate(v, kind === 'block')) apply(v)
         }}
         onKeyDown={(e) => {
-          if (e.key === 'Escape' || (e.key === 'Enter' && (kind === 'inline' || e.metaKey))) {
+          if (e.key === 'Escape' || (e.key === 'Enter' && (kind === 'inline' || modKey(e)))) {
             e.preventDefault()
             finish()
           }
@@ -100,8 +103,9 @@ export function MathPopover({ editor }: { editor: Editor | null }) {
           {error}
         </div>
       ) : (
-        <div className="math-hint">{kind === 'block' ? '⌘↵ ile bitir' : '↵ ile bitir'}</div>
+        <div className="math-hint">{tNow(kind === 'block' ? 'math.finishBlock' : 'math.finishInline')}</div>
       )}
-    </div>
+    </div>,
+    document.body
   )
 }

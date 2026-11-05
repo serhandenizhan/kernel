@@ -9,6 +9,7 @@ import { PageIcon } from '../shell/PageHeader'
 import { createLectureNote } from '../shell/NewMenu'
 import { ActivityHeatmap } from './ActivityHeatmap'
 import { CourseCard } from './CourseCard'
+import { keys } from '../lib/platform'
 
 /** Günün saatine göre selam anahtarı */
 function greetingKey(hour: number) {
@@ -137,7 +138,7 @@ export function HomePage() {
             <button className="home-search" data-testid="home-search" onClick={() => useStore.getState().setOverlay('search')}>
               <Icon name="search" />
               <span>{t('home.search')}</span>
-              <kbd>⌘K</kbd>
+              <kbd>{keys('⌘K')}</kbd>
             </button>
             <button className="home-btn primary" data-testid="home-new" onClick={() => void useStore.getState().createPage(null)}>
               <Icon name="plus" size={14} /> {t('home.newNote')}

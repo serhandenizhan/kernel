@@ -17,6 +17,7 @@ export const shell = {
   'tree.rename': ['Yeniden adlandır', 'Rename', 'Umbenennen'],
   'tree.changeIcon': ['İkon değiştir', 'Change icon', 'Symbol ändern'],
   'tree.reveal': ["Finder'da göster", 'Show in Finder', 'Im Finder zeigen'],
+  'tree.revealWin': ["Dosya Gezgini'nde göster", 'Show in File Explorer', 'Im Explorer zeigen'],
   'tree.exportPdf': ['PDF olarak dışa aktar', 'Export as PDF', 'Als PDF exportieren'],
   'tree.saveTemplate': ['Şablon olarak kaydet', 'Save as template', 'Als Vorlage speichern'],
   'tree.templateSaved': ['"{name}" şablonu kaydedildi', 'Template "{name}" saved', 'Vorlage „{name}“ gespeichert'],

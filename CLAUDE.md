@@ -1,6 +1,6 @@
 # Kernel — Claude için proje rehberi
 
-Kernel: lokal, açık kaynak, Markdown tabanlı macOS not uygulaması (Notion alternatifi). Electron + React + TipTap.
+Kernel: lokal, açık kaynak, Markdown tabanlı macOS + Windows not uygulaması (Notion alternatifi). Electron + React + TipTap.
 
 - Spec: `docs/superpowers/specs/2026-11-04-kernel-design.md`
 - Faz 1 planı: `docs/superpowers/plans/2026-11-04-kernel-phase-1-core.md`
@@ -19,6 +19,7 @@ Kernel: lokal, açık kaynak, Markdown tabanlı macOS not uygulaması (Notion al
 - `npm run typecheck` — TS 7 (baseUrl yok; paths `./` ile başlar)
 - `npm run check:i18n` — arayüzde sözlük dışı (sabit yazılmış) metin taraması; izin listesi `scripts/i18n-allow.txt`
 - `npm run dist` — `.app` / `.dmg` (electron-builder, arm64)
+- `npm run dist:win` — Windows NSIS kurulumu (`release/Kernel-Setup-<sürüm>.exe`, Mac'te de derlenir)
 
 ## Kurallar
 - Kod ve tanımlayıcılar İngilizce, **yorumlar Türkçe**, arayüz metinleri Türkçe.
@@ -50,6 +51,11 @@ Kernel: lokal, açık kaynak, Markdown tabanlı macOS not uygulaması (Notion al
 - Flashcard: `SrsStore` (`src/main/srs.ts`, `ts-fsrs`) → `.kernel/srs.json`; bozuk dosya `srs.json.corrupt-<zaman>` olarak yedeklenir; yetim kart verisi 30 gün tutulur. Sınav modu vadeleri değiştirmez.
 - Sekmeler renderer `localStorage`'ında (userData, kasa başına) tutulur. Bölünmüş ekranın ikinci editörü `activeEditor`'a dokunmaz; kaydı `extraFlushes` / `flushAll` ile yazılır. Aynı sayfa iki bölmede açılmaz.
 - Cmd+W menüde `close-tab` komutudur (pencere: Cmd+Shift+W).
+
+## Notlar (güncelleme + Windows)
+- Güncelleme: `src/core/update.ts` (saf: `compareVersions`, `parseRelease`, `shouldOffer`; yalnızca `RELEASES_PREFIX` adresleri), `src/main/updates.ts` (GitHub `releases/latest`; `KERNEL_TEST` varken ağa çıkmaz, `KERNEL_TEST_UPDATE_FEED` sahte yanıt dosyası). Arayüz `UpdatePrompt.tsx`; ayar `updates: { check, skipped }`. Otomatik kurulum yok (imzasız uygulama), İndir tarayıcıda dosyayı açar.
+- Windows: `window-options.ts` (Mac dışı normal çerçeve + opak zemin), `menu-template.ts` (Mac'e özgü roller yalnızca darwin'de, `Cmd` → `Ctrl`), `sanitizeTitle(title, platform)` Windows yasak karakter / ayrılmış adlar. Renderer `lib/platform.ts`: `isMac`, `modKey(e)`, `keys('⌘K')`; `useT`/`tNow` metinlerdeki ⌘ simgelerini Windows'ta `Ctrl+` yapar. e2e kısayolları `ControlOrMeta+`.
+- CI: `.github/workflows/ci.yml` (macOS + Windows testleri), `release.yml` (`v*` etiketiyle dmg + exe yükler).
 
 ## Mimari
 - `src/main` — Electron ana süreç (pencere, kasa, arama, PDF)

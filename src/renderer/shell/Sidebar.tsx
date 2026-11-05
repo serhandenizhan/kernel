@@ -8,6 +8,7 @@ import { useState } from 'react'
 import type { TreeNode } from '@shared/types'
 import { PageIcon } from './PageHeader'
 import { TagsSection } from './TagsSection'
+import { keys } from '../lib/platform'
 
 function findNode(nodes: TreeNode[], id: string): TreeNode | null {
   for (const n of nodes) {
@@ -76,7 +77,7 @@ export function Sidebar() {
         <button className="search-trigger" onClick={() => s().setOverlay('search')}>
           <Icon name="search" size={14} />
           <span>{t('sidebar.search')}</span>
-          <kbd>⌘K</kbd>
+          <kbd>{keys('⌘K')}</kbd>
         </button>
         <NewButton />
       </div>

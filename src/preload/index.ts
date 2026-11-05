@@ -54,6 +54,7 @@ const api: KernelApi = {
   updates: { check: inv(IPC.updatesCheck), open: inv(IPC.updatesOpen) } as KernelApi['updates'],
   app: {
     locale: inv(IPC.appLocale),
+    platform: process.platform,
     onFlushRequest(cb) {
       ipcRenderer.on(IPC.appFlush, async () => {
         let ok = false

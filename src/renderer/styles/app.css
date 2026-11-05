@@ -267,6 +267,9 @@ button {
 .tree-icon {
   width: 18px;
   flex: none;
+  display: inline-flex;
+  justify-content: center;
+  color: var(--text-3);
   text-align: center;
 }
 .tree-title {
@@ -1184,4 +1187,12 @@ button {
 }
 .update-actions .spacer {
   flex: 1;
+}
+
+/* --- Windows / Linux: vibrancy ve trafik ışıkları yok, pencere çerçevesi sistemin --- */
+html:not([data-platform='darwin']) body {
+  background: var(--bg-solid);
+}
+html:not([data-platform='darwin']) .sidebar-drag {
+  height: 28px;
 }

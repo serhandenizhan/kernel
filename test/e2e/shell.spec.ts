@@ -44,10 +44,10 @@ test('kenar çubuğundan sayfa oluşturma, adlandırma, alt sayfa ve taşıma', 
 test('Cmd+\\ kenar çubuğunu gizler, Cmd+N yeni sayfa açar', async () => {
   const { app, win } = await launch()
   await expect(win.getByTestId('sidebar')).toBeVisible()
-  await win.keyboard.press('Meta+Backslash')
+  await win.keyboard.press('ControlOrMeta+Backslash')
   await expect(win.getByTestId('sidebar')).toBeHidden()
-  await win.keyboard.press('Meta+Backslash')
-  await win.keyboard.press('Meta+n')
+  await win.keyboard.press('ControlOrMeta+Backslash')
+  await win.keyboard.press('ControlOrMeta+n')
   await expect(row(win, 'Adsız')).toHaveCount(1)
   await app.close()
 })

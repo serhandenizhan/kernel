@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { useEffect, useRef } from 'react'
 import { COVER_PRESETS } from '../assets/covers'
 import { kernel } from '../lib/kernel'
@@ -18,7 +19,8 @@ export function CoverPicker({ anchor, onPick, onClose }: { anchor: DOMRect; onPi
     }
   }, [onClose])
 
-  return (
+  // body'ye çizilir: sayfa yüzeyinin cam efekti (backdrop-filter) sabit konumlu menüleri kaydırmasın
+  return createPortal(
     <div ref={ref} className="cover-picker glass" style={{ left: Math.max(8, anchor.right - 420), top: anchor.bottom + 6 }}>
       <div className="picker-title">{tNow('cover.presets')}</div>
       <div className="cover-grid">
@@ -42,6 +44,7 @@ export function CoverPicker({ anchor, onPick, onClose }: { anchor: DOMRect; onPi
           }}
         />
       </label>
-    </div>
+    </div>,
+    document.body
   )
 }

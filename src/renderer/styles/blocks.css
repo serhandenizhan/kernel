@@ -229,7 +229,8 @@
   --callout-bg: #eef2f6;
   background: var(--callout-bg);
 }
-.callout-note { --callout-bg: #eef2f6; }
+/* nötr not kutusu kâğıt degradesi üstünde de seçilsin */
+.callout-note { --callout-bg: rgba(60, 84, 104, 0.09); }
 .callout-tip { --callout-bg: #e3f4f0; }
 .callout-warning { --callout-bg: #fdf3dc; }
 .callout-danger { --callout-bg: #fbe7e5; }
@@ -728,6 +729,12 @@ mark[data-color='gray'] { --hl: #e3e8ec; }
 .wiki-item-path {
   font-size: 11px;
   color: var(--text-3);
+}
+/* seçili (yeşil) satırda yol okunur kalsın */
+.slash-item.active .wiki-item-path {
+  color: rgba(255, 255, 255, 0.78);
+}
+.wiki-item-path {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

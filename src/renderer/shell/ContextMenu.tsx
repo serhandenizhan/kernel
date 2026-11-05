@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 export interface MenuItem {
@@ -33,7 +34,8 @@ export function ContextMenu({ x, y, items, onClose }: { x: number; y: number; it
     }
   }, [onClose])
 
-  return (
+  // body'ye çizilir: sayfa yüzeyinin cam efekti (backdrop-filter) sabit konumlu menüleri kaydırmasın
+  return createPortal(
     <div ref={ref} className="menu glass glass-pop" role="menu" style={{ left: pos.x, top: pos.y }}>
       {items.map((it) => (
         <div key={it.label}>
@@ -50,6 +52,7 @@ export function ContextMenu({ x, y, items, onClose }: { x: number; y: number; it
           </button>
         </div>
       ))}
-    </div>
+    </div>,
+    document.body
   )
 }

@@ -140,6 +140,9 @@ export const useStore = create<State>((set, get) => ({
   openInNewTab(id) {
     set((s) => {
       const base = s.tabs.length ? s.tabs : s.currentId ? [s.currentId] : []
+      // zaten açık sayfa yeni sekme açmaz, kendi sekmesine geçer
+      const open = base.indexOf(id)
+      if (open >= 0) return { tabs: base.length > 1 ? base : [], activeTab: base.length > 1 ? open : 0, currentId: id, view: 'page', split: s.split === id ? null : s.split }
       return { tabs: [...base, id], activeTab: base.length, currentId: id, view: 'page' }
     })
   },
@@ -206,22 +209,50 @@ export const useStore = create<State>((set, get) => ({
 
 export { findNode }
 
+/** Sayfanın üst sayfalarının kimlikleri (kökten başlayarak) */
+function ancestorsOf(nodes: TreeNode[], id: string, chain: string[] = []): string[] | null {
+  for (const n of nodes) {
+    if (n.id === id) return chain
+    const found = ancestorsOf(n.children, id, [...chain, n.id])
+    if (found) return found
+  }
+  return null
+}
+
+// açılan sayfa kenar çubuğunda görünsün: üst sayfaları açılır (kullanıcının kapattığı klasörler yalnızca sayfa değişince açılır)
+useStore.subscribe((s, prev) => {
+  if (!s.currentId || s.currentId === prev.currentId) return
+  const chain = ancestorsOf(s.tree, s.currentId) ?? []
+  if (chain.some((id) => !s.expanded[id])) useStore.setState({ expanded: { ...s.expanded, ...Object.fromEntries(chain.map((id) => [id, true])) } })
+})
+
 // Etkin sekme açık sayfayı izler; silinen sayfaların sekmeleri kapanır; sekmeler kaydedilir
 useStore.subscribe((s, prev) => {
+  // önce silinen sayfaların sekmeleri kapanır: etkin sekme silindiyse yerine ağacın ilk sayfası değil komşu sekme açılır
+  if (s.tree !== prev.tree && s.tabs.length) {
+    const alive = s.tabs.filter((id) => findNode(s.tree, id) !== null)
+    if (alive.length !== s.tabs.length) {
+      const kept = alive.indexOf(s.tabs[s.activeTab]!)
+      const activeTab = kept >= 0 ? kept : Math.min(s.activeTab, Math.max(0, alive.length - 1))
+      const currentId = alive[activeTab] ?? s.currentId
+      const split = s.split && findNode(s.tree, s.split) && s.split !== currentId ? s.split : null
+      useStore.setState({ tabs: alive.length > 1 ? alive : [], activeTab: alive.length > 1 ? activeTab : 0, currentId, split })
+      return
+    }
+  }
   if (s.currentId !== prev.currentId && s.currentId && s.tabs.length && s.tabs[s.activeTab] !== s.currentId) {
+    // sayfa başka bir sekmede zaten açıksa o sekmeye geçilir (aynı sayfa iki sekmede açılmaz)
+    const open = s.tabs.indexOf(s.currentId)
+    if (open >= 0) {
+      useStore.setState({ activeTab: open, split: s.split === s.currentId ? null : s.split })
+      return
+    }
     const tabs = [...s.tabs]
     tabs[s.activeTab] = s.currentId
     useStore.setState({ tabs, split: s.split === s.currentId ? null : s.split })
     return
   }
-  if (s.tree !== prev.tree && s.tabs.length) {
-    const tabs = s.tabs.filter((id) => findNode(s.tree, id) !== null)
-    if (tabs.length !== s.tabs.length) {
-      useStore.setState({ tabs: tabs.length > 1 ? tabs : [], activeTab: Math.min(s.activeTab, Math.max(0, tabs.length - 1)) })
-      return
-    }
-  }
-  if (s.split && s.tree !== prev.tree && !findNode(s.tree, s.split)) useStore.setState({ split: null })
+  if (s.split && (s.tree !== prev.tree || s.split !== prev.split) && !findNode(s.tree, s.split)) useStore.setState({ split: null })
   if ((s.tabs !== prev.tabs || s.activeTab !== prev.activeTab) && s.vaultPath) {
     try {
       localStorage.setItem(TABS_KEY(s.vaultPath), JSON.stringify({ tabs: s.tabs, activeTab: s.activeTab }))

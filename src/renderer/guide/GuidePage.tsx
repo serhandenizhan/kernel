@@ -10,12 +10,13 @@ import { SHORTCUTS } from './shortcuts'
 import { MermaidPreview } from '../editor/ui/MermaidView'
 import { useT, tNow } from '../lib/i18n'
 import type { MessageKey } from '@shared/i18n'
+import { keys } from '../lib/platform'
 
 // Rehberdeki küçük ısı haritası örneği (3 hafta)
 const HOME_DEMO = [0, 1, 2, 0, 3, 1, 0, 2, 4, 1, 0, 3, 2, 1, 0, 1, 3, 4, 2, 0, 1]
 
 /** Tuş gösterimi: sözlük anahtarıysa (sc.*) çevrilir */
-const keysOf = (keys: string) => (keys.startsWith('sc.') ? tNow(keys as MessageKey) : keys)
+const keysOf = (k: string) => (k.startsWith('sc.') ? tNow(k as MessageKey) : keys(k))
 
 /** Canlı örnek: ham NotebookLM metni → Kernel'in dönüşümü (uygulamanın kendi bileşenleriyle) */
 function PasteDemo() {

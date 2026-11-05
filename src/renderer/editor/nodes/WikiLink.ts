@@ -5,6 +5,7 @@ import { tNow } from '../../lib/i18n'
 import { toVaultUrl } from '@core/vault-url'
 import { kernel } from '../../lib/kernel'
 import type { TreeNode } from '@shared/types'
+import { modKey } from '../../lib/platform'
 
 // ikonu olmayan sayfa için ince belge ikonu (ikon setindeki "doc" ile aynı çizim)
 const DOC_ICON = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 1.8h5.2L12 4.6V14a.6.6 0 0 1-.6.6H4a.6.6 0 0 1-.6-.6V2.4a.6.6 0 0 1 .6-.6zM9 1.9v2.9h2.9" stroke-linejoin="round"/></svg>'
@@ -101,7 +102,7 @@ export const WikiLink = Node.create({
       dom.addEventListener('mousedown', (e) => e.preventDefault())
       dom.addEventListener('click', (e) => {
         e.preventDefault()
-        void openWikiTarget(target, e.metaKey)
+        void openWikiTarget(target, modKey(e))
       })
       return { dom, destroy: unsubscribe }
     }

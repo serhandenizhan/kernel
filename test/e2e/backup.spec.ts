@@ -9,7 +9,7 @@ test('ayarlardan yedekleme açılır, klasör seçilir ve şimdi yedek alınır'
   const out = mkdtempSync(join(tmpdir(), 'kernel-bk-'))
   writeFileSync(join(vault, 'Not.md'), 'yedeklenecek\n')
   const { app, win } = await launch(vault, { KERNEL_TEST_BACKUP_DIR: out })
-  await win.keyboard.press('Meta+,')
+  await win.keyboard.press('ControlOrMeta+,')
   await win.getByTestId('setting-backup').check()
   await win.getByTestId('backup-choose').click()
   await expect(win.getByTestId('backup-folder')).toHaveText(out)
@@ -22,7 +22,7 @@ test('ayarlardan yedekleme açılır, klasör seçilir ve şimdi yedek alınır'
 test('yedek klasörü yoksa uyarır, uygulama çalışmaya devam eder', async () => {
   const vault = tmpVault()
   const { app, win } = await launch(vault, { KERNEL_TEST_BACKUP_DIR: join(tmpdir(), 'kesinlikle-olmayan-klasor-kernel') })
-  await win.keyboard.press('Meta+,')
+  await win.keyboard.press('ControlOrMeta+,')
   await win.getByTestId('setting-backup').check()
   await win.getByTestId('backup-choose').click()
   await win.getByTestId('backup-now').click()

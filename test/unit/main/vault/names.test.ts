@@ -41,3 +41,18 @@ describe('uniqueName', () => {
     expect(await uniqueName(dir, 'Kimya', '.md', new Set(['kimya.md']))).toBe('Kimya (2)')
   })
 })
+
+describe('sanitizeTitle — Windows', () => {
+  it('replaces characters Windows forbids and keeps titles readable', () => {
+    expect(sanitizeTitle('Neden? <a|b> "x" * y\\z', 'win32')).toBe('Neden？ ‹aǀb› ”x” ∗ y⧵z')
+  })
+  it('drops trailing dots and spaces and guards reserved device names', () => {
+    expect(sanitizeTitle('Sonuç...', 'win32')).toBe('Sonuç')
+    expect(sanitizeTitle('con', 'win32')).toBe('con_')
+    expect(sanitizeTitle('LPT1', 'win32')).toBe('LPT1_')
+    expect(sanitizeTitle('Console', 'win32')).toBe('Console')
+  })
+  it('leaves macOS titles as before', () => {
+    expect(sanitizeTitle('Neden?', 'darwin')).toBe('Neden?')
+  })
+})

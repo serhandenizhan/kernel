@@ -15,7 +15,7 @@ if (process.env['KERNEL_USER_DATA']) app.setPath('userData', process.env['KERNEL
 installCrashLogging()
 registerVaultScheme()
 // Chromium'un kendi şifreleme anahtarı için Anahtar Zinciri'ne gitmesin (Kernel gizli bilgi saklamaz; parola penceresi açılmaz)
-app.commandLine.appendSwitch('use-mock-keychain')
+if (process.platform === 'darwin') app.commandLine.appendSwitch('use-mock-keychain')
 
 app.whenReady().then(async () => {
   log.info('Kernel başlatılıyor', app.getVersion())

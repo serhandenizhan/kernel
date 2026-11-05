@@ -15,7 +15,7 @@ test('graf tüm sayfaları ve linkleri gösterir; yerel graf komşularla sınır
   await expect(win.locator('.graph-canvas')).toBeVisible()
 
   await win.getByTestId('tree-row').filter({ hasText: 'D' }).click()
-  await win.keyboard.press('Meta+p')
+  await win.keyboard.press('ControlOrMeta+p')
   await win.getByTestId('command-input').fill('bu sayfanın grafı')
   await win.keyboard.press('Enter')
   await expect(win.getByTestId('graph-stats')).toHaveText('1 sayfa · 0 bağlantı')

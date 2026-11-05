@@ -5,12 +5,12 @@
 <h1 align="center">Kernel</h1>
 
 <p align="center">
-  Notların senin bilgisayarında kalır. Lokal, açık kaynak, Markdown tabanlı macOS not uygulaması.<br>
-  <em>Your notes stay on your Mac. A local, open-source, Markdown-based note app for macOS.</em>
+  Notların senin bilgisayarında kalır. Lokal, açık kaynak, Markdown tabanlı not uygulaması — macOS ve Windows.<br>
+  <em>Your notes stay on your computer. A local, open-source, Markdown-based note app for macOS and Windows.</em>
 </p>
 
 <p align="center">
-  <a href="https://github.com/serhandenizhan/kernel/releases/latest"><img src="https://img.shields.io/github/v/release/serhandenizhan/kernel?label=macOS%20i%C3%A7in%20indir%20%C2%B7%20Download&style=for-the-badge&color=0e7c6b" alt="İndir / Download"></a>
+  <a href="https://github.com/serhandenizhan/kernel/releases/latest"><img src="https://img.shields.io/github/v/release/serhandenizhan/kernel?label=%C4%B0ndir%20%C2%B7%20Download&style=for-the-badge&color=0e7c6b" alt="İndir / Download"></a>
 </p>
 
 <p align="center">
@@ -25,7 +25,7 @@
 
 ## Türkçe
 
-Kernel, ders notları ve kişisel bilgi için yapılmış bir not uygulaması. Her sayfa diskte düz bir `.md` dosyasıdır: hesap yok, bulut yok, abonelik yok. Notlarını istediğin editörde açabilir, iCloud ya da Git ile yedekleyebilirsin.
+Kernel, ders notları ve kişisel bilgi için yapılmış, macOS ve Windows'ta çalışan bir not uygulaması. Her sayfa diskte düz bir `.md` dosyasıdır: hesap yok, bulut yok, abonelik yok. Notlarını istediğin editörde açabilir, iCloud ya da Git ile yedekleyebilirsin.
 
 ### Öne çıkanlar
 
@@ -48,7 +48,10 @@ Kernel, ders notları ve kişisel bilgi için yapılmış bir not uygulaması. H
 
 ### Kurulum
 
-**İndir:** [Son sürüm](https://github.com/serhandenizhan/kernel/releases/latest) sayfasından `.dmg` dosyasını indir, `Kernel.app`'i Uygulamalar klasörüne sürükle. Uygulama Apple tarafından imzalanmadığı için ilk açılışta **sağ tık → Aç** demen gerekir. (Apple Silicon Mac gerekir.)
+[Son sürüm](https://github.com/serhandenizhan/kernel/releases/latest) sayfasından indir:
+
+- **macOS** — `.dmg` dosyasını aç, `Kernel.app`'i Uygulamalar klasörüne sürükle. Uygulama Apple tarafından imzalanmadığı için ilk açılışta **sağ tık → Aç** demen gerekir. (Apple Silicon Mac gerekir.)
+- **Windows** — `Kernel-Setup-<sürüm>.exe` dosyasını çalıştır. Uygulama imzasız olduğu için SmartScreen uyarısında **Ek bilgi → Yine de çalıştır** de. (Windows 10/11, 64 bit.)
 
 **Kaynaktan derle** (Node.js 22+):
 
@@ -59,7 +62,7 @@ npm install
 npm run dist
 ```
 
-Çıktı: `release/mac-arm64/Kernel.app` ve `release/Kernel-<sürüm>-arm64.dmg`.
+Çıktı: `release/mac-arm64/Kernel.app` ve `release/Kernel-<sürüm>-arm64.dmg`. Windows kurulumu için `npm run dist:win` (`release/Kernel-Setup-<sürüm>.exe`).
 
 ### Notların nerede?
 
@@ -69,7 +72,7 @@ npm run dist
 
 ## English
 
-Kernel is a note app built for lecture notes and personal knowledge. Every page is a plain `.md` file on your disk: no account, no cloud, no subscription. Open your notes in any editor and back them up with iCloud or Git.
+Kernel is a note app for macOS and Windows, built for lecture notes and personal knowledge. Every page is a plain `.md` file on your disk: no account, no cloud, no subscription. Open your notes in any editor and back them up with iCloud or Git.
 
 ### Highlights
 
@@ -87,9 +90,12 @@ Kernel is a note app built for lecture notes and personal knowledge. Every page 
 
 ### Install
 
-**Download:** get the `.dmg` from the [latest release](https://github.com/serhandenizhan/kernel/releases/latest) and drag `Kernel.app` into Applications. The app is not signed by Apple, so the first time you open it, **right-click → Open**. (Requires an Apple Silicon Mac.)
+Download from the [latest release](https://github.com/serhandenizhan/kernel/releases/latest):
 
-**Build from source** (Node.js 22+): see the commands above.
+- **macOS** — open the `.dmg` and drag `Kernel.app` into Applications. The app is not signed by Apple, so the first time you open it, **right-click → Open**. (Requires an Apple Silicon Mac.)
+- **Windows** — run `Kernel-Setup-<version>.exe`. The app is unsigned, so in the SmartScreen warning choose **More info → Run anyway**. (Windows 10/11, 64-bit.)
+
+**Build from source** (Node.js 22+): see the commands above; use `npm run dist:win` for the Windows installer.
 
 ### Where are my notes?
 

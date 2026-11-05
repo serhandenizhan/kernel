@@ -4,6 +4,7 @@ import { kernel } from './lib/kernel'
 import { Sidebar } from './shell/Sidebar'
 import { VaultPicker } from './shell/VaultPicker'
 import { Toasts } from './shell/Toasts'
+import { modKey } from './lib/platform'
 import { UpdatePrompt } from './shell/UpdatePrompt'
 import { PageView } from './shell/PageView'
 import { SearchPalette } from './shell/SearchPalette'
@@ -53,7 +54,7 @@ function closeTabOrWindow() {
 function useShortcuts() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (!e.metaKey) return
+      if (!modKey(e)) return
       const s = useStore.getState()
       const k = e.key.toLowerCase()
       if (k === '\\') {

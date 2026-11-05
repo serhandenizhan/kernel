@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Settings } from '@shared/types'
 import { useStore } from '../state/store'
 import { kernel } from '../lib/kernel'
+import { isMac } from '../lib/platform'
 import { useLang, useT } from '../lib/i18n'
 import { localeOf } from '@shared/i18n'
 
@@ -136,7 +137,7 @@ export function SettingsDialog() {
           <div className="setting-path">{vaultPath}</div>
           <div className="setting-actions">
             <button className="btn small" onClick={() => void kernel.vault.reveal('')}>
-              {t('settings.vault.reveal')}
+              {t(isMac ? 'settings.vault.reveal' : 'settings.vault.revealWin')}
             </button>
             <button
               className="btn small"

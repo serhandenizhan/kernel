@@ -2,6 +2,8 @@
 :root {
   --bg: #dce5ec;
   --bg-veil: rgba(220, 229, 236, 0.82);
+  /* vibrancy olmayan platformlarda (Windows) opak zemin */
+  --bg-solid: #dce5ec;
   --page: #ffffff;
   --page-radius: 14px;
   --page-inset: 10px;
@@ -22,12 +24,12 @@
   --glass-border: rgba(255, 255, 255, 0.7);
   --glass-edge: rgba(20, 35, 43, 0.12);
   --glass-shadow: 0 12px 40px rgba(20, 35, 43, 0.18), 0 2px 8px rgba(20, 35, 43, 0.08);
-  --font-ui: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  --font-ui: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
   --font-body: var(--font-ui);
-  --font-serif: ui-serif, 'New York', Georgia, serif;
-  --font-display: -apple-system, 'SF Pro Display', BlinkMacSystemFont, sans-serif;
-  --font-rounded: ui-rounded, 'SF Pro Rounded', -apple-system, sans-serif;
-  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-serif: ui-serif, 'New York', Cambria, Georgia, serif;
+  --font-display: -apple-system, 'SF Pro Display', BlinkMacSystemFont, 'Segoe UI Variable Display', 'Segoe UI', sans-serif;
+  --font-rounded: ui-rounded, 'SF Pro Rounded', -apple-system, 'Segoe UI Variable Display', 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, 'Cascadia Mono', Consolas, monospace;
   --page-width: 720px;
   /* Faz 3 (spec §18.1): yazı alanı degradesi (opak uçlar; saydamlık --paper-alpha ile) */
   --paper-top: #ffffff;
@@ -49,6 +51,7 @@
 :root[data-theme='dark'] {
   --bg: #141a20;
   --bg-veil: rgba(20, 26, 32, 0.82);
+  --bg-solid: #141a20;
   --page: #1c232b;
   --accent: #3fbfa8;
   --accent-soft: rgba(63, 191, 168, 0.14);

@@ -1,4 +1,4 @@
-# Kernel macOS paketi (yerel kullanım; Apple imzası yok, ad-hoc imzalı)
+# Kernel paketleri: macOS (ad-hoc imzalı, Apple imzası yok) ve Windows (NSIS kurulum, imzasız)
 appId: app.kernel.notes
 productName: Kernel
 copyright: Copyright © 2026 Kernel contributors
@@ -23,3 +23,15 @@ mac:
   darkModeSupport: true
 dmg:
   title: Kernel
+  artifactName: Kernel-${version}-${arch}.${ext}
+win:
+  icon: build/icon.png
+  target:
+    - target: nsis
+      arch: x64
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  artifactName: Kernel-Setup-${version}.${ext}

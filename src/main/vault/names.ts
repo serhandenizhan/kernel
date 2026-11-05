@@ -3,7 +3,8 @@ import { mainT } from '../i18n'
 
 // Windows'un dosya adında yasakladığı karakterler okunur benzerleriyle değiştirilir
 const WIN_CHARS: Record<string, string> = { '?': '？', '*': '∗', '"': '”', '<': '‹', '>': '›', '|': 'ǀ', '\\': '⧵' }
-const WIN_RESERVED = /^(con|prn|aux|nul|com\d|lpt\d)$/i
+// aygıt adları uzantıyla da ayrılmıştır (con.notes de geçersiz): ilk noktaya kadarki kısım denetlenir
+const WIN_RESERVED = /^(con|prn|aux|nul|com\d|lpt\d)(?=\.|$)/i
 
 // Başlığı dosya adı olarak güvenli hale getirir (macOS; Windows'ta ek kurallar)
 export function sanitizeTitle(title: string, platform: string = process.platform): string {
@@ -18,7 +19,7 @@ export function sanitizeTitle(title: string, platform: string = process.platform
   if (t.length > 120) t = t.slice(0, 120)
   if (platform === 'win32') {
     t = t.replace(/[?*"<>|\\]/g, (c) => WIN_CHARS[c]!).replace(/[. ]+$/, '')
-    if (WIN_RESERVED.test(t)) t += '_'
+    t = t.replace(WIN_RESERVED, '$1_')
   }
   return t || mainT('page.untitled')
 }

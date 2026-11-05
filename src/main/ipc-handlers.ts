@@ -27,7 +27,7 @@ import { log } from './log'
 import { PinStore } from './pins'
 import { ActivityStore } from './activity'
 import { computeHome, localDay } from '@core/home'
-import { RELEASES_PREFIX, shouldOffer } from '@core/update'
+import { isReleaseUrl, shouldOffer } from '@core/update'
 import { fetchLatestRelease } from './updates'
 
 // ana sayfa canlı yenilemesi: değişiklikler 500 ms içinde tek olayda birleştirilir
@@ -401,6 +401,6 @@ export function registerIpc(): void {
   })
   h(IPC.updatesOpen, async (url: string) => {
     // yalnızca bu deponun sürüm adresleri açılır
-    if (typeof url === 'string' && url.startsWith(RELEASES_PREFIX)) await shell.openExternal(url)
+    if (typeof url === 'string' && isReleaseUrl(url)) await shell.openExternal(url)
   })
 }

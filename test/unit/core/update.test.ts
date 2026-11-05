@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { compareVersions, parseRelease, shouldOffer } from '@core/update'
+import { compareVersions, isReleaseUrl, parseRelease, shouldOffer } from '@core/update'
 
 const release = {
   tag_name: 'v0.5.0',
@@ -61,5 +61,15 @@ describe('shouldOffer', () => {
     expect(shouldOffer(info, '0.6.0', null)).toBe(false)
     expect(shouldOffer(info, '0.4.0', '0.5.0')).toBe(false)
     expect(shouldOffer(null, '0.4.0', null)).toBe(false)
+  })
+})
+
+describe('isReleaseUrl', () => {
+  it('accepts only this repository releases on github.com', () => {
+    expect(isReleaseUrl('https://github.com/serhandenizhan/kernel/releases/download/v1/K.dmg')).toBe(true)
+    expect(isReleaseUrl('https://github.com/serhandenizhan/kernel/releases/../../other/repo')).toBe(false)
+    expect(isReleaseUrl('https://user:pw@github.com/serhandenizhan/kernel/releases/x')).toBe(false)
+    expect(isReleaseUrl('https://github.com.evil.io/serhandenizhan/kernel/releases/x')).toBe(false)
+    expect(isReleaseUrl('not a url')).toBe(false)
   })
 })

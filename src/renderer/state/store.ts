@@ -253,6 +253,8 @@ useStore.subscribe((s, prev) => {
     return
   }
   if (s.split && (s.tree !== prev.tree || s.split !== prev.split) && !findNode(s.tree, s.split)) useStore.setState({ split: null })
+  // aynı sayfa iki bölmede görünmez (örn. sekme yokken açık sayfa çöpe atılınca ağacın ilk sayfası sağ bölmedeki sayfa olabilir)
+  if (s.split && s.split === s.currentId && (s.currentId !== prev.currentId || s.split !== prev.split)) useStore.setState({ split: null })
   if ((s.tabs !== prev.tabs || s.activeTab !== prev.activeTab) && s.vaultPath) {
     try {
       localStorage.setItem(TABS_KEY(s.vaultPath), JSON.stringify({ tabs: s.tabs, activeTab: s.activeTab }))

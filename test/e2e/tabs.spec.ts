@@ -86,3 +86,21 @@ test('açık sayfaya Cmd+tık yeni sekme açmaz', async () => {
   await expect(win.getByTestId('page-title')).toHaveValue('Alfa')
   await app.close()
 })
+
+test('sağ bölmedeki sayfa sol bölmeye düşerse bölme kapanır (aynı sayfa iki bölmede görünmez)', async () => {
+  const vault = tmpVault()
+  for (const n of ['Alfa', 'Beta']) writeFileSync(join(vault, `${n}.md`), `${n} metni\n`)
+  const { app, win } = await launch(vault)
+  await win.getByTestId('tree-row').filter({ hasText: 'Beta' }).click()
+  await win.getByTestId('tree-row').filter({ hasText: 'Alfa' }).click({ modifiers: ['ControlOrMeta'] })
+  await win.getByTestId('tab').first().click()
+  await win.getByTestId('tab').nth(1).dragTo(win.getByTestId('split-drop'), { force: true })
+  await expect(win.getByTestId('split-pane').getByTestId('page-title')).toHaveValue('Alfa')
+  await expect(win.getByTestId('page-title').first()).toHaveValue('Beta')
+  // sol bölmedeki Beta sekmesi kapanır: geriye Alfa sekmesi kalır, o da sağ bölmede açık
+  await win.getByTestId('tab').first().hover()
+  await win.getByTestId('tab').first().locator('.tab-close, button').first().click()
+  await expect(win.getByTestId('page-title')).toHaveCount(1)
+  await expect(win.getByTestId('page-title')).toHaveValue('Alfa')
+  await app.close()
+})

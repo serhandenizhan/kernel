@@ -51,6 +51,7 @@ describe('sanitizeTitle — Windows', () => {
     expect(sanitizeTitle('con', 'win32')).toBe('con_')
     expect(sanitizeTitle('LPT1', 'win32')).toBe('LPT1_')
     expect(sanitizeTitle('Console', 'win32')).toBe('Console')
+    expect(sanitizeTitle('con.notes', 'win32')).toBe('con_.notes')
   })
   it('leaves macOS titles as before', () => {
     expect(sanitizeTitle('Neden?', 'darwin')).toBe('Neden?')

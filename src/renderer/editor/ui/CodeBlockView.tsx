@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { NodeViewContent, NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
-import { SUPPORTED_LANGUAGES, looksLikeMermaid, normalizeLanguage } from '@core/smart-paste/language'
+import { looksLikeMermaid } from '@core/smart-paste/language'
 import { getLoadedHighlighter, HIGHLIGHT_LANGUAGES, THEMES } from '../../lib/shiki'
 import { MermaidPreview } from './MermaidView'
+import { LanguagePicker, languageLabel as label } from './LanguagePicker'
 
 const CHUNK_LINES = 25
 
@@ -40,8 +41,6 @@ function StaticCode({ code, language }: { code: string; language: string }) {
   )
 }
 
-const LABELS: Record<string, string> = { cpp: 'C++', csharp: 'C#', javascript: 'JavaScript', typescript: 'TypeScript', html: 'HTML', css: 'CSS', json: 'JSON', yaml: 'YAML', sql: 'SQL', php: 'PHP' }
-const label = (l: string) => LABELS[l] ?? l.charAt(0).toUpperCase() + l.slice(1)
 
 // Kod bloğu: dil seçici (aranabilir), satır numarası, kopyala
 export function CodeBlockView({ node, updateAttributes, editor }: NodeViewProps) {
@@ -57,15 +56,7 @@ export function CodeBlockView({ node, updateAttributes, editor }: NodeViewProps)
   return (
     <NodeViewWrapper className={`code-block${lineNumbers ? ' with-lines' : ''}`} data-language={language || undefined}>
       <div className="code-toolbar" contentEditable={false}>
-        <input
-          className="code-lang"
-          data-testid="code-language"
-          list="kernel-code-languages"
-          placeholder="Düz metin"
-          value={language}
-          disabled={!editor.isEditable}
-          onChange={(e) => updateAttributes({ language: e.target.value ? normalizeLanguage(e.target.value) : null })}
-        />
+        <LanguagePicker value={language || null} disabled={!editor.isEditable} onChange={(v) => updateAttributes({ language: v })} />
         {isMermaid && (
           <button className="code-btn" data-testid="mermaid-toggle" onClick={() => setShowCode(!showCode)}>
             {showCode ? 'Önizleme' : 'Kod'}
@@ -96,13 +87,6 @@ export function CodeBlockView({ node, updateAttributes, editor }: NodeViewProps)
         )}
         <NodeViewContent<'code'> as="code" />
       </pre>
-      <datalist id="kernel-code-languages">
-        {SUPPORTED_LANGUAGES.map((l) => (
-          <option key={l} value={l}>
-            {label(l)}
-          </option>
-        ))}
-      </datalist>
     </NodeViewWrapper>
   )
 }

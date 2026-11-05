@@ -28,7 +28,7 @@ test('Markdown kısayolları blok oluşturur: kod (dil normalize), blok formül'
   await newPage(win, vault, 'Kısayol')
   await win.keyboard.type('```py ')
   await win.keyboard.type('print(1)')
-  await expect(win.locator('[data-testid="code-language"]')).toHaveValue('python')
+  await expect(win.getByTestId('code-language')).toHaveText(/Python/)
   await expect.poll(() => bodyOf(vault, 'Kısayol.md'), { timeout: 5000 }).toContain('```python\nprint(1)\n```')
 
   await newPage(win, vault, 'Formül kısayolu')

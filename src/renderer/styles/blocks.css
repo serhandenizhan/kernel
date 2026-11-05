@@ -33,19 +33,113 @@
   opacity: 1;
 }
 .code-lang {
-  width: 120px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   margin-right: auto;
-  padding: 2px 6px;
+  padding: 3px 9px 3px 10px;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: 999px;
   background: transparent;
   color: var(--text-2);
   font: inherit;
+  font-size: 12px;
+  cursor: default;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 .code-lang:hover,
-.code-lang:focus {
-  border-color: var(--border-strong);
+.code-lang:focus-visible,
+.code-lang.open {
+  border-color: var(--glass-border);
+  background: var(--hover);
+  color: var(--text);
   outline: none;
+}
+.code-lang-chevron {
+  opacity: 0.6;
+  transition: transform 0.18s ease;
+}
+.code-lang.open .code-lang-chevron {
+  transform: rotate(180deg);
+}
+
+/* --- dil seçici (cam açılır panel) --- */
+.lang-picker {
+  position: fixed;
+  z-index: 1300;
+  width: 236px;
+  padding: 6px;
+  border-radius: 14px;
+  transform-origin: top left;
+  animation: lang-in 0.14s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+.lang-picker.up {
+  transform: translateY(-100%);
+  transform-origin: bottom left;
+  animation-name: lang-in-up;
+}
+@keyframes lang-in {
+  from { opacity: 0; transform: scale(0.96) translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes lang-in-up {
+  from { opacity: 0; transform: translateY(-100%) scale(0.96) translateY(4px); }
+  to { opacity: 1; transform: translateY(-100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lang-picker { animation: none; }
+  .code-lang-chevron { transition: none; }
+}
+.lang-search {
+  width: 100%;
+  margin-bottom: 4px;
+  padding: 7px 10px;
+  border: 1px solid var(--glass-border);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--page) 55%, transparent);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+}
+.lang-search:focus {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.lang-list {
+  max-height: 280px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.lang-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+  cursor: default;
+  transition: background 0.1s ease;
+}
+.lang-option.active {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+.lang-option.current .lang-option-label {
+  font-weight: 600;
+}
+.lang-option-hint {
+  color: var(--text-3);
+  font-size: 11px;
+}
+.lang-check {
+  margin-left: auto;
+  color: var(--accent);
+}
+.lang-empty {
+  padding: 8px 10px;
+  color: var(--text-3);
+  font-size: 13px;
 }
 .code-btn {
   padding: 2px 8px;

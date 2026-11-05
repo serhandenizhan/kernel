@@ -15,7 +15,8 @@ export function setMainLanguage(next: Lang | 'system'): void {
 
 /** Geçerli arayüz dili (ayar + macOS dili) */
 export function mainLang(): Lang {
-  return resolveLang(setting, app.getLocale())
+  // birim testlerinde electron uygulaması yoktur: sistem dili Türkçe sayılır
+  return resolveLang(setting, typeof app?.getLocale === 'function' ? app.getLocale() : 'tr-TR')
 }
 
 /** Dil değişince çağrılır (örn. uygulama menüsünü yeniden kurmak için) */

@@ -177,5 +177,7 @@ export interface KernelApi {
     onPageChangedExternally(cb: (id: string) => void): () => void
     /** Ana süreçten gelen bildirim (örn. otomatik yedek hatası) */
     onToast(cb: (message: string, kind: 'info' | 'error') => void): () => void
+    /** uygulama menüsünden gelen komut */
+    onMenuCommand(cb: (cmd: 'settings' | 'toggle-sidebar' | 'toggle-toc') => void): () => void
   }
 }

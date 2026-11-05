@@ -1,4 +1,5 @@
 import { readdir } from 'node:fs/promises'
+import { mainT } from '../i18n'
 
 // Başlığı macOS dosya adı olarak güvenli hale getirir
 export function sanitizeTitle(title: string): string {
@@ -11,7 +12,7 @@ export function sanitizeTitle(title: string): string {
     .replace(/^\.+/, '')
     .trim()
   if (t.length > 120) t = t.slice(0, 120)
-  return t || 'Adsız'
+  return t || mainT('page.untitled')
 }
 
 import { foldKey } from '@core/fold'

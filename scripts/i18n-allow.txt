@@ -6,3 +6,4 @@ src/renderer/shell/ExportDialog.tsx:<option value="pdf">PDF</option>
 src/renderer/shell/ExportDialog.tsx:<option value="A4">A4</option>
 src/renderer/shell/ExportDialog.tsx:<option value="Letter">Letter</option>
 src/renderer/print/PrintView.tsx:*
+src/main/templates.ts:const TITLE_VARS = ['{{başlık}}', '{{title}}', '{{Titel}}']

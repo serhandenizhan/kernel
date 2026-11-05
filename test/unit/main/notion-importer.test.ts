@@ -164,4 +164,13 @@ describe('NotionImporter', () => {
     expect(report.failedFiles).toEqual([{ page: 'Gezegenler', url: 'https://prod-files-secure.s3.us-west-2.amazonaws.com/ws/blk/bozuk.png' }])
     expect(readFileSync(join(vault.root, ROOT, 'Notion aktarım raporu.md'), 'utf8')).not.toContain('GIZLI')
   })
+  it('rapor ve kök klasör oluşturulduğu dilde yazılır (İngilizce)', async () => {
+    const imp = new NotionImporter({ client: new FixtureNotionClient(fixture()), vault, download: download(vault), today: TODAY, onProgress: () => {}, lang: 'en' })
+    await imp.run(['pg-root'])
+    const root = join(vault.root, 'Notion import (2026-11-04)')
+    const report = readFileSync(join(root, 'Notion import report.md'), 'utf8')
+    expect(report).toContain('## Summary')
+    expect(report).toContain('- Pages: 3')
+    expect(report).not.toContain('Özet')
+  })
 })

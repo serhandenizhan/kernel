@@ -9,6 +9,7 @@ import { NotionImporter, type ImportProgress } from './importer'
 import { clearToken, loadToken, saveToken, type SecretStore } from '../secrets'
 import { requireVault } from '../state'
 import { log } from '../log'
+import { mainLang, mainT } from '../i18n'
 
 const DOWNLOAD_TIMEOUT_MS = 30_000
 const MAX_BYTES = 50 * 1024 * 1024
@@ -26,7 +27,7 @@ function clientFor(token: string): NotionApi {
   const fixture = process.env['KERNEL_TEST_NOTION_FIXTURES']
   if (fixture) {
     if (!token.startsWith('secret_')) {
-      return { me: async () => Promise.reject(new NotionError('Notion token’ı geçersiz', 401, 'unauthorized')) } as unknown as NotionApi
+      return { me: async () => Promise.reject(new NotionError(mainT('notionErr.token'), 401, 'unauthorized')) } as unknown as NotionApi
     }
     return new FixtureNotionClient(JSON.parse(readFileSync(fixture, 'utf8')))
   }
@@ -58,8 +59,8 @@ export function registerNotionIpc(broadcast: (channel: string, ...args: unknown[
 
   const importer = async () => {
     const token = await loadToken(store())
-    if (!token) throw new Error('Önce Notion’a bağlan')
-    running = new NotionImporter({ client: clientFor(token), vault: requireVault(), download, onProgress: progress })
+    if (!token) throw new Error(mainT('notionErr.connectFirst'))
+    running = new NotionImporter({ client: clientFor(token), vault: requireVault(), download, onProgress: progress, lang: mainLang() })
     return running
   }
   const runInBackground = (job: Promise<unknown>) =>
@@ -76,7 +77,7 @@ export function registerNotionIpc(broadcast: (channel: string, ...args: unknown[
       await saveToken(token.trim(), store())
       return { ok: true, workspace: workspaceName }
     } catch (e) {
-      return { ok: false, error: e instanceof NotionError ? e.message : 'Notion’a bağlanılamadı' }
+      return { ok: false, error: e instanceof NotionError ? e.message : mainT('notionErr.connectFailed') }
     }
   })
   h(IPC.notionConnected, async () => (await loadToken(store())) !== null)
@@ -92,14 +93,14 @@ export function registerNotionIpc(broadcast: (channel: string, ...args: unknown[
       all.push(...res.results)
       cursor = res.next_cursor ?? undefined
     } while (cursor)
-    const titles = new Map(all.map((p) => [p.id, pageTitleOf(p) || 'Adsız']))
+    const titles = new Map(all.map((p) => [p.id, pageTitleOf(p) || mainT('page.untitled')]))
     // üst seviye sayfalar (alt sayfalar zaten onlarla birlikte gelir)
     return all
       .filter((p) => p.parent.type === 'workspace' || !titles.has(p.parent.page_id ?? ''))
       .map((p) => ({ id: p.id, title: titles.get(p.id)!, icon: p.icon?.type === 'emoji' ? p.icon.emoji : undefined }))
   })
   h(IPC.notionStart, async (ids: string[]) => {
-    if (running) throw new Error('Bir aktarım zaten sürüyor')
+    if (running) throw new Error(mainT('notionErr.running'))
     runInBackground((await importer()).run(ids))
   })
   h(IPC.notionResume, async () => {

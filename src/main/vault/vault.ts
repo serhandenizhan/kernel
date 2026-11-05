@@ -8,6 +8,7 @@ import { extraKeys, joinFrontmatter, splitFrontmatter } from './frontmatter'
 import { foldKey, sanitizeTitle, uniqueName } from './names'
 import { writeAtomic } from './atomic'
 import { loadOrder, saveOrder, type Order } from './order'
+import { mainT } from '../i18n'
 
 const ROOT_KEY = 'root'
 const isHidden = (name: string) => name.startsWith('.')
@@ -170,7 +171,7 @@ export class Vault {
 
   pathOf(id: string): string {
     const p = this.byId.get(id)
-    if (!p) throw new Error(`Sayfa bulunamadı: ${id}`)
+    if (!p) throw new Error(mainT('err.pageNotFound', { id }))
     return p
   }
 
@@ -242,7 +243,7 @@ export class Vault {
     const abs = this.pathOf(id)
     const current = await readFile(abs, 'utf8')
     const { meta, error } = splitFrontmatter(current)
-    if (error || current.includes('\u0000')) throw new Error('Bu sayfa salt okunur: dosyanın başlık bilgisi (frontmatter) bozuk')
+    if (error || current.includes('\u0000')) throw new Error(mainT('err.readOnly'))
     const updated = new Date().toISOString()
     // Kernel'in tanımadığı alanlar (Obsidian vb.) korunur
     await this.writeFile(abs, joinFrontmatter({ ...input.meta, id, updated }, input.markdown, extraKeys(meta)))
@@ -302,7 +303,7 @@ export class Vault {
     const abs = this.pathOf(id)
     if (parentId) {
       const target = this.pathOf(parentId)
-      if (target === abs || target.startsWith(folderOf(abs) + sep)) throw new Error('Sayfa kendi alt sayfasına taşınamaz')
+      if (target === abs || target.startsWith(folderOf(abs) + sep)) throw new Error(mainT('err.moveIntoChild'))
     }
     const oldKey = this.parentKey(abs)
     await this.relocate(id, this.dirForChildren(parentId), titleOf(abs))

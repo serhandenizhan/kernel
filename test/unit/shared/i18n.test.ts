@@ -12,7 +12,8 @@ describe('sözlükler', () => {
     for (const d of [tr, en, de]) for (const v of Object.values(d)) expect(v.trim()).not.toBe('')
   })
   it('yer tutucular her dilde aynı', () => {
-    const ph = (s: string) => (s.match(/\{\w+\}/g) ?? []).sort().join()
+    // {{…}} şablon değişkenidir, çeviri yer tutucusu değil
+    const ph = (s: string) => (s.match(/(?<!\{)\{\w+\}(?!\})/g) ?? []).sort().join()
     for (const k of Object.keys(tr) as MessageKey[]) {
       expect(ph(en[k]), k).toBe(ph(tr[k]))
       expect(ph(de[k]), k).toBe(ph(tr[k]))

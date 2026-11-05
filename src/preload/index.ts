@@ -62,7 +62,8 @@ const api: KernelApi = {
   events: {
     onTreeChanged: (cb) => on(IPC.eventTreeChanged, cb),
     onPageChangedExternally: (cb) => on(IPC.eventPageChanged, cb),
-    onToast: (cb) => on(IPC.eventToast, cb)
+    onToast: (cb) => on(IPC.eventToast, cb),
+    onMenuCommand: (cb) => on(IPC.eventMenuCommand, cb)
   }
 }
 

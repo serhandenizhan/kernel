@@ -12,7 +12,7 @@ export function handleVaultProtocol(): void {
   protocol.handle(VAULT_SCHEME, async (req) => {
     const root = state.vault?.root
     const abs = root ? resolveVaultUrl(root, req.url) : null
-    if (!abs) return new Response('Bulunamadı', { status: 404 })
+    if (!abs) return new Response('Not found', { status: 404 })
     // yalnızca uygulamanın kendi sayfaları bu şemaya erişebilir; fetch (PDF görüntüleyici) için CORS başlığı
     const res = await net.fetch(pathToFileURL(abs).toString())
     const headers = new Headers(res.headers)

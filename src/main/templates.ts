@@ -5,28 +5,17 @@ import { stringify } from 'yaml'
 import { splitFrontmatter } from './vault/frontmatter'
 import { sanitizeTitle, uniqueName } from './vault/names'
 import { writeAtomic } from './vault/atomic'
-
-const DEFAULT_NAME = 'Ders notu'
-const DEFAULT_BODY = `## Konu
-
-{{başlık}} — {{tarih}}
-
-## Önemli kavramlar
-
--
-
-## Formüller
-
-## Örnek sorular
-
-1.
-
-> [!tip] Sınav notu
->
-> Hocanın vurguladığı noktaları buraya yaz.
-`
+import type { Lang } from '@shared/types'
+import { localeOf, t } from '@shared/i18n'
 
 export const formatDateTr = (d: Date): string => `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
+
+/** Şablon tarihi: dilin kısa biçimi (tr/de GG.AA.YYYY, en AA/GG/YYYY) */
+export const formatTemplateDate = (d: Date, lang: Lang): string => new Intl.DateTimeFormat(localeOf(lang), { day: '2-digit', month: '2-digit', year: 'numeric' }).format(d)
+
+// her dilin şablon değişkenleri: başlık ve tarih
+const TITLE_VARS = ['{{başlık}}', '{{title}}', '{{Titel}}']
+const DATE_VARS = ['{{tarih}}', '{{date}}', '{{Datum}}']
 
 // Sayfa şablonları: .kernel/templates/<ad>.md
 export class TemplateStore {
@@ -34,7 +23,9 @@ export class TemplateStore {
 
   constructor(
     root: string,
-    private readonly now: () => Date = () => new Date()
+    private readonly now: () => Date = () => new Date(),
+    /** varsayılan şablonun ve tarih biçiminin dili */
+    private readonly lang: Lang = 'tr'
   ) {
     this.dir = join(root, '.kernel', 'templates')
   }
@@ -53,14 +44,17 @@ export class TemplateStore {
   async ensureDefault(): Promise<void> {
     if ((await this.list()).length) return
     await mkdir(this.dir, { recursive: true })
-    await writeAtomic(join(this.dir, `${DEFAULT_NAME}.md`), DEFAULT_BODY)
+    await writeAtomic(join(this.dir, `${t(this.lang, 'template.defaultName')}.md`), t(this.lang, 'template.defaultBody'))
   }
 
-  /** Şablonu doldurur: {{tarih}} → GG.AA.YYYY, {{başlık}} → sayfa başlığı; ikon/kapak meta'sı kopyalanır */
+  /** Şablonu doldurur: tarih ve başlık değişkenleri (üç dilde); ikon/kapak meta'sı kopyalanır */
   async render(name: string, title: string): Promise<{ markdown: string; meta: Partial<PageMeta> }> {
     const text = await readFile(join(this.dir, `${sanitizeTitle(name)}.md`), 'utf8')
     const { meta, body } = splitFrontmatter(text)
-    const markdown = body.replaceAll('{{tarih}}', formatDateTr(this.now())).replaceAll('{{başlık}}', title)
+    const date = formatTemplateDate(this.now(), this.lang)
+    let markdown = body
+    for (const v of DATE_VARS) markdown = markdown.replaceAll(v, date)
+    for (const v of TITLE_VARS) markdown = markdown.replaceAll(v, title)
     const out: Partial<PageMeta> = {}
     if (typeof meta['icon'] === 'string') out.icon = meta['icon']
     if (typeof meta['cover'] === 'string') out.cover = meta['cover']

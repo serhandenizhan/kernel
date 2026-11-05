@@ -1,6 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
 import { join } from 'node:path'
 import { IPC } from '@shared/ipc'
+import { mainT } from './i18n'
 
 const FLUSH_TIMEOUT_MS = 3000
 let quitting = false
@@ -63,11 +64,11 @@ export function createMainWindow(): BrowserWindow {
         // kayıt başarısız: kullanıcıya sormadan değişiklikleri kaybetme (spec §14)
         const answer = await dialog.showMessageBox(win, {
           type: 'warning',
-          buttons: ['Vazgeç', 'Yine de çık'],
+          buttons: [mainT('quit.cancel'), mainT('quit.anyway')],
           defaultId: 0,
           cancelId: 0,
-          message: 'Kaydedilmemiş değişiklikler var',
-          detail: 'Son değişiklikler diske yazılamadı. Çıkarsan kaybolabilirler.'
+          message: mainT('quit.message'),
+          detail: mainT('quit.detail')
         })
         if (answer.response === 0) {
           quitting = false

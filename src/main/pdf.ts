@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import type { PdfOptions, TreeNode } from '@shared/types'
 import type { Vault } from './vault/vault'
 import { log } from './log'
+import { mainT } from './i18n'
 
 const MARGINS: Record<PdfOptions['margin'], number> = { narrow: 0.4, normal: 0.75, wide: 1.0 } // inç
 const READY_TIMEOUT_MS = 20_000
@@ -30,7 +31,7 @@ async function waitReady(win: BrowserWindow): Promise<void> {
     if (state.ready) return
     await new Promise((r) => setTimeout(r, 100))
   }
-  throw new Error('Sayfa baskıya hazırlanamadı (zaman aşımı). Bir görsel ya da formül yüklenemiyor olabilir.')
+  throw new Error(mainT('err.printTimeout'))
 }
 
 /** Arayüzün baskı görünümünü (#/print) gizli pencerede açar ve hazır olmasını bekler */

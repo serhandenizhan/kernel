@@ -24,6 +24,8 @@ export function findHardcoded(source, jsx = true) {
   lines.forEach((raw, i) => {
     const line = raw.trim()
     if (!line || /^import\s/.test(line) || /\bfrom\s+['"]/.test(line)) return
+    // log kayıtları arayüz metni değildir (geliştirici için, Türkçe kalır)
+    if (/\blog\.(info|warn|error|debug)\(/.test(line)) return
     let hit = false
     // title / placeholder / aria-label / label / alt değerleri
     for (const m of line.matchAll(TEXT_ATTRS)) if (LETTER.test(m[3])) hit = true

@@ -11,6 +11,8 @@ import type { Vault } from '../vault/vault'
 import { NotionError } from './client'
 import { writeAtomic } from '../vault/atomic'
 import type { NotionApi } from './fixture-client'
+import type { Lang } from '@shared/types'
+import { t, type MessageKey } from '@shared/i18n'
 
 import type { ImportProgress, ImportReport } from '@shared/types'
 
@@ -108,6 +110,9 @@ function propText(p: { type: string; [k: string]: unknown }): string {
 // Her adım .kernel/notion-import.json'a işlenir; kesilirse resume() kaldığı yerden sürer.
 export class NotionImporter {
   private canceled = false
+  private tr(key: MessageKey, params?: Record<string, string | number>): string {
+    return t(this.deps.lang ?? 'tr', key, params)
+  }
   private files = new Map<string, string>()
 
   constructor(
@@ -116,6 +121,8 @@ export class NotionImporter {
       vault: Vault
       download: (url: string, nameHint: string) => Promise<string | null>
       today?: () => Date
+      /** rapor ve kök klasör adının dili (varsayılan Türkçe) */
+      lang?: Lang
       onProgress: (p: ImportProgress) => void
     }
   ) {}
@@ -193,7 +200,7 @@ export class NotionImporter {
         if (isFatal(e)) throw e
         // tek bloğun çocukları okunamadı: blok çocuksuz gelir, not düşülür
         b.children = []
-        this.state?.report.notes.push(`Bir ${b.type} bloğunun içeriği Notion'dan okunamadı`)
+        this.state?.report.notes.push(this.tr('report.blockUnreadable', { type: b.type }))
       }
       if (withFiles && FILE_TYPES.has(b.type)) {
         const f = data as unknown as NotionFile
@@ -250,7 +257,7 @@ export class NotionImporter {
         } catch (e) {
           if (isFatal(e)) throw e
           // tek sayfa okunamadı (paylaşılmamış/silinmiş): rapora gir, aktarıma devam et
-          const entry = { page: hint, error: e instanceof Error ? e.message : 'Okunamadı' }
+          const entry = { page: hint, error: e instanceof Error ? e.message : this.tr('notionErr.unreadable') }
           if (!report.failedPages.some((f) => f.page === entry.page)) report.failedPages.push(entry)
           continue
         }
@@ -263,17 +270,17 @@ export class NotionImporter {
           const coverUrl = page.cover?.file?.url ?? page.cover?.external?.url
           if (coverUrl && state.files[`${id}:cover`]) this.files.set(coverUrl, state.files[`${id}:cover`]!)
         }
-        infos.push({ notionId: id, parent, title: pageTitleOf(page) || 'Adsız', page, blocks })
+        infos.push({ notionId: id, parent, title: pageTitleOf(page) || this.tr('page.untitled'), page, blocks })
         const titles = new Map<string, string>()
-        const collectTitles = (bs: NotionBlock[]) => bs.forEach((b) => (b.type === 'child_page' ? titles.set(b.id, String((b['child_page'] as { title?: string })?.title ?? 'Adsız')) : collectTitles(b.children ?? [])))
+        const collectTitles = (bs: NotionBlock[]) => bs.forEach((b) => (b.type === 'child_page' ? titles.set(b.id, String((b['child_page'] as { title?: string })?.title ?? this.tr('page.untitled'))) : collectTitles(b.children ?? [])))
         collectTitles(blocks)
-        for (const cid of childPagesOf(blocks)) queue.push({ id: cid, parent: id, title: titles.get(cid) || 'Adsız' })
+        for (const cid of childPagesOf(blocks)) queue.push({ id: cid, parent: id, title: titles.get(cid) || this.tr('page.untitled') })
         await this.saveState(state)
       }
 
       // 2) kök ve tüm sayfaları oluştur (wiki link hedefleri için başlıklar önceden belli olmalı)
       if (!state.rootKernelId || !this.exists(state.rootKernelId)) {
-        state.rootKernelId = (await vault.create(null, `Notion içe aktarım (${state.date})`)).id
+        state.rootKernelId = (await vault.create(null, this.tr('report.rootName', { date: state.date }))).id
         await this.saveState(state)
       }
       report.rootPageId = state.rootKernelId
@@ -297,7 +304,7 @@ export class NotionImporter {
           state.report = { failedFiles: report.failedFiles, unsupported: report.unsupported, mismatches: report.mismatches, notes: report.notes, failedPages: report.failedPages }
           await this.saveState(state)
           onProgress({ phase: 'canceled', pagesDone: state.done.length, pagesTotal: infos.length })
-          return { ...report, notes: [...report.notes, 'Aktarım durduruldu; "Devam et" ile kaldığı yerden sürer.'] }
+          return { ...report, notes: [...report.notes, this.tr('report.stopped')] }
         }
         onProgress({ phase: 'importing', pagesDone: state.done.length, pagesTotal: infos.length, current: title })
         let explained = false
@@ -308,7 +315,7 @@ export class NotionImporter {
             explained = true
             if (e.kind === 'file-failed') report.failedFiles.push({ page: title, url: withoutSignature(e.detail) })
             else if (e.kind === 'unsupported') report.unsupported.push({ page: title, type: e.detail })
-            else report.notes.push(`${title}: sütun düzeni alt alta dizildi`)
+            else report.notes.push(this.tr('report.columns', { title }))
           }
         }
         const content = convertBlocks(info.blocks, ctx)
@@ -332,7 +339,7 @@ export class NotionImporter {
       onProgress({ phase: 'done', pagesDone: infos.length, pagesTotal: infos.length, report })
       return report
     } catch (e) {
-      onProgress({ phase: 'error', pagesDone: state.done.length, pagesTotal: infos.length, error: e instanceof Error ? e.message : 'Aktarım hatası' })
+      onProgress({ phase: 'error', pagesDone: state.done.length, pagesTotal: infos.length, error: e instanceof Error ? e.message : this.tr('notionErr.importFailed') })
       throw e
     }
   }
@@ -362,18 +369,19 @@ export class NotionImporter {
   private async writeReport(rootId: string, r: ImportReport): Promise<void> {
     const { vault } = this.deps
     const summary = [
-      `Notion'dan **${r.pages}** sayfa ve **${r.files}** dosya aktarıldı.`,
+      this.tr('report.intro', { pages: r.pages, files: r.files }),
       '',
-      r.failedFiles.length || r.unsupported.length || r.mismatches.length || r.failedPages.length ? 'Bazı içerikler tam aktarılamadı; ayrıntılar aşağıdaki raporda.' : 'Tüm içerik sorunsuz aktarıldı.',
+      r.failedFiles.length || r.unsupported.length || r.mismatches.length || r.failedPages.length ? this.tr('report.someFailed') : this.tr('report.allGood'),
       ''
     ].join('\n')
-    const lines = ['## Özet', '', `- Sayfa: ${r.pages}`, `- Dosya: ${r.files}`, `- Okunamayan sayfa: ${r.failedPages.length}`, `- İndirilemeyen dosya: ${r.failedFiles.length}`, `- Desteklenmeyen blok: ${r.unsupported.length}`, '']
-    if (r.failedPages.length) lines.push('## Okunamayan sayfalar', '', ...r.failedPages.map((f) => `- ${f.page}: ${f.error}`), '')
-    if (r.failedFiles.length) lines.push('## İndirilemeyen dosyalar', '', ...r.failedFiles.map((f) => `- ${f.page}: ${f.url}`), '')
-    if (r.unsupported.length) lines.push('## Desteklenmeyen bloklar', '', ...r.unsupported.map((u) => `- ${u.page}: \`${u.type}\``), '')
-    if (r.mismatches.length) lines.push('## Blok sayısı farkları', '', ...r.mismatches.map((m) => `- ${m.page}: Notion ${m.notion}, Kernel ${m.kernel}`), '')
-    if (r.notes.length) lines.push('## Notlar', '', ...[...new Set(r.notes)].map((n) => `- ${n}`), '')
-    const rep = await vault.create(rootId, 'Notion aktarım raporu')
+    const T = (k: MessageKey) => this.tr(k)
+    const lines = [`## ${T('report.summary')}`, '', `- ${T('report.pages')}: ${r.pages}`, `- ${T('report.files')}: ${r.files}`, `- ${T('report.failedPages')}: ${r.failedPages.length}`, `- ${T('report.failedFiles')}: ${r.failedFiles.length}`, `- ${T('report.unsupported')}: ${r.unsupported.length}`, '']
+    if (r.failedPages.length) lines.push(`## ${T('report.failedPagesTitle')}`, '', ...r.failedPages.map((f) => `- ${f.page}: ${f.error}`), '')
+    if (r.failedFiles.length) lines.push(`## ${T('report.failedFilesTitle')}`, '', ...r.failedFiles.map((f) => `- ${f.page}: ${f.url}`), '')
+    if (r.unsupported.length) lines.push(`## ${T('report.unsupportedTitle')}`, '', ...r.unsupported.map((u) => `- ${u.page}: \`${u.type}\``), '')
+    if (r.mismatches.length) lines.push(`## ${T('report.mismatchTitle')}`, '', ...r.mismatches.map((m) => `- ${m.page}: Notion ${m.notion}, Kernel ${m.kernel}`), '')
+    if (r.notes.length) lines.push(`## ${T('report.notesTitle')}`, '', ...[...new Set(r.notes)].map((n) => `- ${n}`), '')
+    const rep = await vault.create(rootId, T('report.pageName'))
     const repPage = await vault.read(rep.id)
     await vault.write(rep.id, { markdown: lines.join('\n'), meta: { ...repPage.meta, icon: '🧾' } })
     // kök özet, bu aktarımın kendi raporuna yol ile bağlanır (önceki aktarımların raporuyla karışmaz)

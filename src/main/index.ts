@@ -4,6 +4,9 @@ import { installCrashLogging, log } from './log'
 import { handleVaultProtocol, registerVaultScheme } from './protocol-handler'
 import { openVault, registerIpc } from './ipc-handlers'
 import { resolveVaultPath } from './config'
+import { Menu } from 'electron'
+import { buildAppMenu } from './menu'
+import { mainLang, onMainLanguageChange } from './i18n'
 
 // Testlerde uygulama ayarları geçici klasörde tutulur
 if (process.env['KERNEL_USER_DATA']) app.setPath('userData', process.env['KERNEL_USER_DATA'])
@@ -23,6 +26,9 @@ app.whenReady().then(async () => {
       log.error('Kasa açılamadı', vaultPath, e)
     }
   }
+  // menü seçili dilde kurulur ve dil değişince yeniden kurulur
+  Menu.setApplicationMenu(buildAppMenu(mainLang()))
+  onMainLanguageChange((lang) => Menu.setApplicationMenu(buildAppMenu(lang)))
   createMainWindow()
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow()

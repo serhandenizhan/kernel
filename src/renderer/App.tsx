@@ -93,9 +93,16 @@ export function App() {
     const off = kernel.events.onTreeChanged(() => void useStore.getState().refreshTree())
     void kernel.notion.pendingResume().then(setPendingImport).catch(() => undefined)
     const offToast = kernel.events.onToast((m, kind) => useStore.getState().toast(m, kind))
+    const offMenu = kernel.events.onMenuCommand((cmd) => {
+      const s = useStore.getState()
+      if (cmd === 'settings') s.setOverlay('settings')
+      else if (cmd === 'toggle-sidebar') s.toggleSidebar()
+      else s.toggleToc()
+    })
     return () => {
       off()
       offToast()
+      offMenu()
     }
   }, [])
 

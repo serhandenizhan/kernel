@@ -12,7 +12,7 @@ const LOCALES: Record<Lang, string> = { tr: 'tr-TR', en: 'en-US', de: 'de-DE' }
 /** Dilin Intl yerel ayarı */
 export const localeOf = (lang: Lang): string => LOCALES[lang]
 
-const fill = (s: string, params?: Params) => (params ? s.replace(/\{(\w+)\}/g, (m, k: string) => (k in params ? String(params[k]) : m)) : s)
+const fill = (s: string, params?: Params) => (params ? s.replace(/(?<!\{)\{(\w+)\}(?!\})/g, (m, k: string) => (k in params ? String(params[k]) : m)) : s)
 
 /** Çeviri; eksik çeviri Türkçeye düşer */
 export function t(lang: Lang, key: MessageKey, params?: Params): string {

@@ -5,6 +5,7 @@ import { exportMessages } from './export'
 import { shell } from './shell'
 import { editor } from './editor'
 import { guide } from './guide'
+import { main } from './main'
 
 // Tüm bölümler: her anahtar [Türkçe, English, Deutsch] üçlüsü (eksik dil yapısal olarak imkânsız)
 export const MESSAGES = {
@@ -14,5 +15,6 @@ export const MESSAGES = {
   ...exportMessages,
   ...shell,
   ...editor,
-  ...guide
+  ...guide,
+  ...main
 } as const

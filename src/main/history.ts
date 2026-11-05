@@ -1,6 +1,7 @@
 import { mkdir, readdir, readFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { writeAtomic } from './vault/atomic'
+import { mainT } from './i18n'
 
 import type { HistoryEntry } from '@shared/types'
 
@@ -30,7 +31,7 @@ export class HistoryStore {
   }
 
   private pageDir(id: string): string {
-    if (!SAFE_ID.test(id)) throw new Error('Geçersiz sayfa kimliği')
+    if (!SAFE_ID.test(id)) throw new Error(mainT('err.invalidPageId'))
     return join(this.dir, id)
   }
 
@@ -72,7 +73,7 @@ export class HistoryStore {
   }
 
   async read(id: string, versionId: string): Promise<string> {
-    if (!VERSION_RE.test(versionId)) throw new Error('Geçersiz sürüm')
+    if (!VERSION_RE.test(versionId)) throw new Error(mainT('err.invalidVersion'))
     return readFile(join(this.pageDir(id), `${versionId}.md`), 'utf8')
   }
 

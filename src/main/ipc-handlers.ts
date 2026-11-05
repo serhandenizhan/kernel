@@ -6,7 +6,7 @@ import type { PageMeta, PdfOptions, Settings } from '@shared/types'
 import { Vault } from './vault/vault'
 import { watchVault } from './vault/watcher'
 import { readSettings, writeSettings } from './vault/settings'
-import { setMainLanguage } from './i18n'
+import { mainLang, mainT, setMainLanguage } from './i18n'
 import { defaultVaultPath, saveVaultPath } from './config'
 import { requireVault, state } from './state'
 import { SearchIndex } from './search'
@@ -16,7 +16,7 @@ import { writeAtomic } from './vault/atomic'
 import { exportPdf } from './pdf'
 import { HistoryStore } from './history'
 import { BackupScheduler, readLastBackup } from './backup'
-import { TemplateStore, formatDateTr } from './templates'
+import { TemplateStore, formatTemplateDate } from './templates'
 import { exportHtml, exportMarkdownZip } from './export'
 import { registerNotionIpc } from './notion/service'
 import { splitFrontmatter } from './vault/frontmatter'
@@ -113,11 +113,11 @@ export function registerIpc(): void {
       if (path && n > 0) {
         const answer = await dialog.showMessageBox({
           type: 'question',
-          buttons: ['Devam et', 'Vazgeç'],
+          buttons: [mainT('ids.continue'), mainT('ids.cancel')],
           defaultId: 0,
           cancelId: 1,
-          message: `Bu klasördeki ${n} Markdown dosyasının başına küçük bir kimlik satırı eklenecek.`,
-          detail: 'Notların içeriği değişmez; Kernel sayfaları tanıyabilmek için yalnızca dosyanın en başına bir "id" alanı yazar. node_modules ve kod depoları (.git) atlanır.'
+          message: mainT('ids.message', { count: n }),
+          detail: mainT('ids.detail')
         })
         if (answer.response !== 0) return null
       }
@@ -216,14 +216,14 @@ export function registerIpc(): void {
     void search?.update(vault, id)
   })
   h(IPC.templatesList, async () => {
-    const t = new TemplateStore(requireVault().root)
+    const t = new TemplateStore(requireVault().root, undefined, mainLang())
     await t.ensureDefault()
     return t.list()
   })
   h(IPC.templatesCreate, async (parentId: string | null, name: string) => {
     const vault = requireVault()
-    const t = new TemplateStore(vault.root)
-    const node = await vault.create(parentId, `${name} ${formatDateTr(new Date())}`)
+    const t = new TemplateStore(vault.root, undefined, mainLang())
+    const node = await vault.create(parentId, `${name} ${formatTemplateDate(new Date(), mainLang())}`)
     const { markdown, meta } = await t.render(name, node.title)
     const page = await vault.read(node.id)
     await vault.write(node.id, { markdown, meta: { ...page.meta, ...meta } })
@@ -232,21 +232,21 @@ export function registerIpc(): void {
   })
   h(IPC.templatesSaveAs, async (id: string, name: string) => {
     const page = await requireVault().read(id)
-    return new TemplateStore(requireVault().root).saveFrom(page.markdown, page.meta, name)
+    return new TemplateStore(requireVault().root, undefined, mainLang()).saveFrom(page.markdown, page.meta, name)
   })
   h(IPC.backupStatus, async () => ({ last: await readLastBackup(requireVault().root) }))
   h(IPC.backupNow, async () => {
     backupSettings = await readSettings(requireVault().root)
     const res = await backups.tick(true)
     if (res === 'done') return { filePath: backupSettings.backup.folder ?? '' }
-    return { error: 'Yedek alınamadı' }
+    return { error: mainT('backup.failedShort') }
   })
   h(IPC.backupChooseFolder, async () => {
     // testlerde diyalog yerine verilen klasör
     const testDir = process.env['KERNEL_TEST_BACKUP_DIR']
     let folder: string | null = testDir ?? null
     if (!testDir) {
-      const res = await dialog.showOpenDialog({ properties: ['openDirectory', 'createDirectory'], title: 'Yedek klasörü seç' })
+      const res = await dialog.showOpenDialog({ properties: ['openDirectory', 'createDirectory'], title: mainT('backup.chooseFolder') })
       folder = res.canceled ? null : (res.filePaths[0] ?? null)
     }
     if (folder) {

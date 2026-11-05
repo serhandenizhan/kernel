@@ -24,6 +24,7 @@ export const IPC = {
   backupStatus: 'backup:status',
   backupChooseFolder: 'backup:choose-folder',
   eventToast: 'event:toast',
+  eventMenuCommand: 'event:menu-command',
   templatesList: 'templates:list',
   templatesCreate: 'templates:create',
   templatesSaveAs: 'templates:save-as',

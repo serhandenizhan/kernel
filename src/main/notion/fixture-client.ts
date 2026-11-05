@@ -1,5 +1,6 @@
 import type { NotionBlock, NotionList, NotionPage, NotionRichText } from '@core/notion/types'
 import { NotionError, type NotionClient } from './client'
+import { mainT } from '../i18n'
 
 export type NotionApi = Pick<NotionClient, 'me' | 'search' | 'page' | 'children' | 'queryDatabase' | 'database'>
 
@@ -25,9 +26,9 @@ export class FixtureNotionClient implements NotionApi {
   private check(op: string, id: string): void {
     const f = this.failOn?.(op, id)
     if (!f) return
-    if (f === 'network') throw new NotionError('Notion’a bağlanılamadı (ağ hatası)', 0, 'network')
-    if (f === 'not_found') throw new NotionError('Notion sayfası bulunamadı ya da integration ile paylaşılmamış', 404, 'object_not_found')
-    throw new NotionError('Notion hatası (503)', 503, 'service_unavailable')
+    if (f === 'network') throw new NotionError(mainT('notionErr.network'), 0, 'network')
+    if (f === 'not_found') throw new NotionError(mainT('notionErr.notFound'), 404, 'object_not_found')
+    throw new NotionError(mainT('notionErr.status', { status: 503 }), 503, 'service_unavailable')
   }
 
   async me(): Promise<{ workspaceName: string }> {
@@ -41,7 +42,7 @@ export class FixtureNotionClient implements NotionApi {
   async page(id: string): Promise<NotionPage> {
     this.check('page', id)
     const p = this.data.pages.find((x) => x.id === id)
-    if (!p) throw new NotionError('Notion sayfası bulunamadı ya da integration ile paylaşılmamış', 404, 'object_not_found')
+    if (!p) throw new NotionError(mainT('notionErr.notFound'), 404, 'object_not_found')
     return p
   }
 
@@ -58,7 +59,7 @@ export class FixtureNotionClient implements NotionApi {
 
   async database(id: string): Promise<{ title: NotionRichText[]; properties: Record<string, { type: string }> }> {
     const db = this.data.databases?.[id]
-    if (!db) throw new NotionError('Notion sayfası bulunamadı ya da integration ile paylaşılmamış', 404, 'object_not_found')
+    if (!db) throw new NotionError(mainT('notionErr.notFound'), 404, 'object_not_found')
     return { title: db.title, properties: db.properties }
   }
 }

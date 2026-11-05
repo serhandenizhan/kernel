@@ -1,4 +1,5 @@
 import type { NotionBlock, NotionList, NotionPage, NotionRichText } from '@core/notion/types'
+import { mainT } from '../i18n'
 
 const API = 'https://api.notion.com/v1'
 const VERSION = '2022-06-28'
@@ -63,7 +64,7 @@ export class NotionClient {
           body: body === undefined ? undefined : JSON.stringify(body)
         })
       } catch {
-        if (attempt >= this.maxRetries) throw new NotionError('Notion’a bağlanılamadı (ağ hatası)', 0, 'network')
+        if (attempt >= this.maxRetries) throw new NotionError(mainT('notionErr.network'), 0, 'network')
         await this.sleep(500 * 2 ** attempt)
         continue
       }
@@ -80,7 +81,7 @@ export class NotionClient {
         // gövde JSON değil
       }
       // mesaj kullanıcıya gösterilebilir; Notion'ın gövdesi (token içerebilir) mesaja konmaz
-      const msg = res.status === 401 ? 'Notion token’ı geçersiz' : res.status === 404 ? 'Notion sayfası bulunamadı ya da integration ile paylaşılmamış' : `Notion hatası (${res.status})`
+      const msg = res.status === 401 ? mainT('notionErr.token') : res.status === 404 ? mainT('notionErr.notFound') : mainT('notionErr.status', { status: res.status })
       throw new NotionError(msg, res.status, code)
     }
   }

@@ -4,6 +4,7 @@ import { extname, join, relative, resolve, sep } from 'node:path'
 import { Zip, ZipDeflate, ZipPassThrough } from 'fflate'
 import type { Settings } from '@shared/types'
 import { writeAtomic } from './vault/atomic'
+import { mainT } from './i18n'
 
 const SKIP_KERNEL = new Set(['.kernel/search-index.json', '.kernel/backup.json'])
 const BACKUP_RE = /^Kernel-yedek-\d{4}-\d{2}-\d{2}-\d{4}\.zip$/
@@ -33,7 +34,7 @@ async function listFiles(root: string, dir: string, skipDir: string | null, out:
 // Kasanın zip yedeği: Kernel-yedek-YYYY-MM-DD-HHmm.zip; son `keep` yedek tutulur.
 // Dosyalar tek tek akıtılır, zip doğrudan diske yazılır (büyük kasalarda belleği ve ana süreci kilitlemez).
 export async function makeBackup(root: string, folder: string, keep: number, now: Date = new Date()): Promise<string> {
-  if (!existsSync(folder) || !statSync(folder).isDirectory()) throw new Error('klasör bulunamadı')
+  if (!existsSync(folder) || !statSync(folder).isDirectory()) throw new Error(mainT('err.folderNotFound'))
   const rootReal = real(root)
   const folderReal = real(folder)
   // yedek klasörü kasanın içindeyse kendini yedeklemesin (kasanın kendisiyse yedek dosyaları zaten atlanır)
@@ -114,7 +115,7 @@ export class BackupScheduler {
       await writeAtomic(join(st.root, '.kernel', 'backup.json'), JSON.stringify({ last: this.now().toISOString() }))
       return 'done'
     } catch (e) {
-      this.onError(`Yedek alınamadı: ${e instanceof Error ? e.message : 'bilinmeyen hata'}`)
+      this.onError(mainT('backup.failed', { error: e instanceof Error ? e.message : mainT('err.unknown') }))
       return 'failed'
     }
   }

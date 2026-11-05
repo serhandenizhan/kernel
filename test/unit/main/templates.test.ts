@@ -37,3 +37,20 @@ describe('TemplateStore', () => {
     expect(r.meta).toEqual({ icon: '🧪' })
   })
 })
+
+describe('TemplateStore dilleri', () => {
+  it('varsayılan şablon oluşturulduğu dilde yazılır (Almanca)', async () => {
+    const t = new TemplateStore(root, now, 'de')
+    await t.ensureDefault()
+    expect(await t.list()).toEqual(['Vorlesungsnotiz'])
+    const r = await t.render('Vorlesungsnotiz', 'Physik')
+    expect(r.markdown).toContain('## Thema')
+    expect(r.markdown).toContain('Physik — 04.11.2026')
+    expect(r.markdown).not.toContain('Konu')
+  })
+  it('her dilin yer tutucuları doldurulur', async () => {
+    const t = new TemplateStore(root, now, 'en')
+    await t.saveFrom('{{title}} {{date}} | {{başlık}} {{tarih}} | {{Titel}} {{Datum}}', { id: 'X', created: 'c', updated: 'u' }, 'Mix')
+    expect((await t.render('Mix', 'Mars')).markdown).toBe('Mars 11/04/2026 | Mars 11/04/2026 | Mars 11/04/2026')
+  })
+})

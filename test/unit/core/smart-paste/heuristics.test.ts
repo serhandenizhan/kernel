@@ -65,7 +65,7 @@ describe('detectUnfencedCode', () => {
 
 describe('htmlToMarkdown', () => {
   it('yapılandırılmış içerik yoksa null döner', () => {
-    expect(htmlToMarkdown('<p>sadece <b>metin</b></p>')).toBe(null)
+    expect(htmlToMarkdown('<p>sadece metin</p><span>ve satır</span>')).toBe(null)
   })
   it('KaTeX annotation ve dil sınıflı kodu çıkarır', () => {
     const md = htmlToMarkdown('<p>a <span class="katex"><span class="katex-mathml"><math><semantics><annotation encoding="application/x-tex">x^2</annotation></semantics></math></span><span class="katex-html">x2</span></span></p><pre><code class="language-js">let a</code></pre>')

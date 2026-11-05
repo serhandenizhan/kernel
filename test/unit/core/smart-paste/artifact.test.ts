@@ -42,7 +42,7 @@ describe('Claude artifact yapıştırma', () => {
     const types = new Set((doc.content ?? []).map((n) => n.type))
     for (const t of ['heading', 'table', 'bulletList', 'codeBlock', 'callout']) expect(types).toContain(t)
   })
-  it('sıradan zengin metin (artifact işareti yok) eskisi gibi null döner', () => {
-    expect(htmlToMarkdown('<ul><li>bir</li></ul><p>iki <b>üç</b></p>')).toBe(null)
+  it('sıradan zengin metin (artifact işareti yok) biçimi korunarak Markdown olur', () => {
+    expect(htmlToMarkdown('<ul><li>bir</li></ul><p>iki <b>üç</b></p>')).toBe('- bir\n\niki **üç**')
   })
 })

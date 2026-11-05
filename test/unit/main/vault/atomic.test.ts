@@ -22,4 +22,22 @@ describe('writeAtomic', () => {
     expect(readFileSync(f, 'utf8')).toBe('eski')
     expect(readdirSync(dir)).toEqual(['a.md'])
   })
+  it('Windows: dosya kısa süre kilitliyse (EPERM/EBUSY) rename yeniden denenir', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'kernel-atomic-'))
+    const f = join(dir, 'a.md')
+    writeFileSync(f, 'eski')
+    let calls = 0
+    const flakyFs = {
+      ...fsp,
+      rename: async (...args: Parameters<typeof fsp.rename>) => {
+        calls++
+        if (calls < 3) throw Object.assign(new Error('locked'), { code: calls === 1 ? 'EPERM' : 'EBUSY' })
+        return fsp.rename(...args)
+      }
+    }
+    await writeAtomic(f, 'yeni', flakyFs)
+    expect(readFileSync(f, 'utf8')).toBe('yeni')
+    expect(calls).toBe(3)
+    expect(readdirSync(dir)).toEqual(['a.md'])
+  })
 })

@@ -8,6 +8,7 @@ import { Menu } from 'electron'
 import { buildAppMenu } from './menu'
 import { removeLegacyTokenFile } from './secrets'
 import { mainLang, onMainLanguageChange } from './i18n'
+import { pendingCount, waitPending } from './pending'
 
 // Testlerde uygulama ayarları geçici klasörde tutulur
 if (process.env['KERNEL_USER_DATA']) app.setPath('userData', process.env['KERNEL_USER_DATA'])
@@ -36,6 +37,17 @@ app.whenReady().then(async () => {
   createMainWindow()
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow()
+  })
+})
+
+// kapanmadan önce süren yazımlar (ayar, son sayfa, kart vb.) en çok 3 sn beklenir
+let drained = false
+app.on('will-quit', (event) => {
+  if (drained || pendingCount() === 0) return
+  event.preventDefault()
+  void waitPending(3000).then(() => {
+    drained = true
+    app.quit()
   })
 })
 

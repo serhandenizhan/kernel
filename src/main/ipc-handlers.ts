@@ -29,6 +29,7 @@ import { ActivityStore } from './activity'
 import { computeHome, localDay } from '@core/home'
 import { isReleaseUrl, shouldOffer } from '@core/update'
 import { fetchLatestRelease } from './updates'
+import { track } from './pending'
 
 // ana sayfa canlı yenilemesi: değişiklikler 500 ms içinde tek olayda birleştirilir
 let homeTimer: ReturnType<typeof setTimeout> | null = null
@@ -155,7 +156,8 @@ async function exportPdfWithDialog(id: string, options: PdfOptions): Promise<{ f
 
 export function registerIpc(): void {
   registerNotionIpc(broadcast)
-  const h = (ch: string, fn: (...a: never[]) => unknown) => ipcMain.handle(ch, (_e, ...args) => (fn as (...a: unknown[]) => unknown)(...args))
+  // her istek takip edilir: kapanışta yarım kalan yazım beklenir (pending.ts)
+  const h = (ch: string, fn: (...a: never[]) => unknown) => ipcMain.handle(ch, (_e, ...args) => track(Promise.resolve().then(() => (fn as (...a: unknown[]) => unknown)(...args))))
 
   h(IPC.vaultInfo, () => (state.vault ? { path: state.vault.root } : null))
   h(IPC.vaultChoose, async (create?: boolean) => {

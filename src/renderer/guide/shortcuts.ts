@@ -31,8 +31,8 @@ export const SHORTCUTS: Shortcut[] = [
   { group: 'sc.group.paste', keys: '⌘V', action: 'sc.smartPaste', phase: 1 },
   { group: 'sc.group.paste', keys: '⌘Z', action: 'sc.undoPaste', phase: 1 },
   { group: 'sc.group.paste', keys: '⌘⇧V', action: 'sc.rawPaste', phase: 1 },
-  { group: 'sc.group.navigation', keys: '⌘P', action: 'sc.palette', phase: 3 },
-  { group: 'sc.group.navigation', keys: '⌘⇧F', action: 'sc.focus', phase: 3 },
+  { group: 'sc.group.navigation', keys: '⌘P', action: 'sc.palette', phase: 1 },
+  { group: 'sc.group.navigation', keys: '⌘⇧F', action: 'sc.focus', phase: 1 },
   { group: 'sc.group.navigation', keys: '⌘T', action: 'sc.newTab', phase: 3 },
   { group: 'sc.group.navigation', keys: '⌘W', action: 'sc.closeTab', phase: 3 }
 ]

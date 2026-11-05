@@ -6,6 +6,7 @@ import { VaultPicker } from './shell/VaultPicker'
 import { Toasts } from './shell/Toasts'
 import { PageView } from './shell/PageView'
 import { SearchPalette } from './shell/SearchPalette'
+import { CommandPalette } from './shell/CommandPalette'
 import { SettingsDialog } from './shell/SettingsDialog'
 import { TocPanel } from './shell/TocPanel'
 import { ExportDialog } from './shell/ExportDialog'
@@ -66,6 +67,12 @@ function useShortcuts() {
       } else if (k === 't' && e.shiftKey) {
         e.preventDefault()
         s.toggleToc()
+      } else if (k === 'p' && !e.shiftKey) {
+        e.preventDefault()
+        s.setOverlay(s.overlay === 'palette' ? null : 'palette')
+      } else if (k === 'f' && e.shiftKey) {
+        e.preventDefault()
+        s.toggleFocus()
       }
     }
     window.addEventListener('keydown', onKey)
@@ -79,6 +86,7 @@ export function App() {
   const ready = useStore((s) => s.ready)
   const vaultPath = useStore((s) => s.vaultPath)
   const sidebarVisible = useStore((s) => s.sidebarVisible)
+  const focusMode = useStore((s) => s.focusMode)
   const overlay = useStore((s) => s.overlay)
   const view = useStore((s) => s.view)
   const tourDone = useStore((s) => s.settings.tourDone)
@@ -102,6 +110,8 @@ export function App() {
       const s = useStore.getState()
       if (cmd === 'settings') s.setOverlay('settings')
       else if (cmd === 'toggle-sidebar') s.toggleSidebar()
+      else if (cmd === 'toggle-focus') s.toggleFocus()
+      else if (cmd === 'palette') s.setOverlay('palette')
       else s.toggleToc()
     })
     return () => {
@@ -121,8 +131,8 @@ export function App() {
     )
   }
   return (
-    <div className={`app${sidebarVisible ? '' : ' sidebar-hidden'}`} lang={lang}>
-      {sidebarVisible && <Sidebar />}
+    <div className={`app${sidebarVisible && !focusMode ? '' : ' sidebar-hidden'}${focusMode ? ' focus-mode' : ''}`} lang={lang}>
+      {sidebarVisible && !focusMode && <Sidebar />}
       <main className="main">
         <div className="main-drag" />
         <div className="page-surface">
@@ -131,9 +141,10 @@ export function App() {
             {overlay === 'guide' ? <GuidePage /> : view === 'home' ? <HomePage /> : <PageView />}
           </ErrorBoundary>
         </div>
-        <TocPanel />
+        {!focusMode && <TocPanel />}
       </main>
       {overlay === 'search' && <SearchPalette />}
+      {overlay === 'palette' && <CommandPalette />}
       {overlay === 'settings' && <SettingsDialog />}
       {overlay === 'export' && <ExportDialog />}
       {overlay === 'history' && <HistoryPanel />}

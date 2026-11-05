@@ -21,7 +21,9 @@ interface State {
   expanded: Record<string, boolean>
   renamingId: string | null
   toasts: Toast[]
-  overlay: 'search' | 'settings' | 'export' | 'guide' | 'history' | 'notion' | null
+  overlay: 'search' | 'settings' | 'export' | 'guide' | 'history' | 'notion' | 'palette' | null
+  /** odak modu: kenar çubuğu, içindekiler ve araç çubukları gizli */
+  focusMode: boolean
   /** Sayfanın diskten yeniden okunmasını tetikler (örn. sürüm geri yükleme) */
   reloadToken: number
   reloadPage(): void
@@ -39,6 +41,7 @@ interface State {
   setSettings(patch: Partial<Settings>): Promise<void>
   toggleSidebar(): void
   toggleToc(): void
+  toggleFocus(): void
   setExpanded(id: string, open: boolean): void
   setRenaming(id: string | null): void
   setOverlay(o: State['overlay']): void
@@ -65,6 +68,7 @@ export const useStore = create<State>((set, get) => ({
   systemLocale: 'tr-TR',
   sidebarVisible: true,
   tocVisible: false,
+  focusMode: false,
   expanded: {},
   renamingId: null,
   toasts: [],
@@ -111,6 +115,7 @@ export const useStore = create<State>((set, get) => ({
 
   toggleSidebar: () => set((s) => ({ sidebarVisible: !s.sidebarVisible })),
   toggleToc: () => set((s) => ({ tocVisible: !s.tocVisible })),
+  toggleFocus: () => set((s) => ({ focusMode: !s.focusMode })),
   setExpanded: (id, open) => set((s) => ({ expanded: { ...s.expanded, [id]: open } })),
   setRenaming: (id) => set({ renamingId: id }),
   setOverlay: (overlay) => set({ overlay }),

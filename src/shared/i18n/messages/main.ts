@@ -66,6 +66,8 @@ export const main = {
   'menu.selectAll': ['Tümünü seç', 'Select All', 'Alles auswählen'],
   'menu.view': ['Görünüm', 'View', 'Darstellung'],
   'menu.sidebar': ['Kenar çubuğu', 'Sidebar', 'Seitenleiste'],
+  'menu.focus': ['Odak modu', 'Focus Mode', 'Fokusmodus'],
+  'menu.palette': ['Komut paleti…', 'Command Palette…', 'Befehlspalette…'],
   'menu.toc': ['İçindekiler', 'Contents', 'Inhalt'],
   'menu.reload': ['Yeniden yükle', 'Reload', 'Neu laden'],
   'menu.devtools': ['Geliştirici araçları', 'Developer Tools', 'Entwicklerwerkzeuge'],

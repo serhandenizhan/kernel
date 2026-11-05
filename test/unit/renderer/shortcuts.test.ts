@@ -13,6 +13,6 @@ describe('SHORTCUTS', () => {
     for (const k of PHASE1) expect(phase1.map((s) => s.keys)).toContain(k)
   })
   it('sonraki fazların kısayolları işaretli', () => {
-    expect(SHORTCUTS.find((s) => s.keys === '⌘P')?.phase).toBe(3)
+    expect(SHORTCUTS.find((s) => s.keys === '⌘T')?.phase).toBe(3)
   })
 })

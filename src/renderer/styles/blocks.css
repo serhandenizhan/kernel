@@ -784,3 +784,24 @@ mark[data-color='gray'] { --hl: #e3e8ec; }
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Komut paleti: komut adı solda, kısayol sağda */
+.command-row {
+  justify-content: space-between;
+  align-items: center;
+}
+.command-keys {
+  font: 12px var(--font-ui, system-ui);
+  color: var(--text-3);
+  background: var(--hover);
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+
+/* Odak modu: yalnızca sayfa kalır */
+.focus-mode .header-actions,
+.focus-mode .cover-actions,
+.focus-mode .block-handle,
+.focus-mode .backlinks {
+  display: none !important;
+}

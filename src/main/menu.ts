@@ -3,7 +3,7 @@ import type { Lang } from '@shared/types'
 import { t } from '@shared/i18n'
 import { IPC } from '@shared/ipc'
 
-export type MenuCommand = 'settings' | 'toggle-sidebar' | 'toggle-toc'
+export type MenuCommand = 'settings' | 'toggle-sidebar' | 'toggle-toc' | 'toggle-focus' | 'palette'
 
 // Menü komutu arayüze gönderilir (kısayolların asıl sahibi arayüzdür; menü yalnızca gösterir ve tetikler)
 const send = (cmd: MenuCommand) => () => BrowserWindow.getFocusedWindow()?.webContents.send(IPC.eventMenuCommand, cmd)
@@ -48,6 +48,8 @@ export function buildAppMenu(lang: Lang): Menu {
       submenu: [
         { label: L('menu.sidebar'), ...shown('Cmd+\\'), click: send('toggle-sidebar') },
         { label: L('menu.toc'), ...shown('Cmd+Shift+T'), click: send('toggle-toc') },
+        { label: L('menu.focus'), ...shown('Cmd+Shift+F'), click: send('toggle-focus') },
+        { label: L('menu.palette'), ...shown('Cmd+P'), click: send('palette') },
         ...(app.isPackaged
           ? []
           : ([{ type: 'separator' }, { role: 'reload', label: L('menu.reload') }, { role: 'toggleDevTools', label: L('menu.devtools') }] as MenuItemConstructorOptions[])),

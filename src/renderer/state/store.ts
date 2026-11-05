@@ -117,7 +117,9 @@ export const useStore = create<State>((set, get) => ({
   pins: [],
   async togglePin(id) {
     const pins = get().pins
-    await get().setPins(pins.includes(id) ? pins.filter((p) => p !== id) : [...pins, id])
+    const pinning = !pins.includes(id)
+    await get().setPins(pinning ? [...pins, id] : pins.filter((p) => p !== id))
+    if (pinning) window.dispatchEvent(new CustomEvent('kernel:tip', { detail: 'first-pin' }))
   },
   async setPins(ids) {
     set({ pins: ids })

@@ -11,6 +11,9 @@ import { MermaidPreview } from '../editor/ui/MermaidView'
 import { useT, tNow } from '../lib/i18n'
 import type { MessageKey } from '@shared/i18n'
 
+// Rehberdeki küçük ısı haritası örneği (3 hafta)
+const HOME_DEMO = [0, 1, 2, 0, 3, 1, 0, 2, 4, 1, 0, 3, 2, 1, 0, 1, 3, 4, 2, 0, 1]
+
 /** Tuş gösterimi: sözlük anahtarıysa (sc.*) çevrilir */
 const keysOf = (keys: string) => (keys.startsWith('sc.') ? tNow(keys as MessageKey) : keys)
 
@@ -146,6 +149,26 @@ export function GuidePage() {
           <div className="demo-math" data-testid="guide-mermaid-demo">
             <MermaidPreview code={t('guide.diagram.sample')} />
           </div>
+        </section>
+
+        <section className="guide-section">
+          <h2>{t('guide.home.title')}</h2>
+          <p>{t('guide.home.body')}</p>
+          <div className="guide-home-demo" data-testid="guide-home-demo" aria-hidden="true">
+            {HOME_DEMO.map((l, i) => (
+              <span key={i} className={`heat-cell l${l}`} />
+            ))}
+          </div>
+        </section>
+
+        <section className="guide-section">
+          <h2>{t('guide.pin.title')}</h2>
+          <p>{t('guide.pin.body')}</p>
+        </section>
+
+        <section className="guide-section">
+          <h2>{t('guide.lang.title')}</h2>
+          <p>{t('guide.lang.body')}</p>
         </section>
 
         <section className="guide-section">

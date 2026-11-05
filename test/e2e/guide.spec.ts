@@ -66,3 +66,18 @@ test('rehberde Faz 2 bölümleri var; canlı Mermaid demosu çizilir; Notion but
   await expect(win.getByTestId('notion-wizard')).toBeVisible()
   await app.close()
 })
+
+test('Rehber Faz 3 bölümleri: ana sayfa, sabitleme, dil ve görünüm (üç dilde)', async () => {
+  const { app, win } = await launch()
+  await win.keyboard.press('Meta+/')
+  const guide = win.getByTestId('guide')
+  for (const title of ['Ana sayfa', 'Sabitleme', 'Dil ve görünüm']) await expect(guide.getByRole('heading', { name: title })).toBeVisible()
+  await expect(guide.getByTestId('guide-home-demo').locator('.heat-cell')).toHaveCount(21)
+  await win.keyboard.press('Escape')
+  await win.keyboard.press('Meta+,')
+  await win.getByTestId('setting-language-en').click()
+  await win.keyboard.press('Escape')
+  await win.keyboard.press('Meta+/')
+  for (const title of ['Home', 'Pinning', 'Language and appearance']) await expect(win.getByTestId('guide').getByRole('heading', { name: title })).toBeVisible()
+  await app.close()
+})

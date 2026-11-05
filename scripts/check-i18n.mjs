@@ -1,6 +1,6 @@
 // Arayüzde sözlük dışı (sabit yazılmış) metin kalmadığını denetler: `npm run check:i18n`
 import { readFileSync, readdirSync, statSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const TR = /[çğıöşüÇĞİÖŞÜ]/
@@ -65,7 +65,8 @@ function main() {
   const findings = []
   for (const r of ROOTS) {
     for (const file of walk(join(root, r))) {
-      const rel = relative(root, file)
+      // Windows'ta da izin listesi ve dışlamalar / ile yazılır
+      const rel = relative(root, file).split(sep).join('/')
       if (EXCLUDE.some((re) => re.test(rel))) continue
       for (const f of findHardcoded(readFileSync(file, 'utf8'), file.endsWith('.tsx'))) {
         if (allow.some((a) => a === `${rel}:${f.text}` || (a.endsWith(':*') && a.slice(0, -2) === rel))) continue

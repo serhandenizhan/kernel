@@ -13,12 +13,15 @@ export interface LaunchOptions {
   onboarding?: boolean
   /** onboarding açıkken yalnızca turu atla (ipuçları açık) */
   skipTour?: boolean
+  /** true: uygulama ana sayfayla açılır (varsayılan: son sayfa, mevcut testler değişmesin) */
+  home?: boolean
 }
 
 export async function launch(vault = tmpVault(), extraEnv: Record<string, string> = {}, opts: LaunchOptions = {}): Promise<{ app: ElectronApplication; win: Page; vault: string }> {
-  if (vault && (!opts.onboarding || opts.skipTour)) {
+  if (vault && (!opts.onboarding || opts.skipTour || opts.home)) {
     mkdirSync(join(vault, '.kernel'), { recursive: true })
-    const settings = opts.onboarding ? { tourDone: true } : { tourDone: true, tips: { enabled: false, seen: [] } }
+    const base = opts.onboarding ? { tourDone: true } : { tourDone: true, tips: { enabled: false, seen: [] } }
+    const settings = { ...base, schema: 2, ...(opts.home ? {} : { startView: 'last' }) }
     try {
       writeFileSync(join(vault, '.kernel', 'settings.json'), JSON.stringify(settings), { flag: 'wx' })
     } catch {

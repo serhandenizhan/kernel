@@ -73,6 +73,9 @@ export interface PasteSettings {
   unfencedCodeHeuristic: boolean
 }
 
+/** Arayüz dili */
+export type Lang = 'tr' | 'en' | 'de'
+
 export interface Settings {
   theme: 'system' | 'light' | 'dark'
   bodyFont: 'serif' | 'sans'
@@ -81,16 +84,25 @@ export interface Settings {
   tips: { enabled: boolean; seen: string[] }
   tourDone: boolean
   backup: { enabled: boolean; folder: string | null; keep: number }
+  /** 'system': macOS dili (tr/en/de değilse Türkçe) */
+  language: Lang | 'system'
+  /** açılışta ana sayfa ya da son açık sayfa */
+  startView: 'home' | 'last'
+  /** ayar dosyası şema sürümü (göçler için) */
+  schema: number
 }
 
 export const DEFAULT_SETTINGS: Settings = {
   theme: 'system',
-  bodyFont: 'serif',
+  bodyFont: 'sans',
   pageWidth: 'normal',
   paste: { stripCitations: true, latexLineHeuristic: true, unfencedCodeHeuristic: true },
   tips: { enabled: true, seen: [] },
   tourDone: false,
-  backup: { enabled: false, folder: null, keep: 14 }
+  backup: { enabled: false, folder: null, keep: 14 },
+  language: 'system',
+  startView: 'home',
+  schema: 2
 }
 
 export interface KernelApi {

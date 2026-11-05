@@ -22,7 +22,10 @@ export function buildAppMenu(lang: Lang): Menu {
         { label: L('menu.settings'), ...shown('Cmd+,'), click: send('settings') },
         { type: 'separator' },
         { role: 'hide', label: L('menu.hide') },
+        { role: 'services', label: L('menu.services') },
+        { type: 'separator' },
         { role: 'hideOthers', label: L('menu.hideOthers') },
+        { role: 'unhide', label: L('menu.showAll') },
         { type: 'separator' },
         { role: 'quit', label: L('menu.quit') }
       ]
@@ -36,6 +39,7 @@ export function buildAppMenu(lang: Lang): Menu {
         { role: 'cut', label: L('menu.cut') },
         { role: 'copy', label: L('menu.copy') },
         { role: 'paste', label: L('menu.paste') },
+        { role: 'pasteAndMatchStyle', label: L('menu.pasteMatch') },
         { role: 'selectAll', label: L('menu.selectAll') }
       ]
     },
@@ -55,7 +59,10 @@ export function buildAppMenu(lang: Lang): Menu {
       label: L('menu.window'),
       submenu: [
         { role: 'minimize', label: L('menu.minimize') },
-        { role: 'zoom', label: L('menu.zoom') }
+        { role: 'zoom', label: L('menu.zoom') },
+        { type: 'separator' },
+        { role: 'close', label: L('menu.close') },
+        { role: 'front', label: L('menu.front') }
       ]
     }
   ]

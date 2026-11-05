@@ -72,5 +72,10 @@ export const main = {
   'menu.window': ['Pencere', 'Window', 'Fenster'],
   'menu.minimize': ['Küçült', 'Minimize', 'Im Dock ablegen'],
   'menu.zoom': ['Yakınlaştır', 'Zoom', 'Zoomen'],
+  'menu.services': ['Hizmetler', 'Services', 'Dienste'],
+  'menu.showAll': ['Tümünü göster', 'Show All', 'Alle einblenden'],
+  'menu.pasteMatch': ['Yapıştır ve stili eşle', 'Paste and Match Style', 'Einsetzen und Stil anpassen'],
+  'menu.close': ['Pencereyi kapat', 'Close Window', 'Fenster schließen'],
+  'menu.front': ['Tümünü öne getir', 'Bring All to Front', 'Alle nach vorne bringen'],
   'menu.fullscreen': ['Tam ekran', 'Full Screen', 'Vollbild']
 } as const

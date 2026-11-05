@@ -5,14 +5,30 @@ import { writeAtomic } from './atomic'
 
 const file = (root: string) => join(root, '.kernel', 'settings.json')
 
+// tanınmayan değerler varsayılana döner (elle düzenlenmiş ya da yeni sürümün yazdığı dosya uygulamayı çökertmesin)
+const ALLOWED = {
+  theme: ['system', 'light', 'dark'],
+  bodyFont: ['serif', 'sans'],
+  pageWidth: ['narrow', 'normal', 'wide'],
+  language: ['system', 'tr', 'en', 'de'],
+  startView: ['home', 'last']
+} as const
+
+function sanitize(s: Settings): Settings {
+  for (const [k, values] of Object.entries(ALLOWED) as [keyof typeof ALLOWED, readonly string[]][]) {
+    if (!values.includes(s[k] as string)) (s as unknown as Record<string, unknown>)[k] = DEFAULT_SETTINGS[k]
+  }
+  return s
+}
+
 function merge(base: Settings, patch: Partial<Settings>): Settings {
-  return {
+  return sanitize({
     ...base,
     ...patch,
     paste: { ...base.paste, ...(patch.paste ?? {}) },
     tips: { ...base.tips, ...(patch.tips ?? {}) },
     backup: { ...base.backup, ...(patch.backup ?? {}) }
-  }
+  })
 }
 
 export const SETTINGS_SCHEMA = 2

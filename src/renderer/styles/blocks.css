@@ -596,12 +596,18 @@ mark[data-color='gray'] { --hl: #e3e8ec; }
   min-width: 0;
   align-items: center;
   gap: 12px;
-  height: 40px;
+  min-height: 40px;
   padding: 0 12px;
   border: 1px solid transparent;
   border-radius: 10px;
   font-size: 15.5px;
   text-decoration: none;
+}
+.kernel-editor p.page-row > .wiki-link .wiki-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .kernel-editor p.page-row > .wiki-link .wiki-icon {
   width: 22px;

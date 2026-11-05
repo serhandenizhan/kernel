@@ -79,12 +79,14 @@ export const useStore = create<State>((set, get) => ({
       set({ ready: true, vaultPath: null })
       return
     }
-    const [settings, tree, pins] = await Promise.all([kernel.settings.get(), kernel.pages.tree(), kernel.pins.list()])
-    set({ ready: true, vaultPath: info.path, settings, tree, pins, currentId: tree[0]?.id ?? null, view: settings.startView === 'home' ? 'home' : 'page' })
+    const [settings, tree, pins, recent] = await Promise.all([kernel.settings.get(), kernel.pages.tree(), kernel.pins.list().catch(() => []), kernel.search.recent().catch(() => [])])
+    // son açık sayfa: son açılanlardan ağaçta hâlâ var olan ilki, yoksa ilk sayfa
+    const last = recent.find((r) => findNode(tree, r.id))?.id
+    set({ ready: true, vaultPath: info.path, settings, tree, pins, currentId: last ?? tree[0]?.id ?? null, view: settings.startView === 'home' ? 'home' : 'page' })
   },
 
   async refreshTree() {
-    const [tree, pins] = await Promise.all([kernel.pages.tree(), kernel.pins.list()])
+    const [tree, pins] = await Promise.all([kernel.pages.tree(), kernel.pins.list().catch(() => get().pins)])
     const { currentId } = get()
     set({ tree, pins, currentId: currentId && findNode(tree, currentId) ? currentId : (tree[0]?.id ?? null) })
   },

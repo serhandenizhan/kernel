@@ -10,7 +10,7 @@ export class PinStore {
     this.file = join(root, '.kernel', 'pins.json')
   }
 
-  /** Sabitlenenler; `keep` verilirse içinde olmayanlar (silinen sayfalar) listeden ve dosyadan atılır */
+  /** Sabitlenenler; `keep` verilirse içinde olmayanlar yalnızca bellekte atlanır (dosyaya dokunulmaz: iCloud'un buluta aldığı ya da taşınmakta olan sayfa geri gelince sabitlemesi yerinde olur) */
   async list(keep?: Set<string>): Promise<string[]> {
     let ids: string[] = []
     try {
@@ -19,12 +19,13 @@ export class PinStore {
     } catch {
       return []
     }
-    if (keep) {
-      const kept = ids.filter((id) => keep.has(id))
-      if (kept.length !== ids.length) await this.set(kept)
-      return kept
-    }
-    return ids
+    return keep ? ids.filter((id) => keep.has(id)) : ids
+  }
+
+  /** Bilinçli silme (sayfa çöpe atıldığında) */
+  async remove(id: string): Promise<void> {
+    const ids = await this.list()
+    if (ids.includes(id)) await this.set(ids.filter((x) => x !== id))
   }
 
   async set(ids: string[]): Promise<void> {

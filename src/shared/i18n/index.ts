@@ -16,7 +16,7 @@ const fill = (s: string, params?: Params) => (params ? s.replace(/(?<!\{)\{(\w+)
 
 /** Çeviri; eksik çeviri Türkçeye düşer */
 export function t(lang: Lang, key: MessageKey, params?: Params): string {
-  return fill(DICTS[lang][key] ?? tr[key] ?? key, params)
+  return fill(DICTS[lang]?.[key] ?? tr[key] ?? key, params)
 }
 
 /** Çoğul çeviri: `key.one` / `key.other` anahtarlarından Intl.PluralRules ile seçer */
@@ -37,7 +37,9 @@ const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDat
 
 /** Göreli zaman: "2 saat önce", "dün", "3 gün önce", "geçen hafta"… */
 export function formatRelative(date: Date, now: Date, lang: Lang): string {
-  const rtf = new Intl.RelativeTimeFormat(LOCALES[lang], { numeric: 'auto' })
+  // bozuk tarih (ör. çözülmemiş şablon değişkeni) arayüzü çökertmesin
+  if (!Number.isFinite(date.getTime()) || !Number.isFinite(now.getTime())) return ''
+  const rtf = new Intl.RelativeTimeFormat(LOCALES[lang] ?? LOCALES.tr, { numeric: 'auto' })
   const days = Math.round((startOfDay(now) - startOfDay(date)) / DAY)
   if (days <= 0) {
     const mins = Math.max(0, Math.round((now.getTime() - date.getTime()) / 60_000))

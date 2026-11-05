@@ -40,3 +40,12 @@ describe('çeviri fonksiyonları', () => {
     expect(formatRelative(new Date(2026, 10, 4, 12, 0), now, 'en')).toBe('yesterday')
   })
 })
+
+describe('dayanıklılık', () => {
+  it('geçersiz tarih göreli zamanda boş metin döner (hata fırlatmaz)', () => {
+    expect(formatRelative(new Date('<% tp.file.creation_date() %>'), new Date(), 'tr')).toBe('')
+  })
+  it('tanınmayan dil Türkçeye düşer', () => {
+    expect(t('fr' as never, 'common.subpages.other', { count: 2 })).toBe('2 alt sayfa')
+  })
+})

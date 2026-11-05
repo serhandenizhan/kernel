@@ -192,6 +192,7 @@ export function registerIpc(): void {
     await requireVault().trash(id, (p) => shell.trashItem(p))
     search?.remove(id)
     recentIds = recentIds.filter((x) => x !== id)
+    await new PinStore(requireVault().root).remove(id).catch((e) => log.warn('Sabitleme kaldırılamadı', e))
     notifyHome()
   })
 

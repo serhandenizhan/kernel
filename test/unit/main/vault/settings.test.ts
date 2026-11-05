@@ -33,3 +33,13 @@ describe('writeSettings', () => {
     expect(await readSettings(root)).toMatchObject({ theme: 'dark', pageWidth: 'wide', startView: 'last' })
   })
 })
+
+describe('ayar doğrulama', () => {
+  it('tanınmayan değerler varsayılana döner', async () => {
+    writeFileSync(join(root, '.kernel', 'settings.json'), JSON.stringify({ schema: 2, language: 'fr', startView: 'x', bodyFont: 'comic', theme: 'pink', pageWidth: 9 }))
+    expect(await readSettings(root)).toMatchObject({ language: 'system', startView: 'home', bodyFont: 'sans', theme: 'system', pageWidth: 'normal' })
+  })
+  it('yazarken de tanınmayan değer saklanmaz', async () => {
+    expect(await writeSettings(root, { language: 'xx' as never })).toMatchObject({ language: 'system' })
+  })
+})

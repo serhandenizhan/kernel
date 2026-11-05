@@ -21,6 +21,18 @@ describe('Vault.summaries', () => {
     expect(mars).toMatchObject({ parentId: g.id, updated: '2026-11-05T09:00:00.000Z', childCount: 0, path: 'Gezegenler/Mars.md' })
     expect(s.map((p) => p.title)).toEqual(['Gezegenler', 'Mars', 'Venüs'])
   })
+  it('geçersiz tarihler atılır, geçerliler ISO biçimine çevrilir', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'kernel-sum-'))
+    writeFileSync(join(root, 'Obsidian.md'), '---\ncreated: "<% tp.file.creation_date() %>"\nupdated: "{{date}}"\n---\nx\n')
+    writeFileSync(join(root, 'Tarih.md'), '---\ncreated: 2026-10-01\n---\ny\n')
+    const v = new Vault(root)
+    await v.init()
+    const s = await v.summaries()
+    const o = s.find((p) => p.title === 'Obsidian')!
+    expect(o.created).toBeUndefined()
+    expect(o.updated).toBeUndefined()
+    expect(s.find((p) => p.title === 'Tarih')!.created).toBe('2026-10-01T00:00:00.000Z')
+  })
   it('500 sayfada summaries + computeHome 200 ms altında (ısınmış önbellek)', async () => {
     const root = mkdtempSync(join(tmpdir(), 'kernel-perf-'))
     for (let c = 0; c < 50; c++) {

@@ -126,7 +126,12 @@ export class Vault {
     if (c && c.mtimeMs === st.mtimeMs) return c
     const { meta } = splitFrontmatter(await readFile(file, 'utf8'))
     const str = (k: string) => (typeof meta[k] === 'string' ? (meta[k] as string) : meta[k] instanceof Date ? (meta[k] as Date).toISOString() : undefined)
-    const entry: Cached = { id: str('id') ?? '', icon: str('icon'), cover: str('cover'), created: str('created'), updated: str('updated'), mtimeMs: st.mtimeMs }
+    // tarih alanları yalnızca geçerliyse (ISO'ya çevrilerek) tutulur
+    const date = (k: string) => {
+      const v = meta[k] instanceof Date ? (meta[k] as Date).getTime() : typeof meta[k] === 'string' ? Date.parse(meta[k] as string) : NaN
+      return Number.isFinite(v) ? new Date(v).toISOString() : undefined
+    }
+    const entry: Cached = { id: str('id') ?? '', icon: str('icon'), cover: str('cover'), created: date('created'), updated: date('updated'), mtimeMs: st.mtimeMs }
     this.cache.set(file, entry)
     return entry
   }

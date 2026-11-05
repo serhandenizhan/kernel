@@ -17,6 +17,7 @@ import './guide/tips'
 import { activeEditor } from './editor/Editor'
 import { tNow, useLang } from './lib/i18n'
 import { HomePage } from './home/HomePage'
+import { ErrorBoundary } from './shell/ErrorBoundary'
 
 function useTheme() {
   const settings = useStore((s) => s.settings)
@@ -124,7 +125,12 @@ export function App() {
       {sidebarVisible && <Sidebar />}
       <main className="main">
         <div className="main-drag" />
-        <div className="page-surface">{overlay === 'guide' ? <GuidePage /> : view === 'home' ? <HomePage /> : <PageView />}</div>
+        <div className="page-surface">
+          {/* hata olursa sayfa görünümüne düşer; görünüm değişince yeniden dener */}
+          <ErrorBoundary resetKey={`${view}:${overlay}`} fallback={<PageView />}>
+            {overlay === 'guide' ? <GuidePage /> : view === 'home' ? <HomePage /> : <PageView />}
+          </ErrorBoundary>
+        </div>
         <TocPanel />
       </main>
       {overlay === 'search' && <SearchPalette />}

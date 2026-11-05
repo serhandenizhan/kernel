@@ -1,0 +1,26 @@
+// Ana sayfa: [Türkçe, English, Deutsch]
+export const home = {
+  'home.morning': ['Günaydın', 'Good morning', 'Guten Morgen'],
+  'home.day': ['İyi günler', 'Good afternoon', 'Guten Tag'],
+  'home.evening': ['İyi akşamlar', 'Good evening', 'Guten Abend'],
+  'home.night': ['İyi geceler', 'Good night', 'Gute Nacht'],
+  'home.search': ['Notlarda ara', 'Search notes', 'Notizen durchsuchen'],
+  'home.newNote': ['Yeni not', 'New note', 'Neue Notiz'],
+  'home.lecture': ['Ders notu', 'Lecture notes', 'Vorlesungsnotiz'],
+  'home.activity': ['Haftalık etkinlik', 'Weekly activity', 'Wöchentliche Aktivität'],
+  'home.last12': ['Son 12 hafta', 'Last 12 weeks', 'Letzte 12 Wochen'],
+  'home.less': ['Az', 'Less', 'Weniger'],
+  'home.more': ['Çok', 'More', 'Mehr'],
+  'home.cellPages.one': ['{date}: {count} sayfa', '{date}: {count} page', '{date}: {count} Seite'],
+  'home.cellPages.other': ['{date}: {count} sayfa', '{date}: {count} pages', '{date}: {count} Seiten'],
+  'home.pinned': ['Sabitlenenler', 'Pinned', 'Angeheftet'],
+  'home.courses': ['Dersler', 'Courses', 'Kurse'],
+  'home.coursesCount': ['{courses} sayfa · {notes} not', '{courses} pages · {notes} notes', '{courses} Seiten · {notes} Notizen'],
+  'home.noSubpages': ['Alt sayfa yok', 'No subpages', 'Keine Unterseiten'],
+  'home.recentEdited': ['Son düzenlenenler', 'Recently edited', 'Zuletzt bearbeitet'],
+  'home.recentAdded': ['Son eklenenler', 'Recently added', 'Zuletzt hinzugefügt'],
+  'home.nothingYet': ['Henüz bir şey yok', 'Nothing yet', 'Noch nichts'],
+  'home.emptyTitle': ['İlk notunu oluştur', 'Create your first note', 'Erstelle deine erste Notiz'],
+  'home.emptyBody': ["Derslerin burada kartlar halinde görünecek. Boş bir notla başla ya da Notion'daki sayfalarını getir.", 'Your courses will appear here as cards. Start with a blank note or bring your Notion pages.', 'Deine Kurse erscheinen hier als Karten. Beginne mit einer leeren Notiz oder hol deine Notion-Seiten.'],
+  'home.emptyNotion': ["Notion'dan aktar", 'Import from Notion', 'Aus Notion importieren']
+} as const

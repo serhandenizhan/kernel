@@ -62,6 +62,7 @@ function PinnedSection() {
 export function Sidebar() {
   const t = useT()
   const s = useStore.getState
+  const view = useStore((st) => st.view)
 
   return (
     <aside className="sidebar" data-testid="sidebar">
@@ -79,7 +80,7 @@ export function Sidebar() {
         <NewButton />
       </div>
       <nav className="sidebar-nav" aria-label={t('sidebar.home')}>
-        <button className="nav-row" data-testid="nav-home" onClick={() => s().openHome()}>
+        <button className={`nav-row${view === 'home' ? ' active' : ''}`} data-testid="nav-home" onClick={() => s().openHome()}>
           <Icon name="home" />
           <span>{t('sidebar.home')}</span>
         </button>

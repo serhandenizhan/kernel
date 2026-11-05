@@ -6,6 +6,7 @@ import { shell } from './shell'
 import { editor } from './editor'
 import { guide } from './guide'
 import { main } from './main'
+import { home } from './home'
 
 // Tüm bölümler: her anahtar [Türkçe, English, Deutsch] üçlüsü (eksik dil yapısal olarak imkânsız)
 export const MESSAGES = {
@@ -16,5 +17,6 @@ export const MESSAGES = {
   ...shell,
   ...editor,
   ...guide,
-  ...main
+  ...main,
+  ...home
 } as const

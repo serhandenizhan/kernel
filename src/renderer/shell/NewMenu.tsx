@@ -15,6 +15,14 @@ interface Item {
   run(): void | Promise<void>
 }
 
+/** Varsayılan ders notu şablonundan sayfa açar (şablon adı bu dilde, başka dilde ya da ilk şablon) */
+export async function createLectureNote(): Promise<void> {
+  const names = await kernel.templates.list()
+  const wanted = translate(currentLang(), 'template.defaultName')
+  const name = names.find((n) => n === wanted) ?? names.find((n) => (['tr', 'en', 'de'] as const).some((l) => translate(l, 'template.defaultName') === n)) ?? names[0] ?? wanted
+  await createFromTemplate(name)
+}
+
 /** Şablondan sayfa oluşturur ve açar */
 async function createFromTemplate(name: string): Promise<void> {
   const s = useStore.getState()
@@ -37,13 +45,7 @@ export function NewButton() {
       icon: 'template',
       label: t('sidebar.lecture'),
       hint: t('sidebar.template'),
-      run: async () => {
-        // varsayılan şablon kasada bu dilde ya da başka dilde oluşturulmuş olabilir: varsa o dilin adı, yoksa ilk şablon
-        const names = await kernel.templates.list()
-        const wanted = translate(currentLang(), 'template.defaultName')
-        const name = names.find((n) => n === wanted) ?? names.find((n) => (['tr', 'en', 'de'] as const).some((l) => translate(l, 'template.defaultName') === n)) ?? names[0] ?? wanted
-        await createFromTemplate(name)
-      }
+      run: createLectureNote
     },
     {
       id: 'new-from-template',

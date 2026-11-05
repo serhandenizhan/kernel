@@ -16,6 +16,7 @@ import { Tour, TipBubble } from './guide/Tour'
 import './guide/tips'
 import { activeEditor } from './editor/Editor'
 import { tNow, useLang } from './lib/i18n'
+import { HomePage } from './home/HomePage'
 
 function useTheme() {
   const settings = useStore((s) => s.settings)
@@ -78,6 +79,7 @@ export function App() {
   const vaultPath = useStore((s) => s.vaultPath)
   const sidebarVisible = useStore((s) => s.sidebarVisible)
   const overlay = useStore((s) => s.overlay)
+  const view = useStore((s) => s.view)
   const tourDone = useStore((s) => s.settings.tourDone)
   const [pendingImport, setPendingImport] = useState(false)
   const [resumeImport, setResumeImport] = useState(false)
@@ -122,7 +124,7 @@ export function App() {
       {sidebarVisible && <Sidebar />}
       <main className="main">
         <div className="main-drag" />
-        <div className="page-surface">{overlay === 'guide' ? <GuidePage /> : <PageView />}</div>
+        <div className="page-surface">{overlay === 'guide' ? <GuidePage /> : view === 'home' ? <HomePage /> : <PageView />}</div>
         <TocPanel />
       </main>
       {overlay === 'search' && <SearchPalette />}

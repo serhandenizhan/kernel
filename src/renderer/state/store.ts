@@ -28,7 +28,8 @@ interface State {
   init(): Promise<void>
   refreshTree(): Promise<void>
   openPage(id: string | null): void
-  /** ana sayfayı açar (görünüm Task 12'de; şimdilik etkisiz) */
+  /** sayfa alanında ne gösterilir: ana sayfa ya da açık sayfa */
+  view: 'home' | 'page'
   openHome(): void
   /** sabitlenen sayfa kimlikleri (kullanıcı sırası) */
   pins: string[]
@@ -79,7 +80,7 @@ export const useStore = create<State>((set, get) => ({
       return
     }
     const [settings, tree, pins] = await Promise.all([kernel.settings.get(), kernel.pages.tree(), kernel.pins.list()])
-    set({ ready: true, vaultPath: info.path, settings, tree, pins, currentId: tree[0]?.id ?? null })
+    set({ ready: true, vaultPath: info.path, settings, tree, pins, currentId: tree[0]?.id ?? null, view: settings.startView === 'home' ? 'home' : 'page' })
   },
 
   async refreshTree() {
@@ -89,14 +90,14 @@ export const useStore = create<State>((set, get) => ({
   },
 
   openPage(id) {
-    set({ currentId: id })
+    set({ currentId: id, view: 'page' })
   },
 
   async createPage(parentId) {
     const node = await kernel.pages.create(parentId)
     if (parentId) set((s) => ({ expanded: { ...s.expanded, [parentId]: true } }))
     await get().refreshTree()
-    set({ currentId: node.id })
+    set({ currentId: node.id, view: 'page' })
   },
 
   async setSettings(patch) {
@@ -111,7 +112,8 @@ export const useStore = create<State>((set, get) => ({
   setExpanded: (id, open) => set((s) => ({ expanded: { ...s.expanded, [id]: open } })),
   setRenaming: (id) => set({ renamingId: id }),
   setOverlay: (overlay) => set({ overlay }),
-  openHome: () => undefined,
+  view: 'page',
+  openHome: () => set({ view: 'home', overlay: null }),
   pins: [],
   async togglePin(id) {
     const pins = get().pins

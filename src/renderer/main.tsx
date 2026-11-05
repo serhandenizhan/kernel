@@ -8,6 +8,7 @@ import './styles/glass.css'
 import './styles/app.css'
 import './styles/editor.css'
 import './styles/blocks.css'
+import './styles/home.css'
 import './styles/print.css'
 
 // #/print: PDF için baskı görünümü; aksi halde uygulama

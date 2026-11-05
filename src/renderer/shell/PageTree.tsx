@@ -110,7 +110,8 @@ function Row({
   onDrop(targetId: string, zone: DropZone): void
   onMenu(x: number, y: number, node: TreeNode): void
 }) {
-  const currentId = useStore((s) => s.currentId)
+  // ana sayfa açıkken ağaçta seçili satır gösterilmez
+  const currentId = useStore((s) => (s.view === 'page' ? s.currentId : null))
   const open = useStore((s) => s.expanded[node.id] ?? false)
   const renaming = useStore((s) => s.renamingId === node.id)
   const hasChildren = node.children.length > 0

@@ -1,17 +1,62 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
-  <!-- Kernel "Sayfa K" logosu: macOS ikon ızgarası (824 px güvenli alan) -->
+  <!-- Kernel logosu: koyu kare üzerinde beyaz dikme ve yeşil şerit "K" (macOS ikon ızgarası, 824 px alan) -->
   <defs>
-    <filter id="shadow" x="-10%" y="-10%" width="120%" height="125%">
-      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#0a2a24" flood-opacity="0.28"/>
+    <radialGradient id="glowBL" cx="0.05" cy="1.02" r="0.62">
+      <stop offset="0" stop-color="#2f9a5a" stop-opacity="0.85"/>
+      <stop offset="0.45" stop-color="#1d6b3f" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#0b1210" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowTR" cx="1.05" cy="0.3" r="0.6">
+      <stop offset="0" stop-color="#2a7a4e" stop-opacity="0.6"/>
+      <stop offset="0.5" stop-color="#174a31" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#0b1210" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.06"/>
+      <stop offset="0.5" stop-color="#ffffff" stop-opacity="0.02"/>
+      <stop offset="1" stop-color="#5fe09a" stop-opacity="0.18"/>
+    </linearGradient>
+    <linearGradient id="slab" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0" stop-color="#f6f7f3"/>
+      <stop offset="1" stop-color="#d6d8d3"/>
+    </linearGradient>
+    <linearGradient id="armTop" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#1f7a52"/>
+      <stop offset="0.35" stop-color="#3fbf80"/>
+      <stop offset="0.8" stop-color="#6fe69a"/>
+      <stop offset="1" stop-color="#b3f7c3"/>
+    </linearGradient>
+    <linearGradient id="armBottom" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f3a28"/>
+      <stop offset="0.35" stop-color="#2a8a5c"/>
+      <stop offset="1" stop-color="#5fdc8e"/>
+    </linearGradient>
+    <linearGradient id="fold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#000" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#000" flood-opacity="0.45"/>
     </filter>
-    <filter id="page-shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#06463c" flood-opacity="0.35"/>
-    </filter>
+    <clipPath id="body"><rect x="100" y="100" width="824" height="824" rx="185"/></clipPath>
   </defs>
-  <rect x="100" y="100" width="824" height="824" rx="185" fill="#0E7C6B" filter="url(#shadow)"/>
-  <g filter="url(#page-shadow)">
-    <path d="M322 214 H614 L748 348 V810 H322 Z" fill="#FFFFFF"/>
-    <path d="M614 214 V348 H748 Z" fill="#BFE6DE"/>
+
+  <!-- gövde -->
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="#0a0d0c"/>
+  <g clip-path="url(#body)">
+    <rect x="100" y="100" width="824" height="824" fill="url(#glowBL)"/>
+    <rect x="100" y="100" width="824" height="824" fill="url(#glowTR)"/>
   </g>
-  <path d="M452 440 V700 M452 578 L612 440 M500 536 L620 700" fill="none" stroke="#0E7C6B" stroke-width="56" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="100.5" y="100.5" width="823" height="823" rx="184.5" fill="none" stroke="url(#edge)" stroke-width="2"/>
+
+  <g filter="url(#soft)">
+    <!-- alt kol (dikmenin arkasından sağ alta) -->
+    <path d="M436 575 C470 540 520 512 566 512 C590 512 606 522 622 538 L781 718 C790 728 784 742 770 742 L590 742 C577 742 568 737 560 728 L436 590 Z" fill="url(#armBottom)"/>
+    <!-- üst kol: dikmeden sağ üste uzanan şerit -->
+    <path d="M408 500 C420 470 442 448 468 422 L588 314 C600 303 612 298 628 298 L786 298 C800 298 805 310 795 320 L640 470 C612 497 590 507 560 516 C510 531 470 548 440 575 L408 610 Z" fill="url(#armTop)"/>
+    <!-- kıvrım gölgesi -->
+    <path d="M440 575 C470 548 510 531 560 516 C580 510 596 514 610 526 C570 532 520 552 478 590 Z" fill="url(#fold)" opacity="0.4"/>
+    <!-- beyaz dikme -->
+    <path d="M264 368 C264 350 274 337 290 328 L392 266 C400 261 408 265 408 275 L408 610 C408 640 398 662 376 676 L282 735 C273 741 264 736 264 725 Z" fill="url(#slab)"/>
+  </g>
 </svg>

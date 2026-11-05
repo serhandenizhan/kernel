@@ -777,3 +777,60 @@ button {
   padding: 10px 14px;
   transform: translateX(-50%);
 }
+
+/* --- segment kontrolü (ayarlar) --- */
+.segmented {
+  display: inline-flex;
+  flex-shrink: 0;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+}
+.segment {
+  min-width: 0;
+  padding: 5px 12px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: default;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.segment.on {
+  background: var(--page);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+}
+.segment.serif {
+  font-family: ui-serif, 'New York', Georgia, serif;
+}
+.setting-row {
+  gap: 12px;
+}
+.setting-row > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* uzun çeviriler (Almanca) taşmasın: kenar çubuğu düğmeleri kesilip … ile biter */
+.sidebar button,
+.sidebar a,
+.settings .btn {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (prefers-reduced-motion: reduce) {
+  .segment {
+    transition: none;
+  }
+}

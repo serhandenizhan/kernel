@@ -27,7 +27,7 @@ test('ayarlar: tema ve not fontu değişir, yeniden başlatınca korunur', async
   await expect(win.getByTestId('settings-dialog')).toBeVisible()
   await win.getByTestId('setting-theme').selectOption('dark')
   await expect(win.locator('html')).toHaveAttribute('data-theme', 'dark')
-  await win.getByTestId('setting-font').selectOption('sans')
+  await win.getByTestId('setting-font-sans').click()
   await expect(win.locator('html')).toHaveAttribute('data-body-font', 'sans')
   await win.getByTestId('setting-strip-citations').uncheck()
   await win.keyboard.press('Escape')

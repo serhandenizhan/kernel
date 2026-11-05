@@ -15,7 +15,7 @@ import { ImportWizard } from './notion/ImportWizard'
 import { Tour, TipBubble } from './guide/Tour'
 import './guide/tips'
 import { activeEditor } from './editor/Editor'
-import { tNow } from './lib/i18n'
+import { tNow, useLang } from './lib/i18n'
 
 function useTheme() {
   const settings = useStore((s) => s.settings)
@@ -72,6 +72,8 @@ function useShortcuts() {
 }
 
 export function App() {
+  // dil değişince bütün arayüz yeniden çizilir (yeniden başlatma gerekmez)
+  const lang = useLang()
   const ready = useStore((s) => s.ready)
   const vaultPath = useStore((s) => s.vaultPath)
   const sidebarVisible = useStore((s) => s.sidebarVisible)
@@ -116,7 +118,7 @@ export function App() {
     )
   }
   return (
-    <div className={`app${sidebarVisible ? '' : ' sidebar-hidden'}`}>
+    <div className={`app${sidebarVisible ? '' : ' sidebar-hidden'}`} lang={lang}>
       {sidebarVisible && <Sidebar />}
       <main className="main">
         <div className="main-drag" />

@@ -34,13 +34,48 @@ export function SettingsDialog() {
               <option value="dark">{t('settings.theme.dark')}</option>
             </select>
           </label>
-          <label className="setting-row">
+          <div className="setting-row">
+            <span>{t('settings.language')}</span>
+            <Segmented
+              testid="setting-language"
+              label={t('settings.language')}
+              value={settings.language}
+              options={[
+                { value: 'system', label: t('settings.language.system') },
+                { value: 'tr', label: 'Türkçe' },
+                { value: 'en', label: 'English' },
+                { value: 'de', label: 'Deutsch' }
+              ]}
+              onChange={(language) => set({ language })}
+            />
+          </div>
+          <p className="setting-hint">{t('settings.language.hint')}</p>
+          <div className="setting-row">
             <span>{t('settings.font')}</span>
-            <select data-testid="setting-font" value={settings.bodyFont} onChange={(e) => set({ bodyFont: e.target.value as Settings['bodyFont'] })}>
-              <option value="serif">New York (serif)</option>
-              <option value="sans">SF Pro (sans)</option>
-            </select>
-          </label>
+            <Segmented
+              testid="setting-font"
+              label={t('settings.font')}
+              value={settings.bodyFont}
+              options={[
+                { value: 'sans', label: 'SF Pro' },
+                { value: 'serif', label: 'New York', className: 'serif' }
+              ]}
+              onChange={(bodyFont) => set({ bodyFont })}
+            />
+          </div>
+          <div className="setting-row">
+            <span>{t('settings.start')}</span>
+            <Segmented
+              testid="setting-start"
+              label={t('settings.start')}
+              value={settings.startView}
+              options={[
+                { value: 'home', label: t('settings.start.home') },
+                { value: 'last', label: t('settings.start.last') }
+              ]}
+              onChange={(startView) => set({ startView })}
+            />
+          </div>
           <label className="setting-row">
             <span>{t('settings.width')}</span>
             <select data-testid="setting-width" value={settings.pageWidth} onChange={(e) => set({ pageWidth: e.target.value as Settings['pageWidth'] })}>
@@ -110,6 +145,27 @@ export function SettingsDialog() {
           </button>
         </div>
       </div>
+    </div>
+  )
+}
+
+/** Segment kontrolü (radyo grubu); seçenek testid'i `${testid}-${value}` */
+function Segmented<V extends string>({ testid, label, value, options, onChange }: { testid: string; label: string; value: V; options: { value: V; label: string; className?: string }[]; onChange(v: V): void }) {
+  return (
+    <div className="segmented" role="radiogroup" aria-label={label} data-testid={testid}>
+      {options.map((o) => (
+        <button
+          key={o.value}
+          type="button"
+          role="radio"
+          aria-checked={o.value === value}
+          data-testid={`${testid}-${o.value}`}
+          className={`segment${o.value === value ? ' on' : ''}${o.className ? ` ${o.className}` : ''}`}
+          onClick={() => onChange(o.value)}
+        >
+          {o.label}
+        </button>
+      ))}
     </div>
   )
 }

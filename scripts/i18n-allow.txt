@@ -1,9 +1,8 @@
 # Sözlüğe girmesi gerekmeyen metinler (özel adlar, sürüm etiketleri): dosya:satır metni ya da dosya:*
-src/renderer/shell/SettingsDialog.tsx:<option value="serif">New York (serif)</option>
-src/renderer/shell/SettingsDialog.tsx:<option value="sans">SF Pro (sans)</option>
 src/renderer/shell/SettingsDialog.tsx:<h4>Notion</h4>
 src/renderer/shell/ExportDialog.tsx:<option value="pdf">PDF</option>
 src/renderer/shell/ExportDialog.tsx:<option value="A4">A4</option>
 src/renderer/shell/ExportDialog.tsx:<option value="Letter">Letter</option>
 src/renderer/print/PrintView.tsx:*
 src/main/templates.ts:const TITLE_VARS = ['{{başlık}}', '{{title}}', '{{Titel}}']
+src/renderer/shell/SettingsDialog.tsx:{ value: 'tr', label: 'Türkçe' },

@@ -16,6 +16,7 @@ Kernel: lokal, açık kaynak, Markdown tabanlı macOS not uygulaması (Notion al
 - `npm test` — birim testleri (Vitest, `test/unit`)
 - `npm run test:e2e` — build + Playwright Electron testleri (`test/e2e`)
 - `npm run typecheck` — TS 7 (baseUrl yok; paths `./` ile başlar)
+- `npm run check:i18n` — arayüzde sözlük dışı (sabit yazılmış) metin taraması; izin listesi `scripts/i18n-allow.txt`
 - `npm run dist` — `.app` / `.dmg` (electron-builder, arm64)
 
 ## Kurallar
@@ -35,6 +36,13 @@ Kernel: lokal, açık kaynak, Markdown tabanlı macOS not uygulaması (Notion al
 - Token: `src/main/secrets.ts` (safeStorage). `KERNEL_TEST` altında Keychain yerine test deposu.
 - Geçmiş `.kernel/history/`, yedek durumu `.kernel/backup.json`, şablonlar `.kernel/templates/`, yarım aktarım `.kernel/notion-import.json`.
 - Test ortam değişkenleri: `KERNEL_TEST_HISTORY_INTERVAL_MS`, `KERNEL_TEST_BACKUP_DIR`, `KERNEL_TEST_PDF_DIR` (PDF/HTML/zip).
+
+## Notlar (Faz 3)
+- Diller: `src/shared/i18n/messages/*.ts` her anahtar `[Türkçe, English, Deutsch]` üçlüsü; `tr/en/de.ts` bunlardan türetilir. Renderer `useT()` / `tNow()`, main `mainT()`. Yeni arayüz metni her zaman sözlüğe eklenir; `{x}` çeviri yer tutucusu, `{{x}}` şablon değişkenidir.
+- Ana sayfa: `computeHome` (`src/core/home.ts`, saf) + `Vault.summaries()`; `home.changed` olayı 500 ms içinde birleştirilir. Veri: `.kernel/pins.json`, `.kernel/activity.json` (yerel gün → sayfa kimlikleri, 400 gün).
+- Ayar şeması 2: `language`, `startView`; eski ayarlar bir kerelik SF Pro'ya göçer. Ayar yazımları sıraya alınır.
+- e2e yardımcısı ayarlara `language: 'tr'` ve `startView: 'last'` yazar; ana sayfa testleri `launch(vault, {}, { home: true })`.
+- Görünüm token'ları `src/renderer/styles/tokens.css` (`--paper-top/bottom`, `--aurora`, `--side-*`); kontrast testi `test/unit/renderer/tokens-contrast.test.ts`.
 
 ## Mimari
 - `src/main` — Electron ana süreç (pencere, kasa, arama, PDF)

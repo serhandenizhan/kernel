@@ -24,12 +24,20 @@
 
 ### Notion'dan geçiş
 
-1. Kernel'de kenar çubuğunda **Notion'dan aktar**.
+1. Kernel'de kenar çubuğunda **Yeni ▾ → Notion'dan aktar**.
 2. [notion.so/my-integrations](https://www.notion.so/my-integrations) → **New integration** (Internal) → token'ı kopyala.
 3. Notion'da aktaracağın her ana sayfada **••• → Connections → Kernel**.
 4. Token'ı sihirbaza yapıştır, sayfaları seç, **Aktar**. Sonuç "Notion içe aktarım (tarih)" sayfasının altına gelir; mevcut notlarının üzerine hiçbir şey yazılmaz.
 
-Faz 3 (`[[linkler]]`, graf, sekmeler, flashcard'lar…) için: [`docs/superpowers/specs/2026-11-04-kernel-design.md`](docs/superpowers/specs/2026-11-04-kernel-design.md).
+## Özellikler (Faz 3)
+
+- **Yeni görünüm:** Yazı alanında yumuşak degrade (açıkta beyazdan griye, koyuda siyahtan griye), hareketsiz "aurora" zemin, saydam kenar çubuğu, SF Pro yazı tipleri ve tutarlı ikon seti. "Saydamlığı azalt" ve "Hareketi azalt" ayarlarına uyar.
+- **Ana sayfa:** Haftalık etkinlik haritası (son 12 hafta), sabitlenenler, ders kartları, son düzenlenen ve eklenen notlar. Kaydettikçe kendiliğinden güncellenir.
+- **Sabitleme:** Sağ tık → Sabitle ya da sayfa başlığındaki iğne.
+- **Sayfa linkleri** hedef sayfanın ikonuyla görünür; tek başına duran link (Notion alt sayfa listeleri) sayfa satırı olur.
+- **Diller:** Türkçe, English, Deutsch (Ayarlar → Dil; yeniden başlatma gerekmez, notlar çevrilmez).
+
+Faz 4 (`[[` seçici, geri bağlantılar, graf, etiketler, sekmeler, flashcard'lar…) için: [`docs/superpowers/specs/2026-11-04-kernel-design.md`](docs/superpowers/specs/2026-11-04-kernel-design.md).
 
 ## Kurulum
 

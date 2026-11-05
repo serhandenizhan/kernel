@@ -1,7 +1,7 @@
 {
   "name": "kernel",
   "productName": "Kernel",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "description": "Lokal, açık kaynak, Markdown tabanlı not uygulaması",
   "license": "MIT",
   "private": true,

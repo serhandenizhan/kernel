@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import katex from 'katex'
 import type { Deck, DeckInfo, ReviewRating, StudyCard } from '@shared/types'
 import { toVaultUrl } from '@core/vault-url'
@@ -37,6 +37,8 @@ function Session({ deck, exam, title, onExit }: { deck: Deck; exam: boolean; tit
   const [cards, setCards] = useState<StudyCard[] | null>(null)
   const [index, setIndex] = useState(0)
   const [shown, setShown] = useState(false)
+  // değerlendirme sürerken ikinci tuş aynı kartı yeniden değerlendirip sonraki kartı atlatmasın
+  const busy = useRef(false)
 
   useEffect(() => {
     void kernel.study.session(deck, exam).then(setCards)
@@ -45,18 +47,26 @@ function Session({ deck, exam, title, onExit }: { deck: Deck; exam: boolean; tit
   const card = cards?.[index]
   const rate = useCallback(
     async (r: ReviewRating) => {
-      if (!card) return
-      // sınav modu vadeleri değiştirmez: yalnızca kendini sınama
-      if (!exam) await kernel.study.review(card.id, r)
-      setShown(false)
-      setIndex((i) => i + 1)
+      if (!card || busy.current) return
+      busy.current = true
+      try {
+        // sınav modu vadeleri değiştirmez: yalnızca kendini sınama
+        if (!exam) await kernel.study.review(card.id, r)
+        setShown(false)
+        setIndex((i) => i + 1)
+      } finally {
+        busy.current = false
+      }
     },
     [card, exam]
   )
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey || e.altKey || !card) return
+      if (e.metaKey || e.ctrlKey || e.altKey || e.repeat || !card) return
+      // üstte palet / ayarlar açıksa ya da odak bir alandaysa tuşlar oraya aittir
+      const el = e.target
+      if (useStore.getState().overlay || (el instanceof Element && el.closest('input, textarea, button, [contenteditable="true"]') !== null)) return
       if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault()
         if (!shown) setShown(true)

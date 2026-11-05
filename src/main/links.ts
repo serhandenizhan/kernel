@@ -5,6 +5,7 @@ import { resolveWikiTarget } from '@core/wiki'
 import { foldKey } from '@core/fold'
 import type { Vault } from './vault/vault'
 import { log } from './log'
+import { readFile } from 'node:fs/promises'
 
 interface Entry {
   title: string
@@ -131,27 +132,33 @@ export class LinkIndex {
 const noExt = (p: string) => p.replace(/\.md$/i, '')
 
 /**
- * Sayfa yeniden adlandırılınca / taşınınca, eskiden o sayfaya çözümlenen linkleri kasa genelinde günceller.
- * Yeni başlık başka bir sayfayla çakışıyorsa link yol biçiminde yazılır. Değişen sayfa kimliklerini döndürür.
+ * Sayfa yeniden adlandırılınca / taşınınca, eskiden o sayfaya ya da alt sayfalarına çözümlenen linkleri kasa genelinde günceller.
+ * Yeni başlık başka bir sayfayla çakışıyorsa link yol biçiminde yazılır. `snapshot` yazmadan önceki hali geçmişe alır.
+ * Değişen sayfa kimliklerini döndürür.
  */
-export async function rewriteLinksAfterRelocate(vault: Vault, id: string, oldTree: TreeNode[]): Promise<string[]> {
+export async function rewriteLinksAfterRelocate(vault: Vault, id: string, oldTree: TreeNode[], snapshot?: (pageId: string, text: string) => Promise<void>): Promise<string[]> {
   const old = flatten(oldTree).find((n) => n.id === id)
   if (!old) return []
-  const tree = await vault.tree()
-  const all = flatten(tree)
-  const now = all.find((n) => n.id === id)
-  if (!now) return []
-  const olds = [old.title, noExt(old.path)].filter((t) => resolveWikiTarget(oldTree, t) === id)
-  if (olds.length === 0) return []
-  const ambiguous = all.some((n) => n.id !== id && foldKey(n.title) === foldKey(now.title))
-  const next = ambiguous ? noExt(now.path) : now.title
+  const all = flatten(await vault.tree())
+  // taşınan sayfa ve alt sayfalarının her biri için: eski hedefler → yeni hedef
+  const rules: { olds: string[]; next: string }[] = []
+  for (const o of flatten([old])) {
+    const now = all.find((n) => n.id === o.id)
+    if (!now) continue
+    const olds = [o.title, noExt(o.path)].filter((t) => resolveWikiTarget(oldTree, t) === o.id)
+    const ambiguous = all.some((n) => n.id !== o.id && foldKey(n.title) === foldKey(now.title))
+    const next = ambiguous ? noExt(now.path) : now.title
+    if (olds.length && !olds.every((t) => t === next)) rules.push({ olds, next })
+  }
+  if (rules.length === 0) return []
   const changed: string[] = []
   for (const n of all) {
     try {
       const p = await vault.read(n.id)
       if (p.readOnly) continue
-      const md = renameLinks(p.markdown, olds, next)
+      const md = rules.reduce((body, r) => renameLinks(body, r.olds, r.next), p.markdown)
       if (md === p.markdown) continue
+      if (snapshot) await snapshot(n.id, await readFile(vault.pathOf(n.id), 'utf8')).catch(() => undefined)
       await vault.write(n.id, { markdown: md, meta: p.meta })
       changed.push(n.id)
     } catch (e) {

@@ -69,8 +69,10 @@ export class SrsStore {
     let text: string
     try {
       text = await readFile(this.file, 'utf8')
-    } catch {
-      return (this.cache = {})
+    } catch (e) {
+      // yalnızca dosya yoksa boş başlanır; başka okuma hatasında yazmak ilerlemeyi silerdi
+      if ((e as NodeJS.ErrnoException).code === 'ENOENT') return (this.cache = {})
+      throw e
     }
     try {
       const raw = JSON.parse(text) as { cards?: Record<string, unknown> }

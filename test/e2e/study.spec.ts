@@ -36,3 +36,26 @@ test('kartlar desteden çalışılır; değerlendirme srs.json’a yazılır; an
   await expect(win.getByTestId('study-progress')).toHaveText('1 / 2')
   await app.close()
 })
+
+test('çalışırken arama paletinde boşluk yazılabilir ve rakamlar kartı değerlendirmez; basılı tutulan tuş kart atlatmaz', async () => {
+  const vault = tmpVault()
+  writeFileSync(join(vault, 'Kart.md'), 'S1 :: C1\nS2 :: C2\nS3 :: C3\n')
+  const { app, win } = await launch(vault)
+  await win.getByTestId('nav-study').click()
+  await win.getByTestId('deck-row').first().getByTestId('deck-study').click()
+  await expect(win.getByTestId('card-question')).toHaveText('S1')
+  await win.keyboard.press('Space')
+  await expect(win.getByTestId('card-answer')).toBeVisible()
+  await win.keyboard.press('Meta+k')
+  await win.getByTestId('search-input').pressSequentially('a b 3')
+  await expect(win.getByTestId('search-input')).toHaveValue('a b 3')
+  await win.keyboard.press('Escape')
+  await expect(win.getByTestId('study-progress')).toHaveText('1 / 3')
+  // aynı karta iki hızlı değerlendirme yalnızca bir kart ilerletir
+  await win.evaluate(() => {
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: '3' }))
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: '3' }))
+  })
+  await expect(win.getByTestId('study-progress')).toHaveText('2 / 3')
+  await app.close()
+})

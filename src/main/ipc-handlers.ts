@@ -98,7 +98,10 @@ let srs: SrsStore | null = null
 
 /** Yeniden adlandırma / taşıma sonrası: kasadaki linkleri güncelle, dizinleri yenile, açık sayfalara haber ver */
 async function relinkAfter(vault: Vault, id: string, before: TreeNode[]): Promise<void> {
-  const changed = await rewriteLinksAfterRelocate(vault, id, before).catch((e) => {
+  // toplu değişiklik geri alınabilsin: her sayfanın önceki hali sürüm geçmişine alınır
+  const changed = await rewriteLinksAfterRelocate(vault, id, before, async (pid, text) => {
+    await history?.snapshot(pid, text, { force: true })
+  }).catch((e) => {
     log.warn('Linkler güncellenemedi', e)
     return [] as string[]
   })

@@ -91,4 +91,14 @@ describe('rewriteLinksAfterRelocate', () => {
     expect((await vault.read(s)).markdown).toBe('[[Not]] [[B/Not]]')
     expect(first).toBeTruthy()
   })
+
+  it('rewrites path-form links to descendants when a parent is renamed', async () => {
+    const a = await page(null, 'A', '')
+    await page(a, 'B', '')
+    const s = await page(null, 'Kaynak', '[[A/B]] ve [[A]]')
+    const before = await vault.tree()
+    await vault.rename(a, 'Z')
+    await rewriteLinksAfterRelocate(vault, a, before)
+    expect((await vault.read(s)).markdown).toBe('[[B]] ve [[Z]]')
+  })
 })

@@ -71,4 +71,12 @@ describe('SrsStore', () => {
     expect(Object.keys(await s2.states())).toEqual(['ok'])
     expect(existsSync(join(other, '.kernel', 'srs.json'))).toBe(true)
   })
+
+  it('does not treat an unreadable file as empty (progress is not wiped)', async () => {
+    const dir = join(root, '.kernel', 'srs.json')
+    mkdirSync(dir, { recursive: true }) // okuma EISDIR ile başarısız olur
+    await expect(store.due([card('a')])).rejects.toThrow()
+    expect(existsSync(dir)).toBe(true)
+  })
 })
+

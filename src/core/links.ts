@@ -82,12 +82,14 @@ export function extractTags(body: string, frontmatterTags?: unknown): string[] {
 const normTarget = (t: string) => foldKey(t.trim().replace(/\.md$/i, ''))
 
 /** `oldTargets`'tan birine giden linkleri `newTarget`'a çevirir; görünen ad ve kod korunur */
-export function renameLinks(body: string, oldTargets: string[], newTarget: string): string {
+export function renameLinks(body: string, oldTargets: string[], newTarget: string, opts: { keepText?: boolean } = {}): string {
   const olds = new Set(oldTargets.map(normTarget))
   const next = mapProse(body, (text) =>
     text.replace(WIKI, (m, bang: string, t: string, label?: string) => {
       if (bang || !olds.has(normTarget(t))) return m
-      return `[[${newTarget}${label !== undefined ? `|${label}` : ''}]]`
+      // keepText: etiketsiz linkte eski metin görünen ad olarak korunur
+      const shown = label ?? (opts.keepText ? t.trim() : undefined)
+      return `[[${newTarget}${shown !== undefined ? `|${shown}` : ''}]]`
     })
   )
   return next === body ? body : next

@@ -162,13 +162,38 @@ export async function rewriteLinksAfterRelocate(vault: Vault, id: string, oldTre
     const next = ambiguous ? noExt(now.path) : now.title
     if (olds.length && !olds.every((t) => t === next)) rules.push({ olds, next })
   }
-  if (rules.length === 0) return []
+  // ad çakışması: eskiden başka bir sayfayı gösteren [[Ad]] linkleri, artık aynı adı taşıyan iki sayfa olduğundan
+  // o sayfanın yoluna sabitlenir; görünen metin aynı kalır ([[Ders1/Notlar|Notlar]])
+  const moved = new Set(flatten([old]).map((o) => o.id))
+  const clashed = new Set(flatten([old]).map((o) => all.find((n) => n.id === o.id)).filter((n): n is TreeNode => !!n).map((n) => foldKey(n.title)))
+  const pinCache = new Map<string, string | null>()
+  const pinFor = (target: string): string | null => {
+    const key = foldKey(target.trim())
+    if (pinCache.has(key)) return pinCache.get(key)!
+    let pin: string | null = null
+    if (clashed.has(key)) {
+      // link ad biçiminde yazılmış ve eskiden taşınmayan bir sayfayı gösteriyordu; şimdi bu adı taşıyan birden çok sayfa var
+      const was = resolveWikiTarget(oldTree, target)
+      const still = was && !moved.has(was) ? all.find((n) => n.id === was) : undefined
+      const byPath = still && foldKey(noExt(still.path)) === key
+      const ambiguous = all.filter((n) => foldKey(n.title) === key).length > 1
+      if (still && !byPath && ambiguous) pin = noExt(still.path)
+    }
+    pinCache.set(key, pin)
+    return pin
+  }
   const changed: string[] = []
   for (const n of all) {
     try {
       const p = await vault.read(n.id)
       if (p.readOnly) continue
-      const md = rules.reduce((body, r) => renameLinks(body, r.olds, r.next), p.markdown)
+      // önce yazıldığı haliyle sabitlenir (eski ağaçta ne gösteriyordu), sonra taşınan sayfanın linkleri yenilenir
+      let md = p.markdown
+      for (const l of extractLinks(md)) {
+        const pin = pinFor(l.target)
+        if (pin) md = renameLinks(md, [l.target], pin, { keepText: true })
+      }
+      md = rules.reduce((body, r) => renameLinks(body, r.olds, r.next), md)
       if (md === p.markdown) continue
       if (snapshot) await snapshot(n.id, await readFile(vault.pathOf(n.id), 'utf8')).catch(() => undefined)
       await vault.write(n.id, { markdown: md, meta: p.meta })

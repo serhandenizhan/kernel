@@ -84,6 +84,36 @@ describe('LinkIndex', () => {
 })
 
 describe('rewriteLinksAfterRelocate', () => {
+  it('pins links to the existing page when a rename makes its title ambiguous (display text unchanged)', async () => {
+    const d1 = await page(null, 'Ders1', '')
+    const d2 = await page(null, 'Ders2', '')
+    const notes = await page(d1, 'Notlar', '')
+    const other = await page(d2, 'Taslak', '')
+    const src = await page(null, 'Kaynak', 'Bkz. [[Notlar]] ve [[notlar|özet]]')
+    const before = await vault.tree()
+    await vault.rename(other, 'Notlar')
+    const changed = await rewriteLinksAfterRelocate(vault, other, before)
+    expect(changed).toEqual([src])
+    expect((await vault.read(src)).markdown).toBe('Bkz. [[Ders1/Notlar|Notlar]] ve [[Ders1/Notlar|özet]]')
+    idx = new LinkIndex()
+    await idx.build(vault)
+    expect(idx.backlinks(notes).map((b) => b.id)).toEqual([src])
+  })
+
+  it('pins links when a move makes a title ambiguous', async () => {
+    const d1 = await page(null, 'Ders1', '')
+    const notes = await page(d1, 'Notlar', '')
+    const loose = await page(null, 'Arşiv', '')
+    const second = await page(loose, 'Notlar', '')
+    const src = await page(null, 'Kaynak', '[[Ders1/Notlar]] ve [[Arşiv/Notlar|arşiv]]')
+    void notes
+    const before = await vault.tree()
+    await vault.move(second, null, 0)
+    await rewriteLinksAfterRelocate(vault, second, before)
+    // taşınan sayfanın linki yeni yoluna (kökte, ad çakışıyor) gider, diğeri dokunulmadan kalır
+    expect((await vault.read(src)).markdown).toBe('[[Ders1/Notlar]] ve [[Notlar|arşiv]]')
+  })
+
   it('rewrites title and path links that pointed to the renamed page', async () => {
     const d = await page(null, 'Ders', '')
     const t = await page(d, 'Eski', '')
@@ -95,7 +125,7 @@ describe('rewriteLinksAfterRelocate', () => {
     expect((await vault.read(s)).markdown).toBe('[[Yeni]] ve [[Yeni|bak]]\n```\n[[Eski]]\n```')
   })
 
-  it('leaves links to a same-titled other page alone and uses the path when the new title is ambiguous', async () => {
+  it('pins links to the same-titled other page and uses the path when the new title is ambiguous', async () => {
     const a = await page(null, 'A', '')
     const b = await page(null, 'B', '')
     const first = await page(a, 'Not', '')
@@ -105,7 +135,7 @@ describe('rewriteLinksAfterRelocate', () => {
     const before = await vault.tree()
     await vault.rename(second, 'Not')
     await rewriteLinksAfterRelocate(vault, second, before)
-    expect((await vault.read(s)).markdown).toBe('[[Not]] [[B/Not]]')
+    expect((await vault.read(s)).markdown).toBe('[[A/Not|Not]] [[B/Not]]')
     expect(first).toBeTruthy()
   })
 

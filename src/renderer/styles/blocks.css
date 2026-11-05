@@ -544,16 +544,94 @@ mark[data-color='gray'] { --hl: #e3e8ec; }
   user-select: none;
 }
 
-/* --- wiki link ve başlıklı toggle --- */
-.wiki-link {
-  color: var(--accent-text);
-  text-decoration: underline dotted;
-  text-underline-offset: 3px;
+/* --- sayfa linkleri (spec §18.1): metin renginde, hedefin ikonuyla --- */
+.wiki-link,
+.kernel-editor a.wiki-link {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 0 4px;
+  border-radius: 6px;
+  color: inherit;
+  font-weight: 500;
+  text-decoration: none;
   cursor: pointer;
+  transition: background 0.12s ease;
 }
 .wiki-link:hover {
-  background: var(--accent-soft);
+  background: var(--hover);
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 3px;
+}
+.wiki-icon {
+  display: inline-flex;
+  align-self: center;
+  font-size: 0.9em;
+  line-height: 1;
+  color: var(--text-3);
+}
+.wiki-icon img {
+  width: 1em;
+  height: 1em;
   border-radius: 3px;
+  object-fit: cover;
+}
+.wiki-link.missing,
+.kernel-editor a.wiki-link.missing {
+  color: var(--text-3);
+  font-weight: 400;
+  text-decoration: underline dashed;
+  text-decoration-color: var(--text-3);
+  text-underline-offset: 3px;
+}
+/* tek başına sayfa linki: satır genişliğinde sayfa satırı */
+.kernel-editor p.page-row {
+  display: flex;
+  margin: 2px 0;
+}
+/* ProseMirror'ın satır sonundaki atom düğümden sonra eklediği yardımcılar fazladan satır açmasın */
+.kernel-editor p.page-row > img.ProseMirror-separator,
+.kernel-editor p.page-row > br.ProseMirror-trailingBreak {
+  display: none;
+}
+.kernel-editor p.page-row > .wiki-link {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-size: 15.5px;
+  text-decoration: none;
+}
+.kernel-editor p.page-row > .wiki-link .wiki-icon {
+  width: 22px;
+  justify-content: center;
+  font-size: 18px;
+}
+.kernel-editor p.page-row > .wiki-link:hover {
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--page) 60%, var(--hover));
+}
+.kernel-editor p.page-row > .wiki-link::after {
+  content: '›';
+  margin-left: auto;
+  color: var(--text-3);
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.kernel-editor p.page-row > .wiki-link:hover::after {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .wiki-link,
+  .kernel-editor p.page-row > .wiki-link::after {
+    transition: none;
+  }
 }
 .kernel-editor .details[data-heading] summary {
   font-family: var(--font-ui);

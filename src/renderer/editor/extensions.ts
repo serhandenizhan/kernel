@@ -14,6 +14,7 @@ import { SmartPaste } from './paste'
 import { WikiLink } from './nodes/WikiLink'
 import { PdfEmbed } from './nodes/PdfEmbed'
 import { tNow } from '../lib/i18n'
+import { PageRow } from './page-row'
 
 // Görev 6'daki Markdown şemasıyla birebir aynı düğüm/işaret adları
 
@@ -65,6 +66,7 @@ export function buildExtensions(opts: ExtensionOptions = {}): AnyExtension[] {
     Callout,
     KernelImage,
     WikiLink,
+    PageRow,
     PdfEmbed
   ]
   if (!opts.readOnly) list.push(SmartPaste, MathShortcuts, SlashCommand, Placeholder.configure({ placeholder: opts.placeholder ?? (() => tNow('editor.placeholder')) }))

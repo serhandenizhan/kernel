@@ -9,6 +9,8 @@ test('uzun notta degrade pencereye sabit: kaydırınca metnin arkası koyulaşma
   const { app, win } = await launch(vault)
   await win.getByTestId('tree-row').filter({ hasText: 'Uzun' }).click()
   const surface = win.locator('.page-surface')
+  // sistemde "saydamlığı azalt" açıksa (bazı CI makineleri) degrade bilerek kapanır; o durum ayrı testte
+  test.skip(await win.evaluate(() => matchMedia('(prefers-reduced-transparency: reduce)').matches), 'sistemde saydamlığı azalt açık')
   expect(await surface.evaluate((e) => getComputedStyle(e).backgroundAttachment)).toContain('fixed')
   expect(await surface.evaluate((e) => getComputedStyle(e).backgroundImage)).toContain('linear-gradient')
   // aurora pencere zemininde

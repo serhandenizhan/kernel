@@ -55,6 +55,7 @@ test('Cmd+\\ kenar çubuğunu gizler, Cmd+N yeni sayfa açar', async () => {
 test('kasa yoksa kasa seçme ekranı görünür', async () => {
   const { app, win } = await launch('', { KERNEL_VAULT: '' })
   await expect(win.getByTestId('vault-picker')).toBeVisible()
-  await expect(win.getByText('Kernel kasası oluştur')).toBeVisible()
+  // kasa yokken ayar dosyası da yok: arayüz sistem dilinde açılır (CI makinesi İngilizce olabilir)
+  await expect(win.getByText(/Kernel kasası oluştur|Create a Kernel vault|Kernel-Tresor erstellen/)).toBeVisible()
   await app.close()
 })

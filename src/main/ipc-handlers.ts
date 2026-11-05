@@ -22,6 +22,7 @@ import { registerNotionIpc } from './notion/service'
 import { splitFrontmatter } from './vault/frontmatter'
 import { log } from './log'
 import { PinStore } from './pins'
+import { ActivityStore } from './activity'
 
 function broadcast(channel: string, ...args: unknown[]): void {
   for (const w of BrowserWindow.getAllWindows()) w.webContents.send(channel, ...args)
@@ -38,6 +39,7 @@ export async function openVault(path: string): Promise<void> {
   const interval = process.env['KERNEL_TEST_HISTORY_INTERVAL_MS']
   history = new HistoryStore(path, undefined, interval !== undefined ? Number(interval) : undefined)
   void history.prune()
+  activity = new ActivityStore(path)
   backupSettings = await readSettings(path)
   setMainLanguage(backupSettings.language)
   backups.stop()
@@ -57,6 +59,7 @@ export async function openVault(path: string): Promise<void> {
 
 let search: SearchIndex | null = null
 let history: HistoryStore | null = null
+let activity: ActivityStore | null = null
 let backupSettings: Settings | null = null
 const backups = new BackupScheduler(
   () => (state.vault && backupSettings ? { root: state.vault.root, settings: backupSettings } : null),
@@ -147,6 +150,8 @@ export function registerIpc(): void {
     }
     const res = await vault.write(id, input)
     void search?.update(vault, id)
+    // ana sayfa ısı haritası: bugün düzenlenen sayfalar
+    void activity?.record(id).catch((e) => log.warn('Etkinlik kaydedilemedi', e))
     return res
   })
   h(IPC.pagesCreate, (parentId: string | null, title?: string) => requireVault().create(parentId, title))

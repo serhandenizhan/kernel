@@ -10,6 +10,19 @@ export interface PageMeta {
   tags?: string[]
 }
 
+/** Ana sayfa için sayfa özeti (frontmatter tarihleri ve kapakla) */
+export interface PageSummary {
+  id: string
+  title: string
+  path: string
+  parentId: string | null
+  icon?: string
+  cover?: string
+  created?: string
+  updated?: string
+  childCount: number
+}
+
 export interface TreeNode {
   id: string
   title: string

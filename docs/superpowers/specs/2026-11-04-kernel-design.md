@@ -323,7 +323,7 @@ Kernel'in temel farkı. Saf fonksiyon: `convertPaste({ text, html }) → { doc, 
 
 ---
 
-## 12. Faz 3: Bilgi ağı ve çalışma araçları
+## 12. Faz 4: Bilgi ağı ve çalışma araçları
 
 - **`[[` linkleri:** `[[` yazınca cam sayfa seçici. Linkler dosyada `[[Sayfa adı]]` olarak saklanır; çözümleme sayfa adına göre yapılır (aynı ada sahip birden fazla sayfa varsa yol ile ayırt edilir: `[[Lineer Cebir/Özdeğerler]]`). Sayfa yeniden adlandırılınca kasadaki tüm linkler güncellenir. Var olmayan sayfaya link → tıklayınca oluşturulur.
 - **Geri bağlantılar:** Sayfanın altında "Bu sayfaya bağlananlar" paneli, bağlam cümlesiyle.
@@ -355,7 +355,7 @@ Kernel'in temel farkı. Saf fonksiyon: `convertPaste({ text, html }) → { doc, 
 | Cmd+N | Yeni sayfa |
 | Cmd+Shift+N | Mevcut sayfanın altına yeni alt sayfa |
 | Cmd+K | Ara / sayfaya git |
-| Cmd+P | Komut paleti (F3) |
+| Cmd+P | Komut paleti (F4) |
 | Cmd+/ | Rehber |
 | Cmd+\\ | Kenar çubuğunu aç/kapat |
 | Cmd+Shift+T | İçindekiler panelini aç/kapat |
@@ -364,8 +364,8 @@ Kernel'in temel farkı. Saf fonksiyon: `convertPaste({ text, html }) → { doc, 
 | Cmd+B / I / U / Shift+S | Kalın / italik / altı çizili / üstü çizili |
 | Cmd+Shift+M | Satır içi formül |
 | Cmd+Alt+C | Kod bloğu |
-| Cmd+Shift+F | Odak modu (F3) |
-| Cmd+W / Cmd+T | Sekmeyi kapat / yeni sekme (F3) |
+| Cmd+Shift+F | Odak modu (F4) |
+| Cmd+W / Cmd+T | Sekmeyi kapat / yeni sekme (F4) |
 | Cmd+, | Ayarlar |
 
 ---
@@ -402,7 +402,8 @@ Her fazın sonunda: tüm testler geçer, `.app` derlenir, kullanıcı elle dener
 |---|---|---|
 | **1 — Çekirdek** | Electron iskeleti, logo ve `.app` paketi, kasa ve sayfa ağacı, editör ve tüm temel bloklar, akıllı yapıştırma, ikon ve kapak, Cmd+K arama, açık/koyu tema, otomatik kayıt, içindekiler paneli, PDF export, ilk açılış turu, Rehber (Faz 1 bölümleri) | Günlük kullanılabilir Kernel `.app`; GitHub'a ilk push |
 | **2 — Taşınma ve güvence** | Notion aktarımı, sürüm geçmişi, otomatik yedekleme, Markdown/HTML export, şablonlar, Mermaid, gömülü PDF, Rehber bölümleri | Notion'dan tamamen geçiş; push |
-| **3 — Bilgi ağı ve çalışma** | `[[linkler]]` ve geri bağlantılar, graf, etiketler, sekmeler ve bölünmüş ekran, komut paleti, odak modu, flashcard'lar ve FSRS, Rehber bölümleri | Tam özellikli Kernel; push |
+| **3 — Yeni görünüm, ana sayfa ve diller** | §18: arayüz yenileme (degrade zemin, saydam kenar çubuğu, yazı tipleri, ikonlar, sayfa linkleri), ana sayfa, Türkçe / İngilizce / Almanca arayüz, Rehber güncellemesi | Yenilenmiş Kernel; push |
+| **4 — Bilgi ağı ve çalışma** | §12: `[[linkler]]` ve geri bağlantılar, graf, etiketler, sekmeler ve bölünmüş ekran, komut paleti, odak modu, flashcard'lar ve FSRS; ana sayfaya "Bugünün tekrarı" kartı, Rehber bölümleri | Tam özellikli Kernel; push |
 
 Her faz kendi uygulama planıyla (writing-plans) ele alınır.
 
@@ -416,3 +417,108 @@ Her faz kendi uygulama planıyla (writing-plans) ele alınır.
 - Eklenti sistemi (kod modüler tutulur ki ileride eklenebilsin, ama v1'de API sunulmaz).
 - Windows / Linux paketleri.
 - Apple Developer imzası / notarization (yerel kullanım için gerekmez; ilk açılışta "Sağ tık → Aç" yeterli). İleride eklenebilir.
+
+---
+
+## 18. Faz 3: Yeni görünüm, ana sayfa ve diller
+
+2026-11-05'te kullanıcı, Notion'dan gerçek notlarını aktarıp uygulamayı bir süre kullandıktan sonra bu bölümü istedi.
+
+### Amaç ve neden
+
+Uygulama çalışıyor ama kullanıcıya göre görünümü "yavan". Kullanıcının istediği, açınca keyif veren, yeni macOS'un cam görünümüne yakın, dikkat çekici ama göz yormayan bir arayüz. Ayrıca bütün derslerini tek bakışta gösteren bir ana sayfa ve İngilizce / Almanca arayüz seçeneği istiyor.
+
+**Başarı:** Kullanıcı uygulamayı açtığında ana sayfada derslerini ve son çalıştığı notları görür, tek tıkla devam eder. Arayüz "Apple uygulaması gibi" hissettirir. Notlar okunaklılığını kaybetmez.
+
+**Hedef dışı:** Notların içeriğini çevirmek; tema mağazası ya da serbest renk özelleştirme; animasyonlu arka planlar.
+
+**Başarısızlık sayılır (teknik olarak çalışsa bile):**
+- Degrade ya da saydamlık yüzünden not metninin okunaklılığının düşmesi.
+- Arayüzün yavaşlaması (yazarken takılma).
+- Çeviriler yüzünden bir düğmenin ya da menünün taşıp bozulması.
+- Mevcut kasa formatının değişmesi.
+
+### 18.1 Arayüz yenileme
+
+Kullanıcının istekleri (ekran görüntüleriyle, 2026-11-05):
+
+1. **Degrade zemin:** Açık ve koyu temada sayfa arka planlarında hafif renk geçişleri. Düz boş zemin yerine, göz yormayan bir arka plan.
+2. **Daha saydam kenar çubuğu:** Yeni macOS'taki gibi.
+3. **Sayfa içi alt sayfa linkleri:** Kendi ikonlarıyla görünecek, yeşil-mavi link rengi olmayacak.
+4. **Kenar çubuğu üst kısmı:** "Kernel" yazısı çok küçük. Yeni sayfa ve şablon ikonları değişecek. Yazı tipleri beğenilmedi. Panel baştan düzenlenecek.
+
+Kararlar (aşağıdakiler benim kararım; kullanıcı spec incelemesinde değiştirebilir):
+
+- **Zemin ("aurora"):** Pencere zemininde 3 büyük, çok bulanık radyal degrade.
+  - Açık tema: petrol yeşili, gök mavisi ve leylak; zemin üzerinde %25–35 opaklık.
+  - Koyu tema: aynı renkler, daha derin tonlarda, %18–25 opaklık.
+  - Degrade sabittir, hareket etmez.
+  - Sayfa "kağıdı" %88–92 opak kalır ve hafif `backdrop-filter` kullanır. Degrade kağıdın kenarlarında ve arkasında çok hafif hissedilir; metnin arkası neredeyse düzdür.
+  - Metin kontrastı WCAG AA'yı (4.5:1) her iki temada sağlar.
+  - "Saydamlığı azalt" açıksa düz renkli zemine düşer.
+  - Aurora ve cam efektleri PDF'e ve HTML export'a girmez; çıktılar beyaz zeminde kalır.
+- **Kenar çubuğu:** Mevcut opak örtü kaldırılır. macOS vibrancy ile birlikte aurora zemini de kenar çubuğunun içinden görünür.
+  - Satırlar: üzerine gelince yarı saydam cam hap; seçili satır vurgu rengiyle tonlanmış cam hap; uzun adlar sağda solarak kesilir.
+- **Kenar çubuğu üstü:** Sayfa K logosu ve yanında "Kernel" (17 px, yarı kalın, SF Pro Rounded).
+  - Altında: arama ve tek bir "Yeni" düğmesi. Düğme küçük bir cam menü açar: Boş sayfa / Ders notu şablonu / Şablondan…
+  - Eski küçük "▾ +" ikonları kalkar.
+  - Bölüm başlıkları: "Ana sayfa" satırı, "Sabitlenenler", "Sayfalar".
+- **İkonlar:** Tutarlı, 1.5 px çizgili, SF Symbols tarzı bir SVG ikon seti yazılır: ev, artı, belge, şablon, arama, ayar, rehber, sabitle, ok. Emoji yalnızca sayfa ikonlarında kullanılır.
+- **Yazı tipleri:**
+  - Arayüz: SF Pro.
+  - Başlıklar (sayfa başlığı, H1–H3): SF Pro Display, kalın, sıkı harf aralığı (−0.02em).
+  - **Not metninin varsayılanı SF Pro Text olur** (16 px, satır yüksekliği 1.65). Kullanıcı mevcut serif fontu beğenmedi.
+  - New York (serif) ayarlarda seçenek olarak kalır.
+  - Mevcut kurulumda kayıtlı not fontu ayarı bir kerelik SF Pro'ya geçirilir.
+  - PDF export not metni için aynı ayarı kullanır. PDF referans görüntüleri (`test/pdf/baseline/`) yeniden üretilir ve gözle doğrulanır.
+  - Kod: SF Mono.
+- **Sayfa linkleri (wiki link) görünümü:**
+  - Satır içi: metin renginde, başında hedef sayfanın ikonu (yoksa ince belge ikonu), altı çizgisiz; üzerine gelince hafif zemin ve ince alt çizgi.
+  - Hedefi olmayan link: soluk renk, kesikli alt çizgi.
+  - Bir paragrafın tek içeriği bir sayfa linkiyse (Notion'daki alt sayfa listeleri gibi) link, satır genişliğinde bir "sayfa satırı" olarak çizilir: ikon, başlık, üzerine gelince cam zemin.
+  - Bu değişiklik yalnızca görünümdür; Markdown'daki `[[...]]` aynı kalır.
+- **Diğer cam yüzeyler:** Biçim çubuğu, menüler ve kod dili seçici, 0.2.4'teki dil seçiciyle aynı dile getirilir: 14 px köşe, ince kenar, hafif açılış animasyonu. Animasyonlar "hareketi azalt" ayarına uyar.
+
+### 18.2 Ana sayfa
+
+Kullanıcı önerilen bölümlerin hepsini istedi.
+
+- **Ne:** Kasaya yazılmayan, uygulamanın kendi görünümü (Rehber gibi). Kenar çubuğunun en üstündeki "Ana sayfa" satırı açar.
+  - Uygulama ana sayfayla açılır. Ayarlardan "son açık sayfayla başla" seçilebilir.
+- **Bölümler (yukarıdan aşağı):**
+  1. **Karşılama:** Günün saatine göre selam ve tarih.
+  2. **Hızlı başlat:** Arama kutusu (Cmd+K ile aynı), "Yeni not", "Ders notu" düğmeleri.
+  3. **Sabitlenenler:** Kullanıcının sabitlediği sayfalar, küçük kartlar halinde. Sabitlemek için sağ tık → "Sabitle" ya da sayfa başlığındaki iğne. Sabitlenenler kenar çubuğunda da ayrı bölümde görünür. Sıra sürükle-bırakla değişir. Veri: `.kernel/pins.json` (sayfa id listesi).
+  4. **Dersler:** Üst seviye sayfaların kart ızgarası. Her kartta kapak görselinin küçük hali (yoksa ikon rengine göre yumuşak degrade), ikon, başlık, alt sayfa sayısı ve "en son ne zaman düzenlendi" (alt sayfalar dahil).
+  5. **Son düzenlenenler** ve **Son eklenenler:** Yan yana iki liste, her biri 8 sayfa. Göreli zamanla gösterilir ("2 saat önce", "dün"). Hangi dersin içinde olduğu da yazar. Kaynak: frontmatter'daki `updated` / `created`.
+  6. **Haftalık etkinlik:** Son 12 haftanın gün gün ısı haritası (GitHub tarzı, vurgu renginin tonları). Bir güne gelince o gün düzenlenen sayfa sayısı görünür.
+     - Veri: `.kernel/activity.json`. Gün (yerel tarih) → o gün en az bir kez kaydedilen benzersiz sayfa id'leri. Otomatik kayıt her yazımda günceller. 400 günden eski girdiler silinir.
+     - Geçmişe dönük veri yoktur; harita kurulumdan itibaren dolar. İlk açılışta sayfaların `updated` tarihleriyle kaba bir başlangıç doldurulur.
+  7. **Bugünün tekrarı:** Faz 4'te flashcard'lar gelince eklenir; o zamana kadar görünmez.
+- **Boş durum:** Kasada sayfa yoksa "İlk notunu oluştur" ve "Notion'dan aktar" düğmeleri.
+- **Performans:** Ana sayfa verisi ana süreçte hesaplanır, tek IPC çağrısıyla gelir. 500 sayfalık kasada 200 ms altında açılır.
+
+### 18.3 Dil seçeneği
+
+- **Diller:** Türkçe, English, Deutsch.
+  - Ayarlarda "Dil" seçimi; değişiklik uygulamayı yeniden başlatmadan uygulanır.
+  - İlk açılışta sistem dili bu üçünden biriyse o, değilse Türkçe.
+- **Çevrilenler:**
+  - Arayüzdeki tüm metinler (menüler, düğmeler, diyaloglar, toast'lar, ipuçları, tanıtım turu, Rehber, kısayol tablosu).
+  - Ana süreç metinleri (macOS menü çubuğu, kayıt diyalogları, hata mesajları).
+  - Uygulamanın oluşturduğu içerikler: Notion aktarım raporu, "Ders notu" şablonunun başlıkları, varsayılan kapak adları. Bunlar oluşturulduğu andaki dilde yazılır, sonradan çevrilmez.
+  - Tarih ve göreli zaman biçimleri (`Intl`).
+- **Çevrilmeyenler:** Kullanıcının notları, dosya ve klasör adları. Aktarım klasör adı da oluşturulduğu dilde kalır.
+- **Yapı:** `src/shared/i18n/{tr,en,de}.ts`, tipli anahtarlar; Türkçe kaynak dildir. Renderer ve main aynı sözlükleri kullanır.
+- **Test:** Üç dilin anahtar kümeleri aynıdır (birim testi). Sabit Türkçe metin kalmadığını tarayan bir kontrol vardır. e2e'de dil değiştirince ana menü ve ayarlar çevrilir. Uzun Almanca metinlerde taşma için ekran görüntüsü kontrolü yapılır.
+- **Çeviri kalitesi:** İngilizce ve Almanca metinleri ben yazarım. Almanca için kullanıcının (ya da bilen birinin) göz atması önerilir.
+
+### 18.4 0.2.x ara sürümlerinde zaten düzeltilenler
+
+- Sayfa ayırıcı çizgiyle başlayınca çizginin seçili gelmesi ve biçim çubuğunun açılması (0.2.3).
+- Diyagram olmayan "mermaid" kod bloklarında hata (0.2.3).
+- Kod dili seçicinin yazarken kendiliğinden seçmesi; Mermaid'in listede olmaması (0.2.4).
+
+### 18.5 Kurucuya bırakılanlar
+
+Degrade renklerinin tam tonları, ikonların çizimi, kart ızgarasının kırılma noktaları, ısı haritası renk basamakları ve animasyon süreleri kurucuya bırakılır. Uyması gerekenler: yukarıdaki kararlar, AA kontrastı ve "Saydamlığı azalt" / "Hareketi azalt" davranışları.

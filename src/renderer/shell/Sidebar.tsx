@@ -7,6 +7,7 @@ import logo from '../assets/logo.svg'
 import { useState } from 'react'
 import type { TreeNode } from '@shared/types'
 import { PageIcon } from './PageHeader'
+import { TagsSection } from './TagsSection'
 
 function findNode(nodes: TreeNode[], id: string): TreeNode | null {
   for (const n of nodes) {
@@ -99,6 +100,7 @@ export function Sidebar() {
           s().setOverlay('export')
         }}
       />
+      <TagsSection />
       <div className="sidebar-footer">
         <button className="footer-btn" onClick={() => s().setOverlay('guide')}>
           <Icon name="help" size={15} />

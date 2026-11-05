@@ -805,3 +805,50 @@ mark[data-color='gray'] { --hl: #e3e8ec; }
 .focus-mode .backlinks {
   display: none !important;
 }
+
+/* Etiketler */
+.kernel-editor .hashtag {
+  color: var(--accent-text);
+  background: var(--accent-soft);
+  border-radius: 5px;
+  padding: 0 3px;
+}
+.sidebar-section-toggle {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+.tag-list {
+  max-height: 180px;
+  overflow-y: auto;
+}
+.tag-hash {
+  width: 16px;
+  text-align: center;
+  color: var(--text-3);
+}
+.tag-count {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text-3);
+}
+.tag-page-title {
+  font-family: var(--font-display, inherit);
+  font-size: 32px;
+  margin: 48px 0 4px;
+}
+.tag-page-count {
+  color: var(--text-2);
+  margin: 0 0 20px;
+}
+.tag-page-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}

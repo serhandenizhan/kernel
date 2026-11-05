@@ -11,6 +11,7 @@ import { Callout } from './nodes/Callout'
 import { KernelImage } from './nodes/Image'
 import { SlashCommand } from './nodes/SlashCommand'
 import { WikiPicker } from './nodes/WikiPicker'
+import { TagHighlight } from './nodes/TagHighlight'
 import { SmartPaste } from './paste'
 import { WikiLink } from './nodes/WikiLink'
 import { PdfEmbed } from './nodes/PdfEmbed'
@@ -35,6 +36,7 @@ export interface ExtensionOptions {
 
 export function buildExtensions(opts: ExtensionOptions = {}): AnyExtension[] {
   const list: AnyExtension[] = [
+    TagHighlight,
     StarterKit.configure({ codeBlock: false, heading: { levels: [1, 2, 3, 4, 5, 6] }, link: { openOnClick: false, autolink: true } }),
     KernelCodeBlock,
     TaskList,

@@ -58,7 +58,8 @@ export function extractLinks(body: string): LinkRef[] {
   return out
 }
 
-const TAG = /(^|[\s(\[{,;])#([\p{L}\p{N}_][\p{L}\p{N}_\-/]*)/gu
+/** #etiket: önünde boşluk / satır başı olmalı (başlık, URL parçası ve C# gibi yazımlar hariç) */
+export const TAG = /(^|[\s(\[{,;])#([\p{L}\p{N}_][\p{L}\p{N}_\-/]*)/gu
 
 /** Etiketler: önce frontmatter `tags`, sonra metindeki #etiket; katlanmış ve tekil */
 export function extractTags(body: string, frontmatterTags?: unknown): string[] {

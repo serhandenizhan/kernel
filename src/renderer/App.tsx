@@ -18,6 +18,7 @@ import './guide/tips'
 import { activeEditor } from './editor/Editor'
 import { tNow, useLang } from './lib/i18n'
 import { HomePage } from './home/HomePage'
+import { TagPage } from './shell/TagPage'
 import { ErrorBoundary } from './shell/ErrorBoundary'
 
 function useTheme() {
@@ -138,7 +139,7 @@ export function App() {
         <div className="page-surface">
           {/* hata olursa sayfa görünümüne düşer; görünüm değişince yeniden dener */}
           <ErrorBoundary resetKey={`${view}:${overlay}`} fallback={<PageView />}>
-            {overlay === 'guide' ? <GuidePage /> : view === 'home' ? <HomePage /> : <PageView />}
+            {overlay === 'guide' ? <GuidePage /> : view === 'home' ? <HomePage /> : view === 'tag' ? <TagPage /> : <PageView />}
           </ErrorBoundary>
         </div>
         {!focusMode && <TocPanel />}

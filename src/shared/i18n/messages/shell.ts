@@ -28,6 +28,8 @@ export const shell = {
   'tree.history': ['Sürüm geçmişi', 'Version history', 'Versionsverlauf'],
   'tree.trash': ['Çöp kutusuna taşı', 'Move to Trash', 'In den Papierkorb'],
   'tree.trashed': ['"{name}" çöp kutusuna taşındı', '"{name}" moved to Trash', '„{name}“ in den Papierkorb verschoben'],
+  'tree.trashWin': ["Geri Dönüşüm Kutusu'na taşı", 'Move to Recycle Bin', 'In den Papierkorb'],
+  'tree.trashedWin': ['"{name}" Geri Dönüşüm Kutusu\'na taşındı', '"{name}" moved to Recycle Bin', '„{name}“ in den Papierkorb verschoben'],
   'tree.addChild': ['Alt sayfa ekle', 'Add subpage', 'Unterseite hinzufügen'],
   'history.restored': ['Sürüm geri yüklendi', 'Version restored', 'Version wiederhergestellt'],
   'history.empty': ['Henüz sürüm yok. Düzenledikçe en fazla 5 dakikada bir kaydedilir.', 'No versions yet. While you edit, one is saved at most every 5 minutes.', 'Noch keine Versionen. Beim Bearbeiten wird höchstens alle 5 Minuten eine gespeichert.'],

@@ -1,5 +1,5 @@
 import { test, expect, type Locator } from '@playwright/test'
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { launch, tmpVault } from './helpers/app'
 
@@ -75,5 +75,37 @@ test('aramayla açılan iç içe sayfa kenar çubuğunda görünür olur (üst k
   const row = win.getByTestId('tree-row').filter({ hasText: 'Olasılık' })
   await expect(row).toBeVisible()
   await expect(row).toHaveClass(/active/)
+  await app.close()
+})
+
+test('ağaçtan yeniden adlandırılan açık sayfanın başlığı da güncellenir', async () => {
+  const vault = tmpVault()
+  writeFileSync(join(vault, 'Notlar.md'), 'serbest\n')
+  const { app, win } = await launch(vault)
+  await win.getByTestId('tree-row').filter({ hasText: 'Notlar' }).click()
+  await expect(win.getByTestId('page-title')).toHaveValue('Notlar')
+  await win.getByTestId('tree-row').filter({ hasText: 'Notlar' }).dblclick()
+  await win.getByTestId('rename-input').fill('Notlarım')
+  await win.getByTestId('rename-input').press('Enter')
+  await expect(win.getByTestId('tree-row').filter({ hasText: 'Notlarım' })).toHaveCount(1)
+  await expect(win.getByTestId('page-title')).toHaveValue('Notlarım')
+  // başlık alanından sonraki düzenleme eski ada geri dönmez
+  await win.getByTestId('page-title').click()
+  await win.keyboard.press('End')
+  await win.keyboard.type(' 2')
+  await win.keyboard.press('Enter')
+  await expect.poll(() => existsSync(join(vault, 'Notlarım 2.md'))).toBe(true)
+  await app.close()
+})
+
+test('şablondan yeni ders notunda başlık seçili gelir; yazılan ad sayfanın adı olur', async () => {
+  const vault = tmpVault()
+  writeFileSync(join(vault, 'Var.md'), 'x\n')
+  const { app, win } = await launch(vault, {}, { home: true })
+  await win.getByTestId('home-lecture').click()
+  await expect(win.getByTestId('page-title')).toBeFocused()
+  await win.keyboard.type('Fizik 1')
+  await win.keyboard.press('Enter')
+  await expect.poll(() => existsSync(join(vault, 'Fizik 1.md'))).toBe(true)
   await app.close()
 })

@@ -22,6 +22,23 @@ beforeEach(async () => {
 })
 
 describe('LinkIndex', () => {
+  it('keeps serving the previous index while a rebuild is running', async () => {
+    const target = await page(null, 'Hedef', '')
+    const a = await page(null, 'Kaynak', '[[Hedef]]')
+    await idx.build(vault)
+    // okumalar yavaş: yeniden tarama sürerken sorgu gelir
+    const read = vault.read.bind(vault)
+    vault.read = async (id: string) => {
+      await new Promise((r) => setTimeout(r, 30))
+      return read(id)
+    }
+    const rebuild = idx.build(vault)
+    await new Promise((r) => setTimeout(r, 15))
+    expect(idx.backlinks(target).map((b) => b.id)).toEqual([a])
+    await rebuild
+    expect(idx.backlinks(target).map((b) => b.id)).toEqual([a])
+  })
+
   it('lists backlinks with context and skips self links', async () => {
     const target = await page(null, 'Hedef', 'Kendine [[Hedef]] link.')
     const a = await page(null, 'Kaynak', 'Önce satır.\n\nBkz. [[hedef]] burada.')

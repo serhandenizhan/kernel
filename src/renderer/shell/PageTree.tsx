@@ -75,13 +75,13 @@ export function PageTree({ onRequestIcon, onRequestExport }: { onRequestIcon(id:
         }
       },
       {
-        label: tNow('tree.trash'),
+        label: tNow(isMac ? 'tree.trash' : 'tree.trashWin'),
         danger: true,
         separatorBefore: true,
         onSelect: async () => {
           await kernel.pages.trash(node.id)
           await s.refreshTree()
-          s.toast(tNow('tree.trashed', { name: node.title }))
+          s.toast(tNow(isMac ? 'tree.trashed' : 'tree.trashedWin', { name: node.title }))
         }
       }
     ]

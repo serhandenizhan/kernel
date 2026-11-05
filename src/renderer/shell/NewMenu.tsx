@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { titleFocusRequest } from './PageView'
 import { t as translate } from '@shared/i18n'
 import { kernel } from '../lib/kernel'
 import { useStore } from '../state/store'
@@ -29,6 +30,7 @@ async function createFromTemplate(name: string): Promise<void> {
   const s = useStore.getState()
   const node = await kernel.templates.create(null, name)
   await s.refreshTree()
+  titleFocusRequest.id = node.id
   s.openPage(node.id)
 }
 

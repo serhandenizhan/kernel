@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { PageData } from '@shared/types'
-import { useStore } from '../state/store'
+import { findNode, useStore } from '../state/store'
 import { tNow } from '../lib/i18n'
 import { isUntitled } from '@shared/i18n'
 import { kernel } from '../lib/kernel'
@@ -52,6 +52,9 @@ export function PageView({ pageId, secondary = false }: { pageId?: string; secon
   )
 }
 
+/** Şablondan yeni oluşturulan sayfa: açılınca başlık seçili odaklanır (yazılan ad hazır adın yerine geçer) */
+export const titleFocusRequest: { id: string | null } = { id: null }
+
 function TitleField({ page }: { page: PageData }) {
   const [title, setTitle] = useState(isUntitled(page.title) ? '' : page.title)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -60,9 +63,21 @@ function TitleField({ page }: { page: PageData }) {
   const committed = useRef(page.title)
   const chain = useRef<Promise<void>>(Promise.resolve())
 
+  // sayfa başka yerden (kenar çubuğu, sağ tık) yeniden adlandırılırsa başlık alanı da güncellenir; yazarken dokunulmaz
+  const treeTitle = useStore((s) => findNode(s.tree, page.id)?.title)
+  useEffect(() => {
+    if (!treeTitle || treeTitle === committed.current || document.activeElement === ref.current) return
+    committed.current = treeTitle
+    setTitle(isUntitled(treeTitle) ? '' : treeTitle)
+  }, [treeTitle])
+
   // yeni (Adsız) sayfada, yalnızca açılışta başlığa odaklan
   useEffect(() => {
-    if (isUntitled(committed.current)) ref.current?.focus()
+    if (titleFocusRequest.id === page.id) {
+      titleFocusRequest.id = null
+      ref.current?.focus()
+      ref.current?.select()
+    } else if (isUntitled(committed.current)) ref.current?.focus()
   }, [page.id])
 
   useEffect(() => {

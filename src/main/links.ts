@@ -29,9 +29,15 @@ export class LinkIndex {
   private tree: TreeNode[] = []
 
   async build(vault: Vault): Promise<void> {
-    this.tree = await vault.tree()
-    this.pages.clear()
-    for (const n of flatten(this.tree)) await this.load(vault, n.id)
+    // yeni dizin ayrı kurulur, bitince eskisiyle değiştirilir: tarama sürerken geri bağlantı / graf boş görünmez
+    const tree = await vault.tree()
+    const pages = new Map<string, Entry>()
+    for (const n of flatten(tree)) {
+      const e = await this.read(vault, n.id)
+      if (e) pages.set(n.id, e)
+    }
+    this.tree = tree
+    this.pages = pages
   }
 
   async update(vault: Vault, id: string): Promise<void> {
@@ -43,14 +49,20 @@ export class LinkIndex {
     this.pages.delete(id)
   }
 
-  private async load(vault: Vault, id: string): Promise<void> {
+  private async read(vault: Vault, id: string): Promise<Entry | null> {
     try {
       const p = await vault.read(id)
-      this.pages.set(id, { title: p.title, path: p.path, links: extractLinks(p.markdown), tags: extractTags(p.markdown, p.meta.tags), cards: extractCards(id, p.markdown) })
+      return { title: p.title, path: p.path, links: extractLinks(p.markdown), tags: extractTags(p.markdown, p.meta.tags), cards: extractCards(id, p.markdown) }
     } catch (e) {
-      this.pages.delete(id)
       log.warn('Link dizinine eklenemedi', e instanceof Error ? e.message : 'bilinmeyen')
+      return null
     }
+  }
+
+  private async load(vault: Vault, id: string): Promise<void> {
+    const e = await this.read(vault, id)
+    if (e) this.pages.set(id, e)
+    else this.pages.delete(id)
   }
 
   private resolve(target: string): string | null {

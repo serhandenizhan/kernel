@@ -453,7 +453,11 @@ Kararlar (aşağıdakiler benim kararım; kullanıcı spec incelemesinde değiş
   - Açık tema: petrol yeşili, gök mavisi ve leylak; zemin üzerinde %25–35 opaklık.
   - Koyu tema: aynı renkler, daha derin tonlarda, %18–25 opaklık.
   - Degrade sabittir, hareket etmez.
-  - Sayfa "kağıdı" %88–92 opak kalır ve hafif `backdrop-filter` kullanır. Degrade kağıdın kenarlarında ve arkasında çok hafif hissedilir; metnin arkası neredeyse düzdür.
+- **Yazı alanında degrade (kullanıcının asıl istediği, mockup sonrası 2026-11-05):** Sayfa "kağıdı", yani notun yazıldığı alan, yukarıdan aşağıya yumuşak bir degradeyle boyanır.
+  - Açık tema: beyazdan açık griye (`#FFFFFF` → `#E5E9EE`).
+  - Koyu tema: siyaha yakın tondan koyu griye (`#14191F` → `#2A313A`).
+  - Kağıt %93–96 opaktır, hafif `backdrop-filter` kullanır. Degrade uzun sayfalarda kağıdın yüksekliği boyunca değil, pencere yüksekliği boyunca yayılır; aşağı kaydırınca metnin arkası koyulaşmaz.
+  - **Kapak görselleri değişmez:** Kullanıcının fotoğrafları (Notion'dan gelenler dahil) olduğu gibi gösterilir. Degrade yalnızca kapağı olmayan sayfaların ders kartı küçük resminde yer tutucu olarak kullanılır.
   - Metin kontrastı WCAG AA'yı (4.5:1) her iki temada sağlar.
   - "Saydamlığı azalt" açıksa düz renkli zemine düşer.
   - Aurora ve cam efektleri PDF'e ve HTML export'a girmez; çıktılar beyaz zeminde kalır.
@@ -488,13 +492,15 @@ Kullanıcı önerilen bölümlerin hepsini istedi.
 - **Bölümler (yukarıdan aşağı):**
   1. **Karşılama:** Günün saatine göre selam ve tarih.
   2. **Hızlı başlat:** Arama kutusu (Cmd+K ile aynı), "Yeni not", "Ders notu" düğmeleri.
-  3. **Sabitlenenler:** Kullanıcının sabitlediği sayfalar, küçük kartlar halinde. Sabitlemek için sağ tık → "Sabitle" ya da sayfa başlığındaki iğne. Sabitlenenler kenar çubuğunda da ayrı bölümde görünür. Sıra sürükle-bırakla değişir. Veri: `.kernel/pins.json` (sayfa id listesi).
-  4. **Dersler:** Üst seviye sayfaların kart ızgarası. Her kartta kapak görselinin küçük hali (yoksa ikon rengine göre yumuşak degrade), ikon, başlık, alt sayfa sayısı ve "en son ne zaman düzenlendi" (alt sayfalar dahil).
-  5. **Son düzenlenenler** ve **Son eklenenler:** Yan yana iki liste, her biri 8 sayfa. Göreli zamanla gösterilir ("2 saat önce", "dün"). Hangi dersin içinde olduğu da yazar. Kaynak: frontmatter'daki `updated` / `created`.
-  6. **Haftalık etkinlik:** Son 12 haftanın gün gün ısı haritası (GitHub tarzı, vurgu renginin tonları). Bir güne gelince o gün düzenlenen sayfa sayısı görünür.
+  3. **Haftalık etkinlik** (kullanıcı en üstte istedi; ayrıntısı aşağıda, 7. maddede).
+  4. **Sabitlenenler:** Kullanıcının sabitlediği sayfalar, küçük kartlar halinde. Sabitlemek için sağ tık → "Sabitle" ya da sayfa başlığındaki iğne. Sabitlenenler kenar çubuğunda da ayrı bölümde görünür. Sıra sürükle-bırakla değişir. Veri: `.kernel/pins.json` (sayfa id listesi).
+  5. **Dersler:** Üst seviye sayfaların kart ızgarası. Her kartta kapak görselinin küçük hali (yoksa ikon rengine göre yumuşak degrade), ikon, başlık, alt sayfa sayısı ve "en son ne zaman düzenlendi" (alt sayfalar dahil).
+  6. **Son düzenlenenler** ve **Son eklenenler:** Yan yana iki liste, her biri 8 sayfa. Göreli zamanla gösterilir ("2 saat önce", "dün"). Hangi dersin içinde olduğu da yazar. Kaynak: frontmatter'daki `updated` / `created`.
+  7. **Haftalık etkinlik (3. sırada gösterilir):** Son 12 haftanın gün gün ısı haritası (GitHub tarzı, vurgu renginin tonları). Bir güne gelince o gün düzenlenen sayfa sayısı görünür.
      - Veri: `.kernel/activity.json`. Gün (yerel tarih) → o gün en az bir kez kaydedilen benzersiz sayfa id'leri. Otomatik kayıt her yazımda günceller. 400 günden eski girdiler silinir.
      - Geçmişe dönük veri yoktur; harita kurulumdan itibaren dolar. İlk açılışta sayfaların `updated` tarihleriyle kaba bir başlangıç doldurulur.
-  7. **Bugünün tekrarı:** Faz 4'te flashcard'lar gelince eklenir; o zamana kadar görünmez.
+  8. **Bugünün tekrarı:** Faz 4'te flashcard'lar gelince eklenir; o zamana kadar görünmez.
+- **Canlı güncelleme:** Ana sayfa açıkken bir not kaydedilir, eklenir, silinir, yeniden adlandırılır ya da dışarıdan değişirse (dosya izleyici) ana sayfa kendini yeniler. Isı haritası, son düzenlenenler ve ders kartları yenilemeye gerek kalmadan güncellenir. Yenileme olayları 500 ms içinde birleştirilir. Ayrıca gün değişince (gece yarısı) karşılama ve ısı haritası güncellenir.
 - **Boş durum:** Kasada sayfa yoksa "İlk notunu oluştur" ve "Notion'dan aktar" düğmeleri.
 - **Performans:** Ana sayfa verisi ana süreçte hesaplanır, tek IPC çağrısıyla gelir. 500 sayfalık kasada 200 ms altında açılır.
 

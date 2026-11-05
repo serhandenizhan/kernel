@@ -167,7 +167,11 @@ export interface KernelApi {
     set(patch: Partial<Settings>): Promise<Settings>
   }
   /** cb: kaydedilmemiş değişiklik kalmadıysa true */
-  app: { onFlushRequest(cb: () => Promise<boolean>): void }
+  app: {
+    onFlushRequest(cb: () => Promise<boolean>): void
+    /** macOS sistem dili (örn. "tr-TR") */
+    locale(): Promise<string>
+  }
   events: {
     onTreeChanged(cb: () => void): () => void
     onPageChangedExternally(cb: (id: string) => void): () => void

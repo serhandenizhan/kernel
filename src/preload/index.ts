@@ -47,6 +47,7 @@ const api: KernelApi = {
   backup: { now: inv(IPC.backupNow), status: inv(IPC.backupStatus), chooseFolder: inv(IPC.backupChooseFolder) } as KernelApi['backup'],
   settings: { get: inv(IPC.settingsGet), set: inv(IPC.settingsSet) } as KernelApi['settings'],
   app: {
+    locale: inv(IPC.appLocale),
     onFlushRequest(cb) {
       ipcRenderer.on(IPC.appFlush, async () => {
         let ok = false

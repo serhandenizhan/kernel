@@ -39,6 +39,7 @@ export const IPC = {
   notionPending: 'notion:pending',
   notionProgress: 'notion:progress',
   appFlush: 'app:flush',
+  appLocale: 'app:locale',
   appFlushDone: 'app:flush-done',
   eventTreeChanged: 'event:tree-changed',
   eventPageChanged: 'event:page-changed'

@@ -6,6 +6,7 @@ import type { PageMeta, PdfOptions, Settings } from '@shared/types'
 import { Vault } from './vault/vault'
 import { watchVault } from './vault/watcher'
 import { readSettings, writeSettings } from './vault/settings'
+import { setMainLanguage } from './i18n'
 import { defaultVaultPath, saveVaultPath } from './config'
 import { requireVault, state } from './state'
 import { SearchIndex } from './search'
@@ -37,6 +38,7 @@ export async function openVault(path: string): Promise<void> {
   history = new HistoryStore(path, undefined, interval !== undefined ? Number(interval) : undefined)
   void history.prune()
   backupSettings = await readSettings(path)
+  setMainLanguage(backupSettings.language)
   backups.stop()
   backups.start()
   recentIds = await loadRecent(path)
@@ -254,5 +256,10 @@ export function registerIpc(): void {
     return folder
   })
   h(IPC.settingsGet, () => readSettings(requireVault().root))
-  h(IPC.settingsSet, async (patch: Partial<Settings>) => (backupSettings = await writeSettings(requireVault().root, patch)))
+  h(IPC.settingsSet, async (patch: Partial<Settings>) => {
+    backupSettings = await writeSettings(requireVault().root, patch)
+    setMainLanguage(backupSettings.language)
+    return backupSettings
+  })
+  h(IPC.appLocale, () => app.getLocale())
 }

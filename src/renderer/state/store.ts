@@ -14,6 +14,8 @@ interface State {
   tree: TreeNode[]
   currentId: string | null
   settings: Settings
+  /** macOS sistem dili (dil ayarı 'system' iken kullanılır) */
+  systemLocale: string
   sidebarVisible: boolean
   tocVisible: boolean
   expanded: Record<string, boolean>
@@ -53,6 +55,7 @@ export const useStore = create<State>((set, get) => ({
   tree: [],
   currentId: null,
   settings: DEFAULT_SETTINGS,
+  systemLocale: 'tr-TR',
   sidebarVisible: true,
   tocVisible: false,
   expanded: {},
@@ -63,7 +66,8 @@ export const useStore = create<State>((set, get) => ({
   reloadPage: () => set((s) => ({ reloadToken: s.reloadToken + 1 })),
 
   async init() {
-    const info = await kernel.vault.info()
+    const [info, systemLocale] = await Promise.all([kernel.vault.info(), kernel.app.locale().catch(() => 'tr-TR')])
+    set({ systemLocale })
     if (!info) {
       set({ ready: true, vaultPath: null })
       return

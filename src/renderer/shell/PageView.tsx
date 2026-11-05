@@ -6,6 +6,7 @@ import { isUntitled } from '@shared/i18n'
 import { kernel } from '../lib/kernel'
 import { PageEditor, activeEditor } from '../editor/Editor'
 import { PageHeader } from './PageHeader'
+import { Backlinks } from './Backlinks'
 
 // Seçili sayfa: başlık alanı + editör
 export function PageView() {
@@ -44,6 +45,7 @@ export function PageView() {
       <div className="page-column">
         <TitleField page={page} />
         <PageEditor page={page} />
+        <Backlinks pageId={page.id} />
       </div>
     </article>
   )

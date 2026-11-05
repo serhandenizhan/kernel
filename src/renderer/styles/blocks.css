@@ -732,3 +732,55 @@ mark[data-color='gray'] { --hl: #e3e8ec; }
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Geri bağlantılar: sayfanın altında sakin bir liste */
+.backlinks {
+  margin: 48px 0 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.backlinks-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  margin: 0 0 8px;
+}
+.backlinks-count {
+  color: var(--text-3);
+  font-weight: 500;
+}
+.backlinks ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.backlink {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: none;
+  border: 0;
+  color: var(--text);
+  cursor: pointer;
+}
+.backlink:hover,
+.backlink:focus-visible {
+  background: var(--hover);
+}
+.backlink-page {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+.backlink-context {
+  font-size: 13px;
+  color: var(--text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

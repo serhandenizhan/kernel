@@ -325,3 +325,183 @@
   gap: 4px;
   margin-top: 6px;
 }
+
+/* --- Bugünün tekrarı kartı --- */
+.home-review {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  margin-bottom: 28px;
+  color: var(--accent-text);
+}
+.home-review .recent-text {
+  flex: 1;
+  color: var(--text);
+}
+
+/* --- Çalışma ekranı --- */
+.study-page {
+  padding-bottom: 48px;
+}
+.study-hint {
+  color: var(--text-2);
+  max-width: 60ch;
+}
+.deck-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.deck-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--page) 70%, transparent);
+  border: 1px solid var(--border);
+}
+.deck-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.deck-title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.deck-meta {
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+.deck-due {
+  min-width: 28px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--text-3);
+}
+.deck-due.has-due {
+  color: var(--accent-text);
+}
+.study-session {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px 48px;
+}
+.study-session-bar {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+}
+.study-deck-name {
+  flex: 1;
+  font-weight: 600;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+.study-exam-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+.study-progress {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-2);
+}
+.study-card {
+  width: min(640px, 100%);
+  margin-top: 8vh;
+  padding: 32px 36px 20px;
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.card-question {
+  font-family: var(--font-display, inherit);
+  font-size: 24px;
+  line-height: 1.35;
+}
+.card-answer {
+  font-size: 17px;
+  line-height: 1.55;
+}
+.card-answer img,
+.card-question img {
+  max-width: 100%;
+  border-radius: 8px;
+}
+.card-divider {
+  height: 1px;
+  background: var(--border);
+}
+.card-show {
+  align-self: center;
+}
+.card-ratings {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.rate-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 6px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--page);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.rate-btn kbd {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-3);
+}
+.rate-again {
+  color: var(--danger);
+}
+.rate-good,
+.rate-easy {
+  color: var(--accent-text);
+}
+.rate-btn:hover {
+  background: var(--hover);
+}
+.card-source {
+  align-self: center;
+  background: none;
+  border: 0;
+  color: var(--text-3);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.card-source:hover {
+  color: var(--text);
+}
+.study-done {
+  margin-top: 12vh;
+  text-align: center;
+}
+.study-done p {
+  color: var(--text-2);
+}

@@ -47,6 +47,7 @@ const api: KernelApi = {
   home: { data: inv(IPC.homeData) } as KernelApi['home'],
   links: { backlinks: inv(IPC.linksBacklinks), graph: inv(IPC.linksGraph) } as KernelApi['links'],
   tags: { list: inv(IPC.tagsList), pages: inv(IPC.tagsPages) } as KernelApi['tags'],
+  study: { decks: inv(IPC.studyDecks), session: inv(IPC.studySession), review: inv(IPC.studyReview), dueCount: inv(IPC.studyDueCount) } as KernelApi['study'],
   templates: { list: inv(IPC.templatesList), create: inv(IPC.templatesCreate), saveAs: inv(IPC.templatesSaveAs) } as KernelApi['templates'],
   backup: { now: inv(IPC.backupNow), status: inv(IPC.backupStatus), chooseFolder: inv(IPC.backupChooseFolder) } as KernelApi['backup'],
   settings: { get: inv(IPC.settingsGet), set: inv(IPC.settingsSet) } as KernelApi['settings'],

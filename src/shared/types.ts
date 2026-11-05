@@ -201,6 +201,14 @@ export interface KernelApi {
     backlinks(id: string): Promise<Backlink[]>
     graph(): Promise<GraphData>
   }
+  /** flashcard çalışması (spec §12) */
+  study: {
+    decks(): Promise<DeckInfo[]>
+    /** exam: vadeye bakmadan tüm kartlar, karışık */
+    session(deck: Deck, exam: boolean): Promise<StudyCard[]>
+    review(cardId: string, rating: ReviewRating): Promise<void>
+    dueCount(): Promise<number>
+  }
   tags: {
     list(): Promise<TagCount[]>
     pages(tag: string): Promise<{ id: string; title: string }[]>
@@ -261,4 +269,24 @@ export interface GraphData {
 export interface TagCount {
   tag: string
   count: number
+}
+
+/** Kart değerlendirmesi: Tekrar / Zor / İyi / Kolay */
+export type ReviewRating = 'again' | 'hard' | 'good' | 'easy'
+
+/** Çalışma destesi (spec §12) */
+export type Deck = { kind: 'all' } | { kind: 'page'; id: string } | { kind: 'folder'; id: string } | { kind: 'tag'; tag: string }
+
+export interface StudyCard {
+  id: string
+  pageId: string
+  question: string
+  answer: string
+}
+
+export interface DeckInfo {
+  deck: Deck
+  title: string
+  total: number
+  due: number
 }

@@ -852,3 +852,10 @@ mark[data-color='gray'] { --hl: #e3e8ec; }
   padding: 0;
   margin: 0;
 }
+
+/* flashcard olarak işaretlenmiş toggle */
+.kernel-editor .details[data-card] {
+  box-shadow: inset 3px 0 0 var(--accent);
+  border-radius: 6px;
+  padding-left: 6px;
+}

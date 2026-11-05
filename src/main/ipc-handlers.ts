@@ -11,6 +11,8 @@ import { defaultVaultPath, saveVaultPath } from './config'
 import { requireVault, state } from './state'
 import { SearchIndex } from './search'
 import { LinkIndex, rewriteLinksAfterRelocate } from './links'
+import { SrsStore } from './srs'
+import type { Deck, DeckInfo, ReviewRating } from '@shared/types'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { writeAtomic } from './vault/atomic'
@@ -59,6 +61,7 @@ export async function openVault(path: string): Promise<void> {
   search = new SearchIndex()
   void search.build(vault)
   links = new LinkIndex()
+  srs = new SrsStore(path)
   void links.build(vault).then(notifyLinks)
   const interval = process.env['KERNEL_TEST_HISTORY_INTERVAL_MS']
   history = new HistoryStore(path, undefined, interval !== undefined ? Number(interval) : undefined)
@@ -91,6 +94,7 @@ export async function openVault(path: string): Promise<void> {
 
 let search: SearchIndex | null = null
 let links: LinkIndex | null = null
+let srs: SrsStore | null = null
 
 /** Yeniden adlandırma / taşıma sonrası: kasadaki linkleri güncelle, dizinleri yenile, açık sayfalara haber ver */
 async function relinkAfter(vault: Vault, id: string, before: TreeNode[]): Promise<void> {
@@ -232,6 +236,39 @@ export function registerIpc(): void {
   h(IPC.linksBacklinks, (id: string) => links?.backlinks(id) ?? [])
   h(IPC.linksGraph, () => links?.graph() ?? { nodes: [], links: [] })
   h(IPC.tagsList, () => links?.tags() ?? [])
+  h(IPC.studyDecks, async (): Promise<DeckInfo[]> => {
+    if (!links || !srs) return []
+    const all = links.allCards()
+    await srs.sync(all)
+    const info = async (deck: Deck, title: string): Promise<DeckInfo> => {
+      const cards = links!.cardsIn(deck)
+      return { deck, title, total: cards.length, due: (await srs!.due(cards)).length }
+    }
+    const out: DeckInfo[] = [await info({ kind: 'all' }, mainT('study.allCards'))]
+    for (const p of links.cardPages()) out.push(await info(p.withChildren > p.own ? { kind: 'folder', id: p.id } : { kind: 'page', id: p.id }, p.title))
+    for (const t of links.tags()) {
+      const d = await info({ kind: 'tag', tag: t.tag }, `#${t.tag}`)
+      if (d.total > 0) out.push(d)
+    }
+    return out
+  })
+  h(IPC.studySession, async (deck: Deck, exam: boolean) => {
+    if (!links || !srs) return []
+    const cards = links.cardsIn(deck)
+    if (!exam) return srs.due(cards)
+    // sınav modu: Fisher–Yates ile karıştır
+    const a = [...cards]
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[a[i], a[j]] = [a[j]!, a[i]!]
+    }
+    return a
+  })
+  h(IPC.studyReview, async (id: string, rating: ReviewRating) => {
+    await srs?.review(id, rating)
+    notifyHome()
+  })
+  h(IPC.studyDueCount, async () => (links && srs ? (await srs.due(links.allCards())).length : 0))
   h(IPC.tagsPages, (tag: string) => links?.pagesWithTag(tag) ?? [])
 
   h(IPC.attachmentsSave, (bytes: Uint8Array, ext: string, nameHint?: string) => requireVault().saveAttachment(bytes, ext, nameHint))

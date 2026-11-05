@@ -52,5 +52,9 @@ export const IPC = {
   linksGraph: 'links:graph',
   tagsList: 'tags:list',
   tagsPages: 'tags:pages',
-  eventLinksChanged: 'event:links-changed'
+  eventLinksChanged: 'event:links-changed',
+  studyDecks: 'study:decks',
+  studySession: 'study:session',
+  studyReview: 'study:review',
+  studyDueCount: 'study:due-count'
 } as const

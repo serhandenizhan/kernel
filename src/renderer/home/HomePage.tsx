@@ -3,7 +3,7 @@ import type { HomeData, HomeItem } from '@shared/types'
 import { formatLongDate, formatRelative } from '@shared/i18n'
 import { kernel } from '../lib/kernel'
 import { useStore } from '../state/store'
-import { useLang, useT } from '../lib/i18n'
+import { useLang, useT, useTn } from '../lib/i18n'
 import { Icon } from '../assets/icons'
 import { PageIcon } from '../shell/PageHeader'
 import { createLectureNote } from '../shell/NewMenu'
@@ -34,6 +34,38 @@ function RecentList({ title, items, testid }: { title: string; items: HomeItem[]
           </button>
         ))}
       </div>
+    </section>
+  )
+}
+
+/** "Bugünün tekrarı": vadesi gelen kart varsa görünür (spec §16, Faz 4) */
+function ReviewCard() {
+  const t = useT()
+  const tn = useTn()
+  const [due, setDue] = useState(0)
+  useEffect(() => {
+    let alive = true
+    const load = () => void kernel.study.dueCount().then((n) => alive && setDue(n))
+    load()
+    const offHome = kernel.events.onHomeChanged(load)
+    const offLinks = kernel.events.onLinksChanged(load)
+    return () => {
+      alive = false
+      offHome()
+      offLinks()
+    }
+  }, [])
+  if (due === 0) return null
+  return (
+    <section className="home-review glass" data-testid="home-review">
+      <Icon name="cards" size={20} />
+      <span className="recent-text">
+        <span className="recent-title">{t('home.review')}</span>
+        <span className="recent-parent">{tn('home.reviewDue', due)}</span>
+      </span>
+      <button className="home-btn primary" data-testid="home-review-start" onClick={() => useStore.getState().openStudy({ kind: 'all' })}>
+        {t('home.reviewStart')}
+      </button>
     </section>
   )
 }
@@ -115,6 +147,8 @@ export function HomePage() {
             </button>
           </div>
         </header>
+
+        <ReviewCard />
 
         <section className="home-section">
           <div className="home-section-head">

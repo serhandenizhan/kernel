@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 // SF Symbols tarzı ikon seti: 16×16, 1.5 px çizgi, currentColor (spec §18.1)
-export const ICON_NAMES = ['home', 'plus', 'doc', 'template', 'grid', 'search', 'settings', 'help', 'pin', 'chevron-down', 'chevron-right', 'download', 'image', 'graph'] as const
+export const ICON_NAMES = ['home', 'plus', 'doc', 'template', 'grid', 'search', 'settings', 'help', 'pin', 'chevron-down', 'chevron-right', 'download', 'image', 'graph', 'cards'] as const
 export type IconName = (typeof ICON_NAMES)[number]
 
 const PATHS: Record<IconName, ReactNode> = {
@@ -44,6 +44,12 @@ const PATHS: Record<IconName, ReactNode> = {
   'chevron-down': <path d="M4 6l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />,
   'chevron-right': <path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />,
   download: <path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13.5h10" strokeLinecap="round" strokeLinejoin="round" />,
+  cards: (
+    <>
+      <rect x="2.5" y="4" width="9" height="10" rx="1.6" />
+      <path d="M5 2h6.9A1.6 1.6 0 0 1 13.5 3.6V11" strokeLinecap="round" />
+    </>
+  ),
   graph: (
     <>
       <circle cx="4" cy="4.5" r="1.8" />

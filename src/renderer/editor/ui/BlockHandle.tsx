@@ -56,7 +56,21 @@ export function BlockHandle({ editor, container }: { editor: Editor; container: 
   const items = (pos: number): MenuItem[] => {
     const chainAt = () => editor.chain().focus().setNodeSelection(pos)
     const turn = (label: string, run: () => void): MenuItem => ({ label, onSelect: run })
+    const block = editor.state.doc.nodeAt(pos)
+    // toggle: başlık = soru, içerik = cevap olan flashcard'a çevrilebilir (spec §12)
+    const cardItem: MenuItem[] =
+      block?.type.name === 'details'
+        ? [
+            {
+              label: tNow(block.attrs['card'] ? 'block.unmarkCard' : 'block.markCard'),
+              onSelect: () => {
+                editor.view.dispatch(editor.state.tr.setNodeAttribute(pos, 'card', !block.attrs['card']))
+              }
+            }
+          ]
+        : []
     return [
+      ...cardItem,
       turn(tNow('block.toText'), () => chainAt().setTextSelection(pos + 1).setParagraph().run()),
       turn(tNow('slash.heading', { level: 1 }), () => chainAt().setTextSelection(pos + 1).setNode('heading', { level: 1 }).run()),
       turn(tNow('slash.heading', { level: 2 }), () => chainAt().setTextSelection(pos + 1).setNode('heading', { level: 2 }).run()),

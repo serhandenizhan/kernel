@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { DEFAULT_SETTINGS, type Settings, type TreeNode } from '@shared/types'
+import { DEFAULT_SETTINGS, type Deck, type Settings, type TreeNode } from '@shared/types'
 import { kernel } from '../lib/kernel'
 
 export interface Toast {
@@ -31,7 +31,10 @@ interface State {
   refreshTree(): Promise<void>
   openPage(id: string | null): void
   /** sayfa alanında ne gösterilir: ana sayfa ya da açık sayfa */
-  view: 'home' | 'page' | 'tag' | 'graph'
+  view: 'home' | 'page' | 'tag' | 'graph' | 'study'
+  /** çalışma ekranı açılınca doğrudan başlatılacak deste */
+  studyDeck: Deck | null
+  openStudy(deck?: Deck): void
   /** graf görünümü: null = genel graf, kimlik = o sayfanın yerel grafı */
   graphFocus: string | null
   openGraph(focus: string | null): void
@@ -129,6 +132,8 @@ export const useStore = create<State>((set, get) => ({
   openHome: () => set({ view: 'home', overlay: null }),
   currentTag: null,
   graphFocus: null,
+  studyDeck: null,
+  openStudy: (deck) => set({ view: 'study', studyDeck: deck ?? null, overlay: null }),
   openGraph: (focus) => set({ view: 'graph', graphFocus: focus, overlay: null }),
   openTag: (tag) => set({ view: 'tag', currentTag: tag, overlay: null }),
   pins: [],

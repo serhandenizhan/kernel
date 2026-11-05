@@ -1,4 +1,5 @@
-import type { Backlink, GraphData, TagCount, TreeNode } from '@shared/types'
+import type { Backlink, Deck, GraphData, TagCount, TreeNode } from '@shared/types'
+import { extractCards, type Card } from '@core/cards'
 import { extractLinks, extractTags, renameLinks, type LinkRef } from '@core/links'
 import { resolveWikiTarget } from '@core/wiki'
 import { foldKey } from '@core/fold'
@@ -10,6 +11,7 @@ interface Entry {
   path: string
   links: LinkRef[]
   tags: string[]
+  cards: Card[]
 }
 
 function flatten(nodes: TreeNode[], out: TreeNode[] = []): TreeNode[] {
@@ -43,7 +45,7 @@ export class LinkIndex {
   private async load(vault: Vault, id: string): Promise<void> {
     try {
       const p = await vault.read(id)
-      this.pages.set(id, { title: p.title, path: p.path, links: extractLinks(p.markdown), tags: extractTags(p.markdown, p.meta.tags) })
+      this.pages.set(id, { title: p.title, path: p.path, links: extractLinks(p.markdown), tags: extractTags(p.markdown, p.meta.tags), cards: extractCards(id, p.markdown) })
     } catch (e) {
       this.pages.delete(id)
       log.warn('Link dizinine eklenemedi', e instanceof Error ? e.message : 'bilinmeyen')
@@ -91,6 +93,30 @@ export class LinkIndex {
       }
     }
     return [...counts.values()].sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag))
+  }
+
+  allCards(): Card[] {
+    return [...this.pages.values()].flatMap((e) => e.cards)
+  }
+
+  /** Deste kartları: tüm kasa, tek sayfa, klasör (sayfa + alt sayfaları) ya da etiket */
+  cardsIn(deck: Deck): Card[] {
+    if (deck.kind === 'all') return this.allCards()
+    if (deck.kind === 'page') return this.pages.get(deck.id)?.cards ?? []
+    if (deck.kind === 'tag') return this.pagesWithTag(deck.tag).flatMap((p) => this.pages.get(p.id)?.cards ?? [])
+    const root = flatten(this.tree).find((n) => n.id === deck.id)
+    return root ? flatten([root]).flatMap((n) => this.pages.get(n.id)?.cards ?? []) : []
+  }
+
+  /** Kartı olan sayfalar (ağaç sırasıyla) ve alt sayfalarında kart olan üst sayfalar */
+  cardPages(): { id: string; title: string; own: number; withChildren: number }[] {
+    const out: { id: string; title: string; own: number; withChildren: number }[] = []
+    for (const n of flatten(this.tree)) {
+      const own = this.pages.get(n.id)?.cards.length ?? 0
+      const withChildren = this.cardsIn({ kind: 'folder', id: n.id }).length
+      if (withChildren > 0) out.push({ id: n.id, title: n.title, own, withChildren })
+    }
+    return out
   }
 
   pagesWithTag(tag: string): { id: string; title: string }[] {

@@ -24,6 +24,7 @@ export const COMMANDS: Command[] = [
   { id: 'lecture', label: 'sidebar.lecture', run: () => void createLectureNote() },
   { id: 'search', label: 'sc.search', keys: '⌘K', run: () => s().setOverlay('search') },
   { id: 'home', label: 'sidebar.home', run: () => s().openHome() },
+  { id: 'study', label: 'cmd.study', run: () => s().openStudy() },
   { id: 'graph', label: 'cmd.graph', run: () => s().openGraph(null) },
   { id: 'local-graph', label: 'cmd.localGraph', enabled: hasPage, run: () => s().openGraph(s().currentId) },
   { id: 'export', label: 'cmd.export', keys: '⌘E', enabled: hasPage, run: () => s().setOverlay('export') },

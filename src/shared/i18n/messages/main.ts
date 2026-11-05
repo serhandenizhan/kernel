@@ -66,6 +66,7 @@ export const main = {
   'menu.selectAll': ['Tümünü seç', 'Select All', 'Alles auswählen'],
   'menu.view': ['Görünüm', 'View', 'Darstellung'],
   'menu.sidebar': ['Kenar çubuğu', 'Sidebar', 'Seitenleiste'],
+  'study.allCards': ['Tüm kartlar', 'All cards', 'Alle Karten'],
   'menu.focus': ['Odak modu', 'Focus Mode', 'Fokusmodus'],
   'menu.palette': ['Komut paleti…', 'Command Palette…', 'Befehlspalette…'],
   'menu.toc': ['İçindekiler', 'Contents', 'Inhalt'],

@@ -10,6 +10,7 @@ import { KernelMath, MathShortcuts } from './nodes/Math'
 import { Callout } from './nodes/Callout'
 import { KernelImage } from './nodes/Image'
 import { SlashCommand } from './nodes/SlashCommand'
+import { WikiPicker } from './nodes/WikiPicker'
 import { SmartPaste } from './paste'
 import { WikiLink } from './nodes/WikiLink'
 import { PdfEmbed } from './nodes/PdfEmbed'
@@ -69,7 +70,7 @@ export function buildExtensions(opts: ExtensionOptions = {}): AnyExtension[] {
     PageRow,
     PdfEmbed
   ]
-  if (!opts.readOnly) list.push(SmartPaste, MathShortcuts, SlashCommand, Placeholder.configure({ placeholder: opts.placeholder ?? (() => tNow('editor.placeholder')) }))
+  if (!opts.readOnly) list.push(SmartPaste, MathShortcuts, SlashCommand, WikiPicker, Placeholder.configure({ placeholder: opts.placeholder ?? (() => tNow('editor.placeholder')) }))
   return list
 }
 

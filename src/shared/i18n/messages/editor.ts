@@ -9,6 +9,8 @@ export const editor = {
   'editor.saveFailed': ['Sayfa kaydedilemedi; tekrar deneniyor. Uygulamayı kapatmadan önce kontrol et.', "The page could not be saved; retrying. Check before quitting the app.", 'Die Seite konnte nicht gespeichert werden; neuer Versuch läuft. Prüfe das vor dem Beenden.'],
   'editor.externalUnreadable': ['Dosya dışarıda değişti ama okunamadı', 'The file changed outside Kernel but could not be read', 'Die Datei wurde außerhalb geändert, konnte aber nicht gelesen werden'],
   'editor.placeholder': ['Yazmaya başla ya da / yaz', 'Start writing or type /', 'Schreib los oder tippe /'],
+  'wiki.typeToSearch': ['Sayfa adı yazın', 'Type a page name', 'Seitennamen eingeben'],
+  'wiki.create': ['“{title}” sayfasını oluştur', 'Create page “{title}”', 'Seite „{title}“ erstellen'],
   'editor.pageNotFound': ['Sayfa bulunamadı: {target}', 'Page not found: {target}', 'Seite nicht gefunden: {target}'],
   'editor.imageFailed': ['Bir görsel indirilemedi, bağlantı olarak bırakıldı', 'An image could not be downloaded and was kept as a link', 'Ein Bild konnte nicht geladen werden und bleibt als Link'],
   'editor.invalidFormulas': ['{count} formül doğrulanamadı, metin olarak bırakıldı', '{count} formulas could not be validated and were kept as text', '{count} Formeln konnten nicht geprüft werden und bleiben als Text'],

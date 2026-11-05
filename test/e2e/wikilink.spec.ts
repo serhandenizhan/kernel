@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test'
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { launch, tmpVault } from './helpers/app'
 
-test('[[wiki link]] tıklanınca hedef sayfa açılır, bulunamayan hedef uyarır', async () => {
+test('[[wiki link]] tıklanınca hedef sayfa açılır, var olmayan hedef oluşturulup açılır', async () => {
   const vault = tmpVault()
   writeFileSync(join(vault, 'Fizik.md'), 'fizik sayfası\n')
   writeFileSync(join(vault, 'Ana.md'), 'bkz. [[fizik]] ve [[Olmayan Sayfa|şurası]]\n')
@@ -15,7 +15,8 @@ test('[[wiki link]] tıklanınca hedef sayfa açılır, bulunamayan hedef uyarı
   await expect(win.getByTestId('page-title')).toHaveValue('Fizik')
   await win.getByTestId('tree-row').filter({ hasText: 'Ana' }).click()
   await win.locator('.wiki-link').nth(1).click()
-  await expect(win.getByTestId('toast').filter({ hasText: 'Sayfa bulunamadı' })).toBeVisible()
+  await expect(win.getByTestId('page-title')).toHaveValue('Olmayan Sayfa')
+  await expect.poll(() => existsSync(join(vault, 'Olmayan Sayfa.md'))).toBe(true)
   // düzenleme sonrası wiki link ve başlıklı toggle korunur
   writeFileSync(join(vault, 'Toggle.md'), '<details data-heading="2">\n<summary>Açılır</summary>\n\niç\n\n</details>\n\nson\n')
   await win.reload()

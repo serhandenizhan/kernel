@@ -13,6 +13,7 @@ import { ConflictDialog } from '../shell/ConflictDialog'
 import { MathPopover } from './ui/MathPopover'
 import { TableMenu } from './ui/TableMenu'
 import { SlashMenu } from './ui/SlashMenu'
+import { WikiMenu } from './ui/WikiMenu'
 import { BubbleToolbar } from './ui/BubbleToolbar'
 import { BlockHandle } from './ui/BlockHandle'
 import { tNow } from '../lib/i18n'
@@ -160,6 +161,7 @@ function LiveEditor({ page, initial }: { page: PageData; initial: ReturnType<typ
       {editor && <TableMenu editor={editor} />}
       {editor && <BubbleToolbar editor={editor} />}
       <SlashMenu />
+      <WikiMenu />
       <MathPopover editor={editor} />
       {conflict && (
         <ConflictDialog

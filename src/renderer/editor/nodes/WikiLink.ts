@@ -3,6 +3,7 @@ import { resolveWikiTarget } from '@core/wiki'
 import { useStore } from '../../state/store'
 import { tNow } from '../../lib/i18n'
 import { toVaultUrl } from '@core/vault-url'
+import { kernel } from '../../lib/kernel'
 import type { TreeNode } from '@shared/types'
 
 // ikonu olmayan sayfa için ince belge ikonu (ikon setindeki "doc" ile aynı çizim)
@@ -17,12 +18,22 @@ function findNode(nodes: TreeNode[], id: string): TreeNode | null {
   return null
 }
 
-/** [[Hedef]] linkini açar; bulunamazsa uyarır */
-export function openWikiTarget(target: string): void {
+/** [[Hedef]] linkini açar; sayfa yoksa oluşturur (spec §12). "Üst/Ad" biçiminde üst sayfa varsa altına açılır. */
+export async function openWikiTarget(target: string): Promise<void> {
   const s = useStore.getState()
   const id = resolveWikiTarget(s.tree, target)
-  if (id) s.openPage(id)
-  else s.toast(tNow('editor.pageNotFound', { target }), 'error')
+  if (id) return s.openPage(id)
+  const parts = target.split('/').map((p) => p.trim()).filter(Boolean)
+  const title = parts.pop()
+  if (!title) return s.toast(tNow('editor.pageNotFound', { target }), 'error')
+  const parentId = parts.length ? resolveWikiTarget(s.tree, parts.join('/')) : null
+  try {
+    const node = await kernel.pages.create(parentId, title)
+    await s.refreshTree()
+    s.openPage(node.id)
+  } catch {
+    s.toast(tNow('editor.pageNotFound', { target }), 'error')
+  }
 }
 
 // [[Sayfa adı]] / [[Sayfa adı|görünen ad]]: tıklanabilir iç link (Faz 3'te seçici ve geri bağlantılar eklenecek)
@@ -90,7 +101,7 @@ export const WikiLink = Node.create({
       dom.addEventListener('mousedown', (e) => e.preventDefault())
       dom.addEventListener('click', (e) => {
         e.preventDefault()
-        openWikiTarget(target)
+        void openWikiTarget(target)
       })
       return { dom, destroy: unsubscribe }
     }

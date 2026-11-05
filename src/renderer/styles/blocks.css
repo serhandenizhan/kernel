@@ -717,3 +717,18 @@ mark[data-color='gray'] { --hl: #e3e8ec; }
 .modal-stage {
   max-height: calc(100vh - 110px);
 }
+
+/* [[ sayfa seçici: başlık altında soluk yol */
+.wiki-item-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  text-align: left;
+}
+.wiki-item-path {
+  font-size: 11px;
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

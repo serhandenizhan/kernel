@@ -1003,3 +1003,45 @@ button {
 .pin-btn.on {
   color: var(--accent-text);
 }
+
+/* --- graf görünümü --- */
+.graph-view {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+.graph-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+}
+.graph-stats,
+.graph-hover {
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+.graph-hover {
+  margin-left: auto;
+  color: var(--text);
+  font-weight: 500;
+}
+.graph-canvas {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  cursor: grab;
+}
+.graph-empty {
+  margin: auto;
+  color: var(--text-2);
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

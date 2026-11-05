@@ -38,6 +38,12 @@
   --side-top: rgba(255, 255, 255, 0.34);
   --side-bottom: rgba(255, 255, 255, 0.16);
   color-scheme: light;
+  --graph-0: #6b7c86;
+  --graph-1: #0e7c6b;
+  --graph-2: #3366cc;
+  --graph-3: #b7791f;
+  --graph-4: #9b4d96;
+  --graph-5: #b4372f;
 }
 
 :root[data-theme='dark'] {
@@ -67,6 +73,12 @@
   --side-top: rgba(22, 30, 38, 0.4);
   --side-bottom: rgba(18, 24, 31, 0.28);
   color-scheme: dark;
+  --graph-0: #8a9aa3;
+  --graph-1: #4fc3ad;
+  --graph-2: #7aa7ff;
+  --graph-3: #e3a857;
+  --graph-4: #d98bd0;
+  --graph-5: #e57a6e;
 }
 
 :root[data-body-font='serif'] {

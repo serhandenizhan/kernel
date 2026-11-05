@@ -31,7 +31,10 @@ interface State {
   refreshTree(): Promise<void>
   openPage(id: string | null): void
   /** sayfa alanında ne gösterilir: ana sayfa ya da açık sayfa */
-  view: 'home' | 'page' | 'tag'
+  view: 'home' | 'page' | 'tag' | 'graph'
+  /** graf görünümü: null = genel graf, kimlik = o sayfanın yerel grafı */
+  graphFocus: string | null
+  openGraph(focus: string | null): void
   /** etiket görünümünde gösterilen etiket */
   currentTag: string | null
   openTag(tag: string): void
@@ -125,6 +128,8 @@ export const useStore = create<State>((set, get) => ({
   view: 'page',
   openHome: () => set({ view: 'home', overlay: null }),
   currentTag: null,
+  graphFocus: null,
+  openGraph: (focus) => set({ view: 'graph', graphFocus: focus, overlay: null }),
   openTag: (tag) => set({ view: 'tag', currentTag: tag, overlay: null }),
   pins: [],
   async togglePin(id) {

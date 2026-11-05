@@ -85,6 +85,10 @@ export function Sidebar() {
           <Icon name="home" />
           <span>{t('sidebar.home')}</span>
         </button>
+        <button className={`nav-row${view === 'graph' ? ' active' : ''}`} data-testid="nav-graph" onClick={() => s().openGraph(null)}>
+          <Icon name="graph" />
+          <span>{t('graph.title')}</span>
+        </button>
       </nav>
       <PinnedSection />
       <div className="sidebar-section">

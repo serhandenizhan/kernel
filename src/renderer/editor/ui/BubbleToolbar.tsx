@@ -30,7 +30,7 @@ export function BubbleToolbar({ editor }: { editor: Editor }) {
       pluginKey="bubbleToolbar"
       shouldShow={({ editor: e, from, to, state }) => e.isEditable && from !== to && !(state.selection instanceof NodeSelection && state.selection.node.isBlock) && !e.isActive('codeBlock') && !e.isActive('image') && !e.isActive('blockMath')}
       options={{ placement: 'top' }}
-      className="bubble-toolbar glass"
+      className="bubble-toolbar glass glass-pop"
       data-testid="bubble-toolbar"
     >
       {btn('bold', 'B', tNow('bubble.bold'), editor.isActive('bold'), () => editor.chain().focus().toggleBold().run())}

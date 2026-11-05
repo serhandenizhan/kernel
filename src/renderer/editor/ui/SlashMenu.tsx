@@ -14,7 +14,7 @@ export function SlashMenu() {
   if (!open || !rect) return null
   const top = rect.bottom + 6 + 320 > window.innerHeight ? Math.max(8, rect.top - 326) : rect.bottom + 6
   return (
-    <div className="slash-menu glass" data-testid="slash-menu" style={{ left: rect.left, top }} onMouseDown={(e) => e.preventDefault()}>
+    <div className="slash-menu glass glass-pop" data-testid="slash-menu" style={{ left: rect.left, top }} onMouseDown={(e) => e.preventDefault()}>
       {items.length === 0 ? (
         <div className="slash-empty">{tNow('slash.noMatch')}</div>
       ) : (

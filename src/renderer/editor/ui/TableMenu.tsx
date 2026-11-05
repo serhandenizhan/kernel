@@ -15,7 +15,7 @@ export function TableMenu({ editor }: { editor: Editor }) {
       pluginKey="tableMenu"
       shouldShow={({ editor: e }) => e.isEditable && e.isActive('table')}
       options={{ placement: 'top' }}
-      className="table-menu glass"
+      className="table-menu glass glass-pop"
     >
       <button onClick={() => editor.chain().focus().addRowAfter().run()}>{tNow('table.addRow')}</button>
       <button onClick={() => editor.chain().focus().addColumnAfter().run()}>{tNow('table.addColumn')}</button>

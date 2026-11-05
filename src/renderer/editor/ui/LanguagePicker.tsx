@@ -140,7 +140,7 @@ export function LanguagePicker({ value, disabled, onChange }: { value: string | 
         createPortal(
           <div
             ref={panelRef}
-            className={`lang-picker glass${pos.up ? ' up' : ''}`}
+            className={`lang-picker glass glass-pop${pos.up ? ' up' : ''}`}
             style={{ top: pos.top, left: pos.left }}
             role="dialog"
             aria-label={tNow('code.language')}

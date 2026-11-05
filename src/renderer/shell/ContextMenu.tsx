@@ -34,7 +34,7 @@ export function ContextMenu({ x, y, items, onClose }: { x: number; y: number; it
   }, [onClose])
 
   return (
-    <div ref={ref} className="menu glass" role="menu" style={{ left: pos.x, top: pos.y }}>
+    <div ref={ref} className="menu glass glass-pop" role="menu" style={{ left: pos.x, top: pos.y }}>
       {items.map((it) => (
         <div key={it.label}>
           {it.separatorBefore && <div className="menu-sep" />}

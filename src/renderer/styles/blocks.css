@@ -69,25 +69,20 @@
   z-index: 1300;
   width: 236px;
   padding: 6px;
-  border-radius: 14px;
   transform-origin: top left;
-  animation: lang-in 0.14s cubic-bezier(0.2, 0.9, 0.3, 1.2);
 }
 .lang-picker.up {
   transform: translateY(-100%);
   transform-origin: bottom left;
-  animation-name: lang-in-up;
 }
-@keyframes lang-in {
-  from { opacity: 0; transform: scale(0.96) translateY(-4px); }
-  to { opacity: 1; transform: none; }
+.glass.glass-pop.lang-picker.up {
+  animation-name: lang-in-up;
 }
 @keyframes lang-in-up {
   from { opacity: 0; transform: translateY(-100%) scale(0.96) translateY(4px); }
   to { opacity: 1; transform: translateY(-100%); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .lang-picker { animation: none; }
   .code-lang-chevron { transition: none; }
 }
 .lang-search {

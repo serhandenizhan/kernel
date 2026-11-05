@@ -5,6 +5,7 @@ import remarkGfm from 'remark-gfm'
 import remarkStringify from 'remark-stringify'
 import { toText } from 'hast-util-to-text'
 import type { Element, Root as HastRoot, ElementContent } from 'hast'
+import { isArtifactHtml, rewriteArtifact, type CalloutItem } from './artifact'
 
 const STRUCTURED = /application\/x-tex|math\/tex|<pre[\s>]|class="[^"]*\bkatex\b/i
 const placeholder = (n: number) => `KERNELMATH${n}X`
@@ -52,18 +53,37 @@ function rewriteMath(node: HastRoot | Element, items: MathItem[], ancestors: Ele
   }) as typeof node.children
 }
 
+interface MdNode {
+  type: string
+  spread?: boolean
+  children?: MdNode[]
+}
+function tighten(n: MdNode): void {
+  if (n.type === 'list' || n.type === 'listItem') n.spread = false
+  n.children?.forEach(tighten)
+}
+
 // Zengin panodan gelen HTML'i Markdown'a çevirir; yapılandırılmış içerik (formül/kod) yoksa null
 export function htmlToMarkdown(html: string): string | null {
-  if (!STRUCTURED.test(html)) return null
+  const artifact = isArtifactHtml(html)
+  if (!STRUCTURED.test(html) && !artifact) return null
   const hast = unified().use(rehypeParse, { fragment: true }).parse(html)
   const items: MathItem[] = []
   rewriteMath(hast, items)
+  const callouts: CalloutItem[] = []
+  if (artifact) rewriteArtifact(hast, callouts)
   const mdast = unified().use(rehypeRemark).runSync(hast)
+  // artifact listeleri sıkı (aralarında boş satır olmadan) yazılır
+  if (artifact) tighten(mdast as unknown as MdNode)
   const md = unified().use(remarkGfm).use(remarkStringify, { bullet: '-', fences: true, emphasis: '*', strong: '*' }).stringify(mdast as never)
   return md
     .replace(/KERNELMATH(\d+)X/g, (_, n: string) => {
       const item = items[Number(n)]!
       return item.display ? `\n\n$$\n${item.latex}\n$$\n\n` : `$${item.latex}$`
+    })
+    .replace(/KERNELCALLOUT(\d+)X/g, (_, n: string) => {
+      const c = callouts[Number(n)]!
+      return `[!${c.type}]${c.title ? ` ${c.title}` : ''}`
     })
     .replace(/\n{3,}/g, '\n\n')
     .trim()

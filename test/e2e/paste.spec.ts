@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { launch } from './helpers/app'
 import { markdownToDoc } from '../../src/core/markdown/parse'
 import { loadCases } from '../fixtures/paste/load'
+import { ARTIFACT_HTML } from '../fixtures/paste/artifact'
 
 const bodyOf = (vault: string, file: string) => readFileSync(join(vault, file), 'utf8').replace(/^---[\s\S]*?---\n/, '')
 const cases = loadCases()
@@ -90,5 +91,18 @@ test('kararsız LaTeX satırı için "Formüle çevir" çipi çıkar', async () 
   await expect(chip).toBeVisible()
   await chip.click()
   await expect.poll(() => bodyOf(vault, 'Öneri.md'), { timeout: 5000 }).toBe('$$\nKayıp \\sum_{i=1}^{n} (y_i - \\hat{y}_i)^2\n$$\n')
+  await app.close()
+})
+
+test('Claude artifact sayfası yapıştırılınca düzenlenebilir not olur (tablo, callout, terim listesi)', async () => {
+  const { app, win, vault } = await launch()
+  await newPage(win, vault, 'Artifact')
+  await paste(win, 'Gezegenler Özeti düz metin', ARTIFACT_HTML)
+  await expect(win.locator('.kernel-editor table')).toHaveCount(1)
+  await expect(win.locator('.kernel-editor [data-callout="warning"], .kernel-editor .callout').first()).toBeVisible()
+  await expect.poll(() => bodyOf(vault, 'Artifact.md'), { timeout: 5000 }).toContain('- **Yörünge:** Bir cismin izlediği yol')
+  const md = bodyOf(vault, 'Artifact.md')
+  expect(md).toContain('> [!warning] Sık karışanlar')
+  expect(md).toContain('| Gezegen | Uydu |')
   await app.close()
 })

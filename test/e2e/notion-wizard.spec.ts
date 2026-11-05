@@ -35,6 +35,7 @@ test('Notion sihirbazı: bağlan, sayfa seç, aktar, rapor; token sonunda silini
   const vault = tmpVault()
   const userData = mkdtempSync(join(tmpdir(), 'kernel-ud-'))
   const { app, win } = await launch(vault, { KERNEL_TEST_NOTION_FIXTURES: writeFixture(), KERNEL_USER_DATA: userData })
+  await win.getByTestId('new-menu').click()
   await win.getByTestId('notion-import').click()
   await expect(win.getByTestId('notion-wizard')).toBeVisible()
   await win.getByTestId('notion-next').click()
@@ -58,6 +59,7 @@ test('Notion sihirbazı: bağlan, sayfa seç, aktar, rapor; token sonunda silini
 
 test('yanlış token anlaşılır hata verir', async () => {
   const { app, win } = await launch(tmpVault(), { KERNEL_TEST_NOTION_FIXTURES: writeFixture() })
+  await win.getByTestId('new-menu').click()
   await win.getByTestId('notion-import').click()
   await win.getByTestId('notion-next').click()
   await win.getByTestId('notion-token').fill('yanlis')
@@ -77,6 +79,7 @@ test('yarım aktarım bandı: Devam et hatası görünür; kapatıp yeniden aç�
   await expect(win.getByTestId('notion-error')).toContainText('Notion')
   await win.getByRole('button', { name: 'Kapat' }).click()
   await expect(win.getByTestId('notion-wizard')).toHaveCount(0)
+  await win.getByTestId('new-menu').click()
   await win.getByTestId('notion-import').click()
   await expect(win.getByTestId('notion-next')).toBeVisible()
   await app.close()

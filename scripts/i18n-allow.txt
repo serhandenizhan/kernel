@@ -6,3 +6,4 @@ src/renderer/shell/ExportDialog.tsx:<option value="Letter">Letter</option>
 src/renderer/print/PrintView.tsx:*
 src/main/templates.ts:const TITLE_VARS = ['{{başlık}}', '{{title}}', '{{Titel}}']
 src/renderer/shell/SettingsDialog.tsx:{ value: 'tr', label: 'Türkçe' },
+src/renderer/shell/Sidebar.tsx:<span>Kernel</span>

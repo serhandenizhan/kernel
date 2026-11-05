@@ -28,6 +28,8 @@ interface State {
   init(): Promise<void>
   refreshTree(): Promise<void>
   openPage(id: string | null): void
+  /** ana sayfayı açar (görünüm Task 12'de; şimdilik etkisiz) */
+  openHome(): void
   createPage(parentId: string | null): Promise<void>
   setSettings(patch: Partial<Settings>): Promise<void>
   toggleSidebar(): void
@@ -105,6 +107,7 @@ export const useStore = create<State>((set, get) => ({
   setExpanded: (id, open) => set((s) => ({ expanded: { ...s.expanded, [id]: open } })),
   setRenaming: (id) => set({ renamingId: id }),
   setOverlay: (overlay) => set({ overlay }),
+  openHome: () => undefined,
 
   toast(message, kind = 'info') {
     const id = ++toastSeq

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { join, basename } from 'node:path'
 import { unzipSync } from 'fflate'
 import { makeBackup, BackupScheduler } from '../../../src/main/backup'
 import { DEFAULT_SETTINGS, type Settings } from '@shared/types'
@@ -46,7 +46,7 @@ describe('makeBackup', () => {
   })
   it('keep 0 olsa da yeni yedek silinmez', async () => {
     const zip = await makeBackup(root, out, 0)
-    expect(readdirSync(out)).toContain(zip.split('/').pop())
+    expect(readdirSync(out)).toContain(basename(zip))
   })
   it('sıkıştırılmış medya yeniden sıkıştırılmaz (olduğu gibi saklanır), içerik doğru', async () => {
     const big = Buffer.alloc(200_000, 7)

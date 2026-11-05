@@ -5,7 +5,8 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 describe('make-icon', () => {
-  it('SVG logodan macOS .icns üretir (10 boyut)', () => {
+  // iconutil yalnızca macOS'ta var
+  it.skipIf(process.platform !== 'darwin')('SVG logodan macOS .icns üretir (10 boyut)', () => {
     const out = mkdtempSync(join(tmpdir(), 'kernel-icon-'))
     const icns = join(out, 'icon.icns')
     execFileSync('node', ['scripts/make-icon.mjs', 'build/icon.svg', icns], { stdio: 'pipe' })

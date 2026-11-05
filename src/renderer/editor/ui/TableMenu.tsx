@@ -1,5 +1,6 @@
 import type { Editor } from '@tiptap/react'
 import { BubbleMenu } from '@tiptap/react/menus'
+import { tNow } from '../../lib/i18n'
 
 type Align = 'left' | 'center' | 'right' | null
 
@@ -16,17 +17,17 @@ export function TableMenu({ editor }: { editor: Editor }) {
       options={{ placement: 'top' }}
       className="table-menu glass"
     >
-      <button onClick={() => editor.chain().focus().addRowAfter().run()}>+ Satır</button>
-      <button onClick={() => editor.chain().focus().addColumnAfter().run()}>+ Sütun</button>
-      <button onClick={() => editor.chain().focus().deleteRow().run()}>− Satır</button>
-      <button onClick={() => editor.chain().focus().deleteColumn().run()}>− Sütun</button>
+      <button onClick={() => editor.chain().focus().addRowAfter().run()}>{tNow('table.addRow')}</button>
+      <button onClick={() => editor.chain().focus().addColumnAfter().run()}>{tNow('table.addColumn')}</button>
+      <button onClick={() => editor.chain().focus().deleteRow().run()}>{tNow('table.deleteRow')}</button>
+      <button onClick={() => editor.chain().focus().deleteColumn().run()}>{tNow('table.deleteColumn')}</button>
       <span className="sep" />
-      <button title="Sola hizala" onClick={() => setAlign('left')}>⇤</button>
-      <button title="Ortala" onClick={() => setAlign('center')}>↔</button>
-      <button title="Sağa hizala" onClick={() => setAlign('right')}>⇥</button>
+      <button title={tNow('table.alignLeft')} onClick={() => setAlign('left')}>⇤</button>
+      <button title={tNow('table.alignCenter')} onClick={() => setAlign('center')}>↔</button>
+      <button title={tNow('table.alignRight')} onClick={() => setAlign('right')}>⇥</button>
       <span className="sep" />
       <button className="danger" onClick={() => editor.chain().focus().deleteTable().run()}>
-        Tabloyu sil
+        {tNow('table.delete')}
       </button>
     </BubbleMenu>
   )

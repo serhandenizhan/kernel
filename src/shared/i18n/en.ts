@@ -1,7 +1,5 @@
 import type { MessageKey } from './index'
+import { _pick } from './tr'
 
 // İngilizce sözlük
-export const en: Record<MessageKey, string> = {
-  'common.subpages.one': '{count} subpage',
-  'common.subpages.other': '{count} subpages'
-}
+export const en: Record<MessageKey, string> = _pick(1)

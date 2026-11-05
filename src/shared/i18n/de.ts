@@ -1,7 +1,5 @@
 import type { MessageKey } from './index'
+import { _pick } from './tr'
 
 // Almanca sözlük
-export const de: Record<MessageKey, string> = {
-  'common.subpages.one': '{count} Unterseite',
-  'common.subpages.other': '{count} Unterseiten'
-}
+export const de: Record<MessageKey, string> = _pick(2)

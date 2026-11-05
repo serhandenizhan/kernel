@@ -15,6 +15,8 @@ import { TableMenu } from './ui/TableMenu'
 import { SlashMenu } from './ui/SlashMenu'
 import { BubbleToolbar } from './ui/BubbleToolbar'
 import { BlockHandle } from './ui/BlockHandle'
+import { tNow } from '../lib/i18n'
+import type { MessageKey } from '@shared/i18n'
 
 /** Uygulama kapanırken açık sayfanın bekleyen kaydını yapar */
 /** Açılışta imleci ilk metin konumuna koyar; sayfa ayırıcı çizgi ya da görselle başlıyorsa o blok seçilmesin */
@@ -33,15 +35,15 @@ export const activeEditor: { flush: (() => Promise<boolean>) | null; editor: Tip
 /** Açık editör (içindekiler paneli gibi bileşenler için tepkisel) */
 export const useActiveEditor = create<{ editor: TiptapEditor | null }>(() => ({ editor: null }))
 
-const STATUS_TEXT: Record<SaveState, string> = { saved: 'Kaydedildi', dirty: 'Düzenleniyor', saving: 'Kaydediliyor', error: 'Kaydedilemedi' }
+const STATUS_KEY: Record<SaveState, MessageKey> = { saved: 'editor.status.saved', dirty: 'editor.status.dirty', saving: 'editor.status.saving', error: 'editor.status.error' }
 
 export function PageEditor({ page }: { page: PageData }) {
   const parsed = useMemo(() => {
-    if (page.readOnly) return { doc: null, error: 'dosyanın başlık bilgisi bozuk ya da ikili veri içeriyor' }
+    if (page.readOnly) return { doc: null, error: tNow('editor.readOnlyBroken') }
     try {
       return { doc: markdownToDoc(page.markdown), error: null as string | null }
     } catch (e) {
-      return { doc: null, error: e instanceof Error ? e.message : 'Dosya okunamadı' }
+      return { doc: null, error: e instanceof Error ? e.message : tNow('editor.readFailed') }
     }
   }, [page.markdown, page.readOnly])
 
@@ -81,7 +83,7 @@ function LiveEditor({ page, initial }: { page: PageData; initial: ReturnType<typ
         500,
         (s) => {
           setStatus(s)
-          if (s === 'error') useStore.getState().toast('Sayfa kaydedilemedi; tekrar deneniyor. Uygulamayı kapatmadan önce kontrol et.', 'error')
+          if (s === 'error') useStore.getState().toast(tNow('editor.saveFailed'), 'error')
         }
       ),
     [page.id]
@@ -136,7 +138,7 @@ function LiveEditor({ page, initial }: { page: PageData; initial: ReturnType<typ
           editorRef.current.commands.setContent(markdownToDoc(fresh.markdown), { emitUpdate: false })
           caretToFirstText(editorRef.current)
         } catch {
-          useStore.getState().toast('Dosya dışarıda değişti ama okunamadı', 'error')
+          useStore.getState().toast(tNow('editor.externalUnreadable'), 'error')
         }
       } else {
         // karar verilene kadar kaydetme: dış değişikliğin üzerine yazılmasın
@@ -149,7 +151,7 @@ function LiveEditor({ page, initial }: { page: PageData; initial: ReturnType<typ
   return (
     <>
       <span className={`save-status ${status}`} data-testid="save-status">
-        {STATUS_TEXT[status]}
+        {tNow(STATUS_KEY[status])}
       </span>
       <div className="editor-wrap" ref={setWrap}>
         <EditorContent editor={editor} />

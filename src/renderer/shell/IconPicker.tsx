@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { normalizeTr } from '@core/normalize-tr'
 import { EMOJI_TR } from '../assets/emoji-tr'
 import { kernel } from '../lib/kernel'
+import { tNow } from '../lib/i18n'
 
 interface Emoji {
   unicode: string
@@ -51,12 +52,12 @@ export function IconPicker({ anchor, onPick, onRemove, onClose }: { anchor: DOMR
   return (
     <div ref={ref} className="icon-picker glass" style={{ left: anchor.left, top: anchor.bottom + 6 }}>
       <div className="picker-head">
-        <input className="picker-search" data-testid="icon-search" autoFocus placeholder="Emoji ara (ör. kitap, beyin, atom)" value={query} onChange={(e) => setQuery(e.target.value)} />
+        <input className="picker-search" data-testid="icon-search" autoFocus placeholder={tNow('icon.search')} value={query} onChange={(e) => setQuery(e.target.value)} />
         <button className="btn small" onClick={() => fileRef.current?.click()}>
-          Görsel yükle
+          {tNow('icon.upload')}
         </button>
         <button className="btn small" data-testid="icon-remove" onClick={onRemove}>
-          Kaldır
+          {tNow('icon.remove')}
         </button>
         <input
           ref={fileRef}
@@ -77,7 +78,7 @@ export function IconPicker({ anchor, onPick, onRemove, onClose }: { anchor: DOMR
             {u}
           </button>
         ))}
-        {!results.length && <div className="picker-empty">Sonuç yok</div>}
+        {!results.length && <div className="picker-empty">{tNow('icon.noResults')}</div>}
       </div>
     </div>
   )

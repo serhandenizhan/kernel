@@ -15,6 +15,7 @@ import { ImportWizard } from './notion/ImportWizard'
 import { Tour, TipBubble } from './guide/Tour'
 import './guide/tips'
 import { activeEditor } from './editor/Editor'
+import { tNow } from './lib/i18n'
 
 function useTheme() {
   const settings = useStore((s) => s.settings)
@@ -122,7 +123,7 @@ export function App() {
       {overlay === 'notion' && <ImportWizard resume={resumeImport} />}
       {pendingImport && overlay !== 'notion' && (
         <div className="resume-banner glass" data-testid="notion-resume-banner">
-          Yarım kalan bir Notion aktarımı var.
+          {tNow('notion.resumeBanner')}
           <button
             className="btn small primary"
             data-testid="notion-resume"
@@ -132,7 +133,7 @@ export function App() {
               useStore.getState().setOverlay('notion')
             }}
           >
-            Devam et
+            {tNow('notion.resume')}
           </button>
         </div>
       )}

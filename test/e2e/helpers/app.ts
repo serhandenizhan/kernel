@@ -18,10 +18,11 @@ export interface LaunchOptions {
 }
 
 export async function launch(vault = tmpVault(), extraEnv: Record<string, string> = {}, opts: LaunchOptions = {}): Promise<{ app: ElectronApplication; win: Page; vault: string }> {
-  if (vault && (!opts.onboarding || opts.skipTour || opts.home)) {
+  if (vault) {
     mkdirSync(join(vault, '.kernel'), { recursive: true })
-    const base = opts.onboarding ? { tourDone: true } : { tourDone: true, tips: { enabled: false, seen: [] } }
-    const settings = { ...base, schema: 2, ...(opts.home ? {} : { startView: 'last' }) }
+    // testler makinenin sistem dilinden bağımsız olarak Türkçe çalışır
+    const base = !opts.onboarding ? { tourDone: true, tips: { enabled: false, seen: [] } } : opts.skipTour ? { tourDone: true } : {}
+    const settings = { ...base, schema: 2, language: 'tr', ...(opts.home ? {} : { startView: 'last' }) }
     try {
       writeFileSync(join(vault, '.kernel', 'settings.json'), JSON.stringify(settings), { flag: 'wx' })
     } catch {

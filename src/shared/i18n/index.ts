@@ -58,3 +58,8 @@ export function formatLongDate(date: Date, lang: Lang): string {
   const rest = new Intl.DateTimeFormat(loc, { day: 'numeric', month: 'long', year: 'numeric' }).format(date)
   return `${weekday}, ${rest}`
 }
+
+/** Adsız sayfa adları (her dilde): başlık alanı bunları boş gösterir */
+export function isUntitled(title: string): boolean {
+  return title === tr['page.untitled'] || title === en['page.untitled'] || title === de['page.untitled']
+}

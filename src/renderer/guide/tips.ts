@@ -1,14 +1,15 @@
+import type { MessageKey } from '@shared/i18n'
 import { create } from 'zustand'
 import { useStore } from '../state/store'
 
 export type TipId = 'first-paste' | 'first-math' | 'first-slash' | 'first-export' | 'first-history'
 
-export const TIPS: Record<TipId, { title: string; body: string }> = {
-  'first-paste': { title: 'Akıllı yapıştırma', body: 'Formüller ve kod blokları otomatik algılandı. Ham metin istersen hemen ⌘Z, ya da ⌘⇧V ile ham yapıştır.' },
-  'first-math': { title: 'Formül düzenleme', body: 'LaTeX yaz; yalnızca geçerli formül uygulanır. Bitirmek için ⌘↵ (satır içinde ↵).' },
-  'first-slash': { title: 'Blok menüsü', body: 'Türkçe karakter yazmadan da arayabilirsin: "basl" → Başlık.' },
-  'first-history': { title: 'Sürüm geçmişi', body: 'Kernel düzenledikçe en fazla 5 dakikada bir sürüm saklar. Bir sürümü seçip farkları gör, tek tıkla geri dön.' },
-  'first-export': { title: 'PDF hazır', body: 'Alt sayfaları da tek PDF’te birleştirmek için export penceresindeki seçeneği kullan.' }
+export const TIPS: Record<TipId, { title: MessageKey; body: MessageKey }> = {
+  'first-paste': { title: 'tip.paste.title', body: 'tip.paste.body' },
+  'first-math': { title: 'tip.math.title', body: 'tip.math.body' },
+  'first-slash': { title: 'tip.slash.title', body: 'tip.slash.body' },
+  'first-history': { title: 'tip.history.title', body: 'tip.history.body' },
+  'first-export': { title: 'tip.export.title', body: 'tip.export.body' }
 }
 
 export const useTip = create<{ current: TipId | null }>(() => ({ current: null }))

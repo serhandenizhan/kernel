@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import type { PageData } from '@shared/types'
 import { useStore } from '../state/store'
+import { tNow } from '../lib/i18n'
+import { isUntitled } from '@shared/i18n'
 import { kernel } from '../lib/kernel'
 import { PageEditor, activeEditor } from '../editor/Editor'
 import { PageHeader } from './PageHeader'
@@ -18,7 +20,7 @@ export function PageView() {
     kernel.pages
       .read(currentId)
       .then((p) => alive && setPage(p))
-      .catch(() => alive && useStore.getState().toast('Sayfa açılamadı', 'error'))
+      .catch(() => alive && useStore.getState().toast(tNow('page.openFailed'), 'error'))
     return () => {
       alive = false
     }
@@ -27,10 +29,10 @@ export function PageView() {
   if (!currentId) {
     return (
       <div className="empty-state">
-        <h2>İlk sayfanı oluştur</h2>
-        <span>Ders notlarını sayfalar ve alt sayfalar halinde düzenle.</span>
+        <h2>{tNow('page.emptyTitle')}</h2>
+        <span>{tNow('page.emptyHint')}</span>
         <button className="btn primary" onClick={() => void useStore.getState().createPage(null)}>
-          Yeni sayfa
+          {tNow('page.new')}
         </button>
       </div>
     )
@@ -48,7 +50,7 @@ export function PageView() {
 }
 
 function TitleField({ page }: { page: PageData }) {
-  const [title, setTitle] = useState(page.title === 'Adsız' ? '' : page.title)
+  const [title, setTitle] = useState(isUntitled(page.title) ? '' : page.title)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const ref = useRef<HTMLTextAreaElement>(null)
 
@@ -57,7 +59,7 @@ function TitleField({ page }: { page: PageData }) {
 
   // yeni (Adsız) sayfada, yalnızca açılışta başlığa odaklan
   useEffect(() => {
-    if (committed.current === 'Adsız') ref.current?.focus()
+    if (isUntitled(committed.current)) ref.current?.focus()
   }, [page.id])
 
   useEffect(() => {
@@ -71,14 +73,14 @@ function TitleField({ page }: { page: PageData }) {
   // Enter, blur ve zamanlayıcı aynı anda tetikleyebilir: yeniden adlandırmalar sırayla ve bir kez yapılır
   const commit = (value: string): Promise<void> => {
     if (timer.current) clearTimeout(timer.current)
-    const next = value.trim() || 'Adsız'
+    const next = value.trim() || tNow('page.untitled')
     chain.current = chain.current.then(async () => {
       if (next === committed.current) return
       const node = await kernel.pages.rename(page.id, next)
       committed.current = node.title
       await useStore.getState().refreshTree()
     })
-    return chain.current.catch(() => useStore.getState().toast('Sayfa yeniden adlandırılamadı', 'error'))
+    return chain.current.catch(() => useStore.getState().toast(tNow('page.renameFailed'), 'error'))
   }
 
   return (
@@ -87,7 +89,7 @@ function TitleField({ page }: { page: PageData }) {
       className="page-title"
       data-testid="page-title"
       rows={1}
-      placeholder="Adsız"
+      placeholder={tNow('page.untitled')}
       value={title}
       onChange={(e) => {
         const v = e.target.value.replace(/\n/g, '')

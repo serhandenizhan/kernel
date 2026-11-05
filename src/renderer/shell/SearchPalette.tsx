@@ -3,6 +3,7 @@ import type { SearchHit } from '@shared/types'
 import { kernel } from '../lib/kernel'
 import { useStore } from '../state/store'
 import { PageIcon } from './PageHeader'
+import { tNow } from '../lib/i18n'
 
 interface Row {
   id: string
@@ -45,7 +46,7 @@ export function SearchPalette() {
           className="palette-input"
           data-testid="search-input"
           autoFocus
-          placeholder="Sayfa ya da içerik ara"
+          placeholder={tNow('search.placeholder')}
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onKeyDown={(e) => {
@@ -59,7 +60,7 @@ export function SearchPalette() {
             } else if (e.key === 'Enter') open(rows[index])
           }}
         />
-        <div className="palette-section">{q.trim() ? 'Sonuçlar' : 'Son açılanlar'}</div>
+        <div className="palette-section">{q.trim() ? tNow('search.results') : tNow('search.recent')}</div>
         <div className="palette-list">
           {rows.map((r, i) => (
             <button key={r.id} data-testid="search-result" className={`palette-row${i === index ? ' active' : ''}`} onMouseEnter={() => setIndex(i)} onClick={() => open(r)}>
@@ -71,7 +72,7 @@ export function SearchPalette() {
               </span>
             </button>
           ))}
-          {!rows.length && <div className="palette-empty">{q.trim() ? 'Sonuç bulunamadı' : 'Henüz açılan sayfa yok'}</div>}
+          {!rows.length && <div className="palette-empty">{q.trim() ? tNow('search.noResults') : tNow('search.noRecent')}</div>}
         </div>
       </div>
     </div>

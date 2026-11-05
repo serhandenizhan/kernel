@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { SUPPORTED_LANGUAGES, normalizeLanguage } from '@core/smart-paste/language'
+import { tNow } from '../../lib/i18n'
 
 const LABELS: Record<string, string> = {
   cpp: 'C++',
@@ -26,8 +27,8 @@ interface Option {
 
 // Seçenekler: düz metin, Mermaid diyagramı, ardından vurgulanan diller (alfabetik)
 const OPTIONS: Option[] = [
-  { value: null, label: 'Düz metin' },
-  { value: 'mermaid', label: 'Mermaid', hint: 'Diyagram' },
+  { value: null, get label() { return tNow('code.plain') } },
+  { value: 'mermaid', label: 'Mermaid', get hint() { return tNow('code.diagram') } },
   ...[...SUPPORTED_LANGUAGES].sort((a, b) => languageLabel(a).localeCompare(languageLabel(b), 'tr')).map((l) => ({ value: l, label: languageLabel(l) }))
 ]
 
@@ -114,7 +115,7 @@ export function LanguagePicker({ value, disabled, onChange }: { value: string | 
     e.stopPropagation()
   }
 
-  const current = value ? (value === 'mermaid' ? 'Mermaid' : languageLabel(value)) : 'Düz metin'
+  const current = value ? (value === 'mermaid' ? 'Mermaid' : languageLabel(value)) : tNow('code.plain')
 
   return (
     <>
@@ -142,21 +143,21 @@ export function LanguagePicker({ value, disabled, onChange }: { value: string | 
             className={`lang-picker glass${pos.up ? ' up' : ''}`}
             style={{ top: pos.top, left: pos.left }}
             role="dialog"
-            aria-label="Kod dili"
+            aria-label={tNow('code.language')}
             onKeyDown={onKey}
           >
             <input
               className="lang-search"
               data-testid="code-language-search"
               autoFocus
-              placeholder="Dil ara…"
+              placeholder={tNow('code.searchLanguage')}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               aria-controls="lang-picker-list"
               aria-activedescendant={`lang-opt-${active}`}
             />
             <div className="lang-list" id="lang-picker-list" role="listbox" ref={listRef}>
-              {options.length === 0 && <div className="lang-empty">Eşleşen dil yok</div>}
+              {options.length === 0 && <div className="lang-empty">{tNow('code.noLanguage')}</div>}
               {options.map((o, i) => (
                 <div
                   key={o.value ?? 'plain'}

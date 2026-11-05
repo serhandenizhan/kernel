@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import type { Settings } from '@shared/types'
 import { useStore } from '../state/store'
 import { kernel } from '../lib/kernel'
+import { useLang, useT } from '../lib/i18n'
+import { localeOf } from '@shared/i18n'
 
 // Ayarlar (Cmd+,): görünüm, yapıştırma, ipuçları, kasa
 export function SettingsDialog() {
@@ -9,6 +11,7 @@ export function SettingsDialog() {
   const vaultPath = useStore((s) => s.vaultPath)
   const set = (patch: Partial<Settings>) => void useStore.getState().setSettings(patch)
   const close = () => useStore.getState().setOverlay(null)
+  const t = useT()
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && close()
@@ -18,60 +21,60 @@ export function SettingsDialog() {
 
   return (
     <div className="modal-backdrop" onMouseDown={close}>
-      <div className="modal settings glass" role="dialog" aria-label="Ayarlar" data-testid="settings-dialog" onMouseDown={(e) => e.stopPropagation()}>
-        <h3>Ayarlar</h3>
+      <div className="modal settings glass" role="dialog" aria-label={t('settings.title')} data-testid="settings-dialog" onMouseDown={(e) => e.stopPropagation()}>
+        <h3>{t('settings.title')}</h3>
 
         <section>
-          <h4>Görünüm</h4>
+          <h4>{t('settings.appearance')}</h4>
           <label className="setting-row">
-            <span>Tema</span>
+            <span>{t('settings.theme')}</span>
             <select data-testid="setting-theme" value={settings.theme} onChange={(e) => set({ theme: e.target.value as Settings['theme'] })}>
-              <option value="system">Sistemi takip et</option>
-              <option value="light">Açık</option>
-              <option value="dark">Koyu</option>
+              <option value="system">{t('settings.theme.system')}</option>
+              <option value="light">{t('settings.theme.light')}</option>
+              <option value="dark">{t('settings.theme.dark')}</option>
             </select>
           </label>
           <label className="setting-row">
-            <span>Not metni fontu</span>
+            <span>{t('settings.font')}</span>
             <select data-testid="setting-font" value={settings.bodyFont} onChange={(e) => set({ bodyFont: e.target.value as Settings['bodyFont'] })}>
               <option value="serif">New York (serif)</option>
               <option value="sans">SF Pro (sans)</option>
             </select>
           </label>
           <label className="setting-row">
-            <span>Sayfa genişliği</span>
+            <span>{t('settings.width')}</span>
             <select data-testid="setting-width" value={settings.pageWidth} onChange={(e) => set({ pageWidth: e.target.value as Settings['pageWidth'] })}>
-              <option value="narrow">Dar</option>
-              <option value="normal">Normal</option>
-              <option value="wide">Geniş</option>
+              <option value="narrow">{t('settings.width.narrow')}</option>
+              <option value="normal">{t('settings.width.normal')}</option>
+              <option value="wide">{t('settings.width.wide')}</option>
             </select>
           </label>
         </section>
 
         <section>
-          <h4>Akıllı yapıştırma</h4>
+          <h4>{t('settings.paste')}</h4>
           <label className="setting-check">
             <input type="checkbox" data-testid="setting-strip-citations" checked={settings.paste.stripCitations} onChange={(e) => set({ paste: { ...settings.paste, stripCitations: e.target.checked } })} />
-            NotebookLM kaynak numaralarını temizle ([1], [2, 3])
+            {t('settings.paste.citations')}
           </label>
           <label className="setting-check">
             <input type="checkbox" checked={settings.paste.latexLineHeuristic} onChange={(e) => set({ paste: { ...settings.paste, latexLineHeuristic: e.target.checked } })} />
-            Ayraçsız LaTeX satırlarını formüle çevir
+            {t('settings.paste.latex')}
           </label>
           <label className="setting-check">
             <input type="checkbox" checked={settings.paste.unfencedCodeHeuristic} onChange={(e) => set({ paste: { ...settings.paste, unfencedCodeHeuristic: e.target.checked } })} />
-            Çitsiz kodu kod bloğu yap
+            {t('settings.paste.code')}
           </label>
         </section>
 
         <section>
-          <h4>İpuçları</h4>
+          <h4>{t('settings.tips')}</h4>
           <label className="setting-check">
             <input type="checkbox" checked={settings.tips.enabled} onChange={(e) => set({ tips: { ...settings.tips, enabled: e.target.checked } })} />
-            Bir özelliği ilk kullandığımda ipucu göster
+            {t('settings.tips.enabled')}
           </label>
           <button className="btn small" onClick={() => set({ tips: { ...settings.tips, seen: [] }, tourDone: false })}>
-            İpuçlarını ve turu sıfırla
+            {t('settings.tips.reset')}
           </button>
         </section>
 
@@ -80,11 +83,11 @@ export function SettingsDialog() {
         <NotionSection />
 
         <section>
-          <h4>Kasa</h4>
+          <h4>{t('settings.vault')}</h4>
           <div className="setting-path">{vaultPath}</div>
           <div className="setting-actions">
             <button className="btn small" onClick={() => void kernel.vault.reveal('')}>
-              Finder'da göster
+              {t('settings.vault.reveal')}
             </button>
             <button
               className="btn small"
@@ -96,14 +99,14 @@ export function SettingsDialog() {
                 }
               }}
             >
-              Başka bir kasa seç
+              {t('settings.vault.choose')}
             </button>
           </div>
         </section>
 
         <div className="modal-actions">
           <button className="btn primary" onClick={close}>
-            Tamam
+            {t('settings.done')}
           </button>
         </div>
       </div>
@@ -116,17 +119,19 @@ function BackupSection() {
   const [last, setLast] = useState<string | null>(null)
   const refresh = () => void kernel.backup.status().then((s) => setLast(s.last))
   useEffect(refresh, [])
+  const t = useT()
+  const lang = useLang()
   const set = (patch: Partial<typeof backup>) => void useStore.getState().setSettings({ backup: { ...backup, ...patch } })
-  const lastText = last ? (Date.now() - new Date(last).getTime() < 120_000 ? 'az önce' : new Date(last).toLocaleString('tr-TR')) : 'henüz yok'
+  const lastText = last ? (Date.now() - new Date(last).getTime() < 120_000 ? t('settings.backup.justNow') : new Date(last).toLocaleString(localeOf(lang))) : t('settings.backup.never')
   return (
     <section>
-      <h4>Yedekleme</h4>
+      <h4>{t('settings.backup')}</h4>
       <label className="setting-check">
         <input type="checkbox" data-testid="setting-backup" checked={backup.enabled} onChange={(e) => set({ enabled: e.target.checked })} />
-        Kasayı her gün otomatik yedekle (son {backup.keep} yedek tutulur)
+        {t('settings.backup.enabled', { keep: backup.keep })}
       </label>
       <div className="setting-path" data-testid="backup-folder">
-        {backup.folder ?? 'Yedek klasörü seçilmedi'}
+        {backup.folder ?? t('settings.backup.noFolder')}
       </div>
       <div className="setting-actions">
         <button
@@ -137,7 +142,7 @@ function BackupSection() {
             if (folder) await useStore.getState().setSettings({ backup: { ...useStore.getState().settings.backup, folder } })
           }}
         >
-          Klasör seç
+          {t('settings.backup.choose')}
         </button>
         <button
           className="btn small"
@@ -145,38 +150,39 @@ function BackupSection() {
           disabled={!backup.folder}
           onClick={async () => {
             const res = await kernel.backup.now()
-            if ('filePath' in res) useStore.getState().toast('Yedek alındı')
+            if ('filePath' in res) useStore.getState().toast(t('settings.backup.done'))
             refresh()
           }}
         >
-          Şimdi yedekle
+          {t('settings.backup.now')}
         </button>
       </div>
       <div className="setting-hint" data-testid="backup-last">
-        Son yedek: {lastText}
+        {t('settings.backup.last', { when: lastText })}
       </div>
     </section>
   )
 }
 
 function NotionSection() {
+  const t = useT()
   const [connected, setConnected] = useState(false)
   useEffect(() => void kernel.notion.connected().then(setConnected), [])
   if (!connected) return null
   return (
     <section>
       <h4>Notion</h4>
-      <p className="setting-hint">Bu Mac'te kayıtlı bir Notion token'ı var.</p>
+      <p className="setting-hint">{t('settings.notion.hint')}</p>
       <button
         className="btn small"
         data-testid="notion-disconnect"
         onClick={async () => {
           await kernel.notion.disconnect()
           setConnected(false)
-          useStore.getState().toast('Notion bağlantısı silindi')
+          useStore.getState().toast(t('settings.notion.disconnected'))
         }}
       >
-        Notion bağlantısını sil
+        {t('settings.notion.disconnect')}
       </button>
     </section>
   )

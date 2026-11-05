@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
 import { toVaultUrl } from '@core/vault-url'
 import { loadPdf, type PDFDocumentProxy } from '../../lib/pdfjs'
+import { tNow } from '../../lib/i18n'
 
 const MIN = 0.5
 const MAX = 3
@@ -56,7 +57,7 @@ function Toolbar({ name, page, pages, zoom, setPage, setZoom, onExpand }: { name
       </button>
       {onExpand && (
         <button className="code-btn" data-testid="pdf-expand" onClick={onExpand}>
-          Büyüt
+          {tNow('pdf.enlarge')}
         </button>
       )}
     </div>
@@ -82,7 +83,7 @@ export function PdfEmbedView({ node, editor }: NodeViewProps) {
     let alive = true
     loadPdf(toVaultUrl(src))
       .then((d) => alive && setDoc(d))
-      .catch((e) => alive && setError(e instanceof Error ? e.message : 'PDF açılamadı'))
+      .catch((e) => alive && setError(e instanceof Error ? e.message : tNow('pdf.openFailed')))
     return () => {
       alive = false
     }
@@ -116,7 +117,7 @@ export function PdfEmbedView({ node, editor }: NodeViewProps) {
       <div ref={boxRef}>
         {doc && <Toolbar name={name} page={page} pages={doc.numPages} zoom={zoom} setPage={setPage} setZoom={setZoom} onExpand={() => (setMPage(page), setExpanded(true))} />}
         <div className="pdf-stage" contentEditable={false}>
-          {error ? <div className="mermaid-error">{error}</div> : doc ? <PdfCanvas doc={doc} page={page} zoom={zoom} width={width} /> : <div className="pdf-loading">PDF yükleniyor…</div>}
+          {error ? <div className="mermaid-error">{error}</div> : doc ? <PdfCanvas doc={doc} page={page} zoom={zoom} width={width} /> : <div className="pdf-loading">{tNow('pdf.loading')}</div>}
         </div>
       </div>
       {expanded &&

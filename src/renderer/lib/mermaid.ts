@@ -1,3 +1,4 @@
+import { tNow } from './i18n'
 // Mermaid tembel yüklenir (büyük kütüphane); yalnızca diyagram olan sayfalarda indirilir
 type MermaidApi = typeof import('mermaid').default
 
@@ -31,7 +32,7 @@ export async function renderMermaid(code: string, id: string): Promise<{ svg: st
     return { svg }
   } catch (e) {
     document.getElementById(`d${id}`)?.remove()
-    return { error: e instanceof Error ? e.message.split('\n')[0]! : 'Diyagram çizilemedi' }
+    return { error: e instanceof Error ? e.message.split('\n')[0]! : tNow('diagram.failed') }
   } finally {
     window.kernelPendingRenders = Math.max(0, (window.kernelPendingRenders ?? 1) - 1)
   }

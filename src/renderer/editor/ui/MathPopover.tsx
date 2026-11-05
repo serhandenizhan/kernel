@@ -2,13 +2,14 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import katex from 'katex'
 import type { Editor } from '@tiptap/react'
 import { useMathEdit } from './math-state'
+import { tNow } from '../../lib/i18n'
 
 function validate(latex: string, display: boolean): string | null {
   try {
     katex.renderToString(latex, { throwOnError: true, displayMode: display, strict: 'ignore' })
     return null
   } catch (e) {
-    return e instanceof Error ? e.message.replace(/^KaTeX parse error: /, '') : 'Geçersiz formül'
+    return e instanceof Error ? e.message.replace(/^KaTeX parse error: /, '') : tNow('math.invalid')
   }
 }
 
@@ -73,7 +74,7 @@ export function MathPopover({ editor }: { editor: Editor | null }) {
         value={draft}
         rows={kind === 'block' ? 3 : 1}
         spellCheck={false}
-        placeholder="LaTeX yaz, örn. \frac{a}{b}"
+        placeholder={tNow('math.placeholder')}
         onChange={(e) => {
           const v = e.target.value
           setDraft(v)

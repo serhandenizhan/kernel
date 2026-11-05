@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useSlash } from './slash-state'
+import { tNow } from '../../lib/i18n'
 
 // "/" blok menüsü (cam yüzey)
 export function SlashMenu() {
@@ -15,7 +16,7 @@ export function SlashMenu() {
   return (
     <div className="slash-menu glass" data-testid="slash-menu" style={{ left: rect.left, top }} onMouseDown={(e) => e.preventDefault()}>
       {items.length === 0 ? (
-        <div className="slash-empty">Eşleşen blok yok</div>
+        <div className="slash-empty">{tNow('slash.noMatch')}</div>
       ) : (
         <div ref={listRef} className="slash-list">
           {items.map((it, i) => (

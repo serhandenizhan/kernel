@@ -8,23 +8,26 @@ import { SLASH_ITEMS } from '../editor/slash-items'
 import { useStore } from '../state/store'
 import { SHORTCUTS } from './shortcuts'
 import { MermaidPreview } from '../editor/ui/MermaidView'
+import { useT, tNow } from '../lib/i18n'
+import type { MessageKey } from '@shared/i18n'
 
-const SAMPLE = `- **Momentum:** \\\\(p = m \\vec{v}\\\\) korunur.
-  \\\\[F = \\frac{dp}{dt}\\\\]
-- Örnek: \\\\(3 \\times 4 = 12\\\\) newton`
+/** Tuş gösterimi: sözlük anahtarıysa (sc.*) çevrilir */
+const keysOf = (keys: string) => (keys.startsWith('sc.') ? tNow(keys as MessageKey) : keys)
 
 /** Canlı örnek: ham NotebookLM metni → Kernel'in dönüşümü (uygulamanın kendi bileşenleriyle) */
 function PasteDemo() {
-  const doc = useMemo(() => convertPaste({ text: SAMPLE }, { stripCitations: true, latexLineHeuristic: true, unfencedCodeHeuristic: true }).doc, [])
+  const t = useT()
+  const SAMPLE = t('guide.paste.sample')
+  const doc = useMemo(() => convertPaste({ text: SAMPLE }, { stripCitations: true, latexLineHeuristic: true, unfencedCodeHeuristic: true }).doc, [SAMPLE])
   const editor = useEditor({ extensions: buildExtensions({ readOnly: true }), content: doc, editable: false })
   return (
     <div className="demo-split" data-testid="guide-paste-demo">
       <div>
-        <div className="demo-label">Yapıştırdığın (NotebookLM)</div>
+        <div className="demo-label">{t('guide.paste.from')}</div>
         <pre className="demo-raw">{SAMPLE}</pre>
       </div>
       <div>
-        <div className="demo-label">Kernel'de görünen</div>
+        <div className="demo-label">{t('guide.paste.to')}</div>
         <div className="kernel-editor demo-render">
           <EditorContent editor={editor} />
         </div>
@@ -34,16 +37,17 @@ function PasteDemo() {
 }
 
 function MathDemo() {
+  const t = useT()
   const [latex, setLatex] = useState('\\int_0^1 x^2\\,dx = \\frac{1}{3}')
   const html = useMemo(() => katex.renderToString(latex, { throwOnError: false, displayMode: true }), [latex])
   return (
     <div className="demo-split">
       <div>
-        <div className="demo-label">LaTeX</div>
+        <div className="demo-label">{t('guide.math.latex')}</div>
         <input className="picker-search" style={{ width: '100%', fontFamily: 'var(--font-mono)', fontSize: 13 }} value={latex} onChange={(e) => setLatex(e.target.value)} spellCheck={false} />
       </div>
       <div>
-        <div className="demo-label">Sonuç</div>
+        <div className="demo-label">{t('guide.math.result')}</div>
         <div className="demo-math" dangerouslySetInnerHTML={{ __html: html }} />
       </div>
     </div>
@@ -53,6 +57,7 @@ function MathDemo() {
 // Kernel Rehberi (Cmd+/): kasaya yazılmayan, uygulama içi sayfa
 export function GuidePage() {
   const [q, setQ] = useState('')
+  const t = useT()
   const close = () => useStore.getState().setOverlay(null)
 
   useEffect(() => {
@@ -63,35 +68,33 @@ export function GuidePage() {
 
   const rows = useMemo(() => {
     const n = normalizeTr(q.trim())
-    return SHORTCUTS.filter((s) => s.phase === 1).filter((s) => !n || normalizeTr(`${s.action} ${s.group} ${s.keys}`).includes(n))
-  }, [q])
+    return SHORTCUTS.filter((s) => s.phase === 1).filter((s) => !n || normalizeTr(`${t(s.action)} ${t(s.group)} ${keysOf(s.keys)}`).includes(n))
+  }, [q, t])
 
   return (
     <article className="page guide" data-testid="guide">
       <div className="page-column">
-        <button className="icon-btn guide-close" aria-label="Rehberi kapat" onClick={close}>
+        <button className="icon-btn guide-close" aria-label={t('guide.close')} onClick={close}>
           ×
         </button>
-        <h1 className="page-title">Kernel Rehberi</h1>
-        <p className="guide-lead">Kernel'in özellikleri ve kısayolları. Her bölümdeki örnek canlıdır, dokunabilirsin.</p>
+        <h1 className="page-title">{t('guide.title')}</h1>
+        <p className="guide-lead">{t('guide.lead')}</p>
 
         <section className="guide-section">
-          <h2>Akıllı yapıştırma</h2>
-          <p>Yapay zekâ araçlarından kopyaladığın metni olduğu gibi yapıştır. Çift kaçışlı formüller (\\( \\)), $…$ ve $$…$$ formül olur; kodun dili tespit edilir. Beğenmezsen hemen ⌘Z ile ham metne dönersin, ⌘⇧V ham yapıştırır.</p>
+          <h2>{t('guide.paste.title')}</h2>
+          <p dangerouslySetInnerHTML={{ __html: t('guide.paste.body') }} />
           <PasteDemo />
         </section>
 
         <section className="guide-section">
-          <h2>Formül ve kod</h2>
-          <p>
-            Satır içinde <code>$x^2$</code> yaz ya da ⌘⇧M'ye bas. Boş satırda <code>$$</code> ve boşluk blok formül açar. Formüle tıklayınca düzenlersin; yalnızca geçerli LaTeX uygulanır. Kod için <code>```python</code> yaz.
-          </p>
+          <h2>{t('guide.math.title')}</h2>
+          <p dangerouslySetInnerHTML={{ __html: t('guide.math.body') }} />
           <MathDemo />
         </section>
 
         <section className="guide-section">
-          <h2>Bloklar</h2>
-          <p>Satır başında / yaz ve aramaya başla. Türkçe karakter gerekmez: "basl" → Başlık.</p>
+          <h2>{t('guide.blocks.title')}</h2>
+          <p>{t('guide.blocks.body')}</p>
           <div className="guide-blocks">
             {SLASH_ITEMS.map((it) => (
               <span key={it.id} className="guide-block">
@@ -103,18 +106,18 @@ export function GuidePage() {
         </section>
 
         <section className="guide-section">
-          <h2>İkon ve kapak</h2>
-          <p>Başlığın üstüne gelince "İkon ekle" ve "Kapak ekle" belirir. Kapakta hazır desenlerden birini ya da kendi görselini seçip sürükleyerek konumlandırabilirsin.</p>
+          <h2>{t('guide.icon.title')}</h2>
+          <p>{t('guide.icon.body')}</p>
         </section>
 
         <section className="guide-section">
-          <h2>Arama ve PDF</h2>
-          <p>⌘K tüm sayfa adlarında ve içerikte arar. ⌘E sayfayı PDF'e çevirir: metin ve formüller vektörel, görseller tam çözünürlükte; başlıklar sayfa sonunda yalnız kalmaz, kısa kod blokları bölünmez.</p>
+          <h2>{t('guide.search.title')}</h2>
+          <p>{t('guide.search.body')}</p>
         </section>
 
         <section className="guide-section">
-          <h2>Notion'dan aktarma</h2>
-          <p>Notion'daki sayfalarını ikon, kapak, görsel, formül ve alt sayfalarıyla birlikte getir. Sihirbaz integration oluşturma adımlarını gösterir; token yalnızca bu Mac'in Anahtar Zinciri'nde durur ve aktarım bitince silinebilir. Yarıda kalırsa "Devam et" ile kaldığı yerden sürer, sonunda bir doğrulama raporu oluşturulur.</p>
+          <h2>{t('guide.notion.title')}</h2>
+          <p>{t('guide.notion.body')}</p>
           <button
             className="btn"
             data-testid="guide-notion"
@@ -123,42 +126,40 @@ export function GuidePage() {
               useStore.getState().setOverlay('notion')
             }}
           >
-            Notion'dan aktar
+            {t('guide.notion.open')}
           </button>
         </section>
 
         <section className="guide-section">
-          <h2>Sürüm geçmişi ve yedek</h2>
-          <p>Kernel düzenledikçe en fazla 5 dakikada bir sayfanın sürümünü saklar (30 gün tamamı, sonra günde bir). Kenar çubuğunda sayfaya sağ tıkla → "Sürüm geçmişi": farkları gör, tek tıkla geri dön. Ayarlar → Yedekleme ile kasan her gün seçtiğin klasöre zip olarak yedeklenir.</p>
+          <h2>{t('guide.history.title')}</h2>
+          <p>{t('guide.history.body')}</p>
         </section>
 
         <section className="guide-section">
-          <h2>Şablonlar</h2>
-          <p>Kenar çubuğundaki ▾ ile "Ders notu" gibi bir şablondan yeni sayfa aç; <code>{'{{tarih}}'}</code> ve <code>{'{{başlık}}'}</code> otomatik dolar. Herhangi bir sayfayı sağ tık → "Şablon olarak kaydet" ile kendi şablonun yapabilirsin.</p>
+          <h2>{t('guide.templates.title')}</h2>
+          <p dangerouslySetInnerHTML={{ __html: t('guide.templates.body') }} />
         </section>
 
         <section className="guide-section">
-          <h2>Diyagram ve PDF</h2>
-          <p>
-            <code>```mermaid</code> kod bloğu canlı diyagram olarak çizilir ve PDF'e vektörel basılır. Hocanın slaytlarını sürükleyip bırak ya da <code>/pdf</code> yaz: PDF sayfanın içinde gezilebilir bir görüntüleyiciyle açılır.
-          </p>
+          <h2>{t('guide.diagram.title')}</h2>
+          <p dangerouslySetInnerHTML={{ __html: t('guide.diagram.body') }} />
           <div className="demo-math" data-testid="guide-mermaid-demo">
-            <MermaidPreview code={'graph LR\n  Not --> Özet --> Sınav'} />
+            <MermaidPreview code={t('guide.diagram.sample')} />
           </div>
         </section>
 
         <section className="guide-section">
-          <h2>Kısayollar</h2>
-          <input className="picker-search shortcut-search" data-testid="shortcut-search" placeholder="Kısayol ara" value={q} onChange={(e) => setQ(e.target.value)} />
+          <h2>{t('guide.shortcuts.title')}</h2>
+          <input className="picker-search shortcut-search" data-testid="shortcut-search" placeholder={t('guide.shortcuts.search')} value={q} onChange={(e) => setQ(e.target.value)} />
           <table className="shortcut-table">
             <tbody>
               {rows.map((s) => (
                 <tr key={s.keys + s.action} data-testid="shortcut-row">
                   <td>
-                    <kbd>{s.keys}</kbd>
+                    <kbd>{keysOf(s.keys)}</kbd>
                   </td>
-                  <td>{s.action}</td>
-                  <td className="muted">{s.group}</td>
+                  <td>{t(s.action)}</td>
+                  <td className="muted">{t(s.group)}</td>
                 </tr>
               ))}
             </tbody>

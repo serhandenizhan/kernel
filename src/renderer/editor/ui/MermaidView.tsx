@@ -1,5 +1,6 @@
 import { useEffect, useId, useState } from 'react'
 import { renderMermaid } from '../../lib/mermaid'
+import { tNow } from '../../lib/i18n'
 
 // Mermaid önizlemesi: kod değiştikçe (300 ms sonra) yeniden çizilir; hatalı kodda hata metni
 export function MermaidPreview({ code }: { code: string }) {
@@ -30,6 +31,6 @@ export function MermaidPreview({ code }: { code: string }) {
     }
   }, [code, rid])
 
-  if (state.error) return <div className="mermaid-error">Diyagram hatası: {state.error}</div>
+  if (state.error) return <div className="mermaid-error">{tNow('diagram.error', { error: state.error })}</div>
   return <div className="mermaid-preview" contentEditable={false} dangerouslySetInnerHTML={{ __html: state.svg ?? '' }} />
 }

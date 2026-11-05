@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { ImportProgress, ImportReport } from '@shared/types'
 import { kernel } from '../lib/kernel'
 import { useStore } from '../state/store'
+import { useT } from '../lib/i18n'
 
 type Step = 'intro' | 'token' | 'pages' | 'progress' | 'report'
 const STEPS: Step[] = ['intro', 'token', 'pages', 'progress', 'report']
@@ -19,6 +20,7 @@ export function ImportWizard({ resume = false }: { resume?: boolean }) {
   const [deleteToken, setDeleteToken] = useState(true)
   const [busy, setBusy] = useState(false)
   const close = () => useStore.getState().setOverlay(null)
+  const t = useT()
 
   useEffect(
     () =>
@@ -28,7 +30,7 @@ export function ImportWizard({ resume = false }: { resume?: boolean }) {
           setReport(p.report)
           setStep('report')
         }
-        if (p.phase === 'error') setError(p.error ?? 'Aktarım durdu')
+        if (p.phase === 'error') setError(p.error ?? t('notion.stoppedFallback'))
       }),
     []
   )
@@ -38,7 +40,7 @@ export function ImportWizard({ resume = false }: { resume?: boolean }) {
     try {
       await kernel.notion.resume()
     } catch (e) {
-      setError(e instanceof Error ? e.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, '') : 'Aktarım sürdürülemedi')
+      setError(e instanceof Error ? e.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, '') : t('notion.resumeFailed'))
     }
   }
 
@@ -66,7 +68,7 @@ export function ImportWizard({ resume = false }: { resume?: boolean }) {
     try {
       await kernel.notion.start([...selected])
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Aktarım başlatılamadı')
+      setError(e instanceof Error ? e.message : t('notion.startFailed'))
     }
   }
 
@@ -81,7 +83,7 @@ export function ImportWizard({ resume = false }: { resume?: boolean }) {
 
   return (
     <div className="modal-backdrop">
-      <div className="modal notion-wizard glass" data-testid="notion-wizard" role="dialog" aria-label="Notion'dan aktar">
+      <div className="modal notion-wizard glass" data-testid="notion-wizard" role="dialog" aria-label={t('notion.title')}>
         <div className="tour-dots">
           {STEPS.map((s) => (
             <span key={s} className={s === step ? 'on' : ''} />
@@ -90,26 +92,20 @@ export function ImportWizard({ resume = false }: { resume?: boolean }) {
 
         {step === 'intro' && (
           <>
-            <h3>Notion'dan aktar</h3>
-            <p>Sayfaların; ikonları, kapakları, görselleri ve formülleriyle birlikte Kernel'e gelir. Notion'da üç adım:</p>
+            <h3>{t('notion.title')}</h3>
+            <p>{t('notion.intro')}</p>
             <ol className="wizard-steps">
-              <li>
-                <b>notion.so/my-integrations</b> adresinde <b>New integration</b> → ad: "Kernel" → <b>Internal</b> → Kaydet.
-              </li>
-              <li>
-                Açılan sayfada <b>Internal Integration Secret</b>'ı kopyala (<code>secret_…</code> ya da <code>ntn_…</code>).
-              </li>
-              <li>
-                Aktarmak istediğin her ana sayfada sağ üstte <b>•••</b> → <b>Connections</b> → <b>Kernel</b>'i seç. Alt sayfalar otomatik gelir.
-              </li>
+              <li dangerouslySetInnerHTML={{ __html: t('notion.step1') }} />
+              <li dangerouslySetInnerHTML={{ __html: t('notion.step2') }} />
+              <li dangerouslySetInnerHTML={{ __html: t('notion.step3') }} />
             </ol>
-            <p className="setting-hint">Token yalnızca bu Mac'in Anahtar Zinciri'nde şifreli tutulur; notlarına ya da başka bir yere yazılmaz.</p>
+            <p className="setting-hint">{t('notion.tokenHint')}</p>
             <div className="modal-actions">
               <button className="btn" onClick={close}>
-                Vazgeç
+                {t('notion.cancel')}
               </button>
               <button className="btn primary" data-testid="notion-next" onClick={() => setStep('token')}>
-                Devam
+                {t('notion.next')}
               </button>
             </div>
           </>
@@ -117,8 +113,8 @@ export function ImportWizard({ resume = false }: { resume?: boolean }) {
 
         {step === 'token' && (
           <>
-            <h3>Token'ı yapıştır</h3>
-            <input className="picker-search wide" type="password" data-testid="notion-token" autoFocus placeholder="secret_… ya da ntn_…" value={token} onChange={(e) => setToken(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && token && void connect()} />
+            <h3>{t('notion.pasteToken')}</h3>
+            <input className="picker-search wide" type="password" data-testid="notion-token" autoFocus placeholder={t('notion.tokenPlaceholder')} value={token} onChange={(e) => setToken(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && token && void connect()} />
             {error && (
               <div className="mermaid-error" data-testid="notion-error">
                 {error}
@@ -126,10 +122,10 @@ export function ImportWizard({ resume = false }: { resume?: boolean }) {
             )}
             <div className="modal-actions">
               <button className="btn" onClick={() => setStep('intro')}>
-                Geri
+                {t('notion.back')}
               </button>
               <button className="btn primary" data-testid="notion-connect" disabled={!token || busy} onClick={() => void connect()}>
-                {busy ? 'Bağlanıyor…' : 'Bağlan'}
+                {busy ? t('notion.connecting') : t('notion.connect')}
               </button>
             </div>
           </>
@@ -137,17 +133,17 @@ export function ImportWizard({ resume = false }: { resume?: boolean }) {
 
         {step === 'pages' && (
           <>
-            <h3>Hangi sayfalar gelsin?</h3>
+            <h3>{t('notion.whichPages')}</h3>
             <div className="setting-hint" data-testid="notion-workspace">
-              Bağlandı: {workspace}
+              {t('notion.connected', { workspace: workspace ?? '' })}
             </div>
             {pages.length === 0 ? (
-              <p>Paylaşılmış sayfa bulunamadı. Notion'da sayfada ••• → Connections → Kernel adımını kontrol et.</p>
+              <p>{t('notion.noPages')}</p>
             ) : (
               <div className="notion-pages">
                 <label className="setting-check">
                   <input type="checkbox" data-testid="notion-select-all" checked={selected.size === pages.length} onChange={(e) => setSelected(e.target.checked ? new Set(pages.map((p) => p.id)) : new Set())} />
-                  <b>Hepsini seç</b>
+                  <b>{t('notion.selectAll')}</b>
                 </label>
                 {pages.map((p) => (
                   <label key={p.id} className="setting-check" data-testid="notion-page">
@@ -168,10 +164,10 @@ export function ImportWizard({ resume = false }: { resume?: boolean }) {
             )}
             <div className="modal-actions">
               <button className="btn" onClick={close}>
-                Vazgeç
+                {t('notion.cancel')}
               </button>
               <button className="btn primary" data-testid="notion-start" disabled={!selected.size} onClick={() => void start()}>
-                Aktar
+                {t('notion.import')}
               </button>
             </div>
           </>
@@ -179,31 +175,31 @@ export function ImportWizard({ resume = false }: { resume?: boolean }) {
 
         {step === 'progress' && (
           <>
-            <h3>{progress?.phase === 'scanning' ? 'Sayfalar taranıyor…' : progress?.phase === 'canceled' ? 'Aktarım durduruldu' : 'Aktarılıyor…'}</h3>
+            <h3>{progress?.phase === 'scanning' ? t('notion.scanning') : progress?.phase === 'canceled' ? t('notion.stopped') : t('notion.importing')}</h3>
             <div className="progress-bar">
               <span style={{ width: `${pct}%` }} />
             </div>
             <div className="setting-hint">
-              {progress ? `${progress.pagesDone} / ${progress.pagesTotal}` : 'Başlıyor…'} {progress?.current ? `— ${progress.current}` : ''}
+              {progress ? `${progress.pagesDone} / ${progress.pagesTotal}` : t('notion.starting')} {progress?.current ? `— ${progress.current}` : ''}
             </div>
             {error && (
               <div className="mermaid-error" data-testid="notion-error">
-                {error}. Bağlantını kontrol edip "Devam et" diyebilirsin.
+                {t('notion.errorRetry', { error })}
               </div>
             )}
             <div className="modal-actions">
               {progress?.phase === 'canceled' || error ? (
                 <>
                   <button className="btn" onClick={close}>
-                    Kapat
+                    {t('notion.close')}
                   </button>
                   <button className="btn primary" onClick={() => void doResume()}>
-                    Devam et
+                    {t('notion.resume')}
                   </button>
                 </>
               ) : (
                 <button className="btn" onClick={() => void kernel.notion.cancel()}>
-                  Durdur
+                  {t('notion.stop')}
                 </button>
               )}
             </div>
@@ -212,24 +208,20 @@ export function ImportWizard({ resume = false }: { resume?: boolean }) {
 
         {step === 'report' && report && (
           <>
-            <h3>Aktarım tamamlandı</h3>
+            <h3>{t('notion.done')}</h3>
             <div className="notion-report" data-testid="notion-report">
-              <p>
-                <b>{report.pages} sayfa</b> ve <b>{report.files} dosya</b> aktarıldı.
-              </p>
+              <p dangerouslySetInnerHTML={{ __html: t('notion.summary', { pages: report.pages, files: report.files }) }} />
               {(report.failedFiles.length > 0 || report.unsupported.length > 0 || report.mismatches.length > 0) && (
-                <p>
-                  {report.failedFiles.length} dosya indirilemedi, {report.unsupported.length} blok desteklenmiyor. Ayrıntılar "Notion aktarım raporu" sayfasında.
-                </p>
+                <p>{t('notion.problems', { failed: report.failedFiles.length, unsupported: report.unsupported.length })}</p>
               )}
             </div>
             <label className="setting-check">
               <input type="checkbox" checked={deleteToken} onChange={(e) => setDeleteToken(e.target.checked)} />
-              Notion token'ını bu Mac'ten sil
+              {t('notion.deleteToken')}
             </label>
             <div className="modal-actions">
               <button className="btn primary" data-testid="notion-finish" onClick={() => void finish()}>
-                Bitir
+                {t('notion.finish')}
               </button>
             </div>
           </>

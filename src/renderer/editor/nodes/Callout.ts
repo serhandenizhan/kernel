@@ -2,9 +2,12 @@ import { Node, mergeAttributes } from '@tiptap/core'
 import { ReactNodeViewRenderer } from '@tiptap/react'
 import { CALLOUT_TYPES, type CalloutType } from '@core/markdown/schema'
 import { CalloutView } from '../ui/CalloutView'
+import { tNow } from '../../lib/i18n'
+import type { MessageKey } from '@shared/i18n'
 
 export const CALLOUT_DEFAULT_ICON: Record<CalloutType, string> = { note: '📝', tip: '💡', warning: '⚠️', danger: '🚫', info: 'ℹ️', example: '🧪' }
-export const CALLOUT_LABEL: Record<CalloutType, string> = { note: 'Not', tip: 'İpucu', warning: 'Uyarı', danger: 'Tehlike', info: 'Bilgi', example: 'Örnek' }
+/** Callout türünün o anki dildeki adı (yeni başlıklar oluşturulduğu dilde yazılır) */
+export const calloutLabel = (type: CalloutType): string => tNow(`callout.${type}` as MessageKey)
 
 export const Callout = Node.create({
   name: 'callout',

@@ -8,6 +8,7 @@ import { getHighlighter } from '../lib/shiki'
 import { coverCss } from '../assets/covers'
 import { toVaultUrl } from '../editor/nodes/Image'
 import { PageIcon } from '../shell/PageHeader'
+import { currentLang } from '../lib/i18n'
 
 declare global {
   interface Window {
@@ -49,7 +50,7 @@ window.kernelSnapshotHtml = async () => {
   }
   const title = document.querySelector('.print-title')?.textContent ?? 'Kernel'
   const theme = document.documentElement.dataset['theme'] ?? 'light'
-  return `<!doctype html>\n<html lang="tr" data-theme="${theme}" class="printing"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title.replace(/</g, '&lt;')}</title><style>${css.join('\n')}\n.print-root{max-width:780px;margin:40px auto;padding:0 24px}</style></head><body>${root.outerHTML}</body></html>`
+  return `<!doctype html>\n<html lang="${currentLang()}" data-theme="${theme}" class="printing"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title.replace(/</g, '&lt;')}</title><style>${css.join('\n')}\n.print-root{max-width:780px;margin:40px auto;padding:0 24px}</style></head><body>${root.outerHTML}</body></html>`
 }
 
 function parseParams(): { ids: string[]; opts: PdfOptions } {

@@ -3,15 +3,17 @@ import type { Editor } from '@tiptap/react'
 import { BubbleMenu } from '@tiptap/react/menus'
 import { NodeSelection } from '@tiptap/pm/state'
 import { ContextMenu } from '../../shell/ContextMenu'
+import { tNow } from '../../lib/i18n'
+import type { MessageKey } from '@shared/i18n'
 
-export const HIGHLIGHT_COLORS: { id: string | null; label: string }[] = [
-  { id: 'yellow', label: 'Sarı' },
-  { id: 'green', label: 'Yeşil' },
-  { id: 'blue', label: 'Mavi' },
-  { id: 'pink', label: 'Pembe' },
-  { id: 'purple', label: 'Mor' },
-  { id: 'gray', label: 'Gri' },
-  { id: null, label: 'Renksiz vurgu' }
+export const HIGHLIGHT_COLORS: { id: string | null; label: MessageKey }[] = [
+  { id: 'yellow', label: 'color.yellow' },
+  { id: 'green', label: 'color.green' },
+  { id: 'blue', label: 'color.blue' },
+  { id: 'pink', label: 'color.pink' },
+  { id: 'purple', label: 'color.purple' },
+  { id: 'gray', label: 'color.gray' },
+  { id: null, label: 'bubble.removeHighlight' }
 ]
 
 // Metin seçilince beliren cam biçim araç çubuğu
@@ -31,17 +33,17 @@ export function BubbleToolbar({ editor }: { editor: Editor }) {
       className="bubble-toolbar glass"
       data-testid="bubble-toolbar"
     >
-      {btn('bold', 'B', 'Kalın (⌘B)', editor.isActive('bold'), () => editor.chain().focus().toggleBold().run())}
-      {btn('italic', 'I', 'İtalik (⌘I)', editor.isActive('italic'), () => editor.chain().focus().toggleItalic().run())}
-      {btn('underline', 'U', 'Altı çizili (⌘U)', editor.isActive('underline'), () => editor.chain().focus().toggleUnderline().run())}
-      {btn('strike', 'S', 'Üstü çizili (⌘⇧S)', editor.isActive('strike'), () => editor.chain().focus().toggleStrike().run())}
-      {btn('code', '</>', 'Kod', editor.isActive('code'), () => editor.chain().focus().toggleCode().run())}
-      {btn('math', '∑', 'Satır içi formül (⌘⇧M)', false, () => {
+      {btn('bold', 'B', tNow('bubble.bold'), editor.isActive('bold'), () => editor.chain().focus().toggleBold().run())}
+      {btn('italic', 'I', tNow('bubble.italic'), editor.isActive('italic'), () => editor.chain().focus().toggleItalic().run())}
+      {btn('underline', 'U', tNow('bubble.underline'), editor.isActive('underline'), () => editor.chain().focus().toggleUnderline().run())}
+      {btn('strike', 'S', tNow('bubble.strike'), editor.isActive('strike'), () => editor.chain().focus().toggleStrike().run())}
+      {btn('code', '</>', tNow('bubble.code'), editor.isActive('code'), () => editor.chain().focus().toggleCode().run())}
+      {btn('math', '∑', tNow('bubble.math'), false, () => {
         const { from, to } = editor.state.selection
         const latex = editor.state.doc.textBetween(from, to)
         editor.chain().focus().deleteSelection().insertContent({ type: 'inlineMath', attrs: { latex } }).run()
       })}
-      {btn('link', '🔗', 'Link', editor.isActive('link'), () => {
+      {btn('link', '🔗', tNow('bubble.link'), editor.isActive('link'), () => {
         const prev = editor.getAttributes('link')['href'] as string | undefined
         const url = window.prompt('Link adresi', prev ?? 'https://')
         if (url === null) return
@@ -50,7 +52,7 @@ export function BubbleToolbar({ editor }: { editor: Editor }) {
       })}
       <button
         data-testid="bubble-highlight"
-        title="Vurgu rengi"
+        title={tNow('bubble.highlight')}
         className={editor.isActive('highlight') ? 'active' : ''}
         onMouseDown={(e) => e.preventDefault()}
         onClick={(e) => {
@@ -66,8 +68,8 @@ export function BubbleToolbar({ editor }: { editor: Editor }) {
           y={colorMenu.y}
           onClose={() => setColorMenu(null)}
           items={[
-            ...HIGHLIGHT_COLORS.map((c) => ({ label: c.label, onSelect: () => editor.chain().focus().setHighlight(c.id ? { color: c.id } : { color: null as unknown as string }).run() })),
-            { label: 'Vurguyu kaldır', separatorBefore: true, onSelect: () => editor.chain().focus().unsetHighlight().run() }
+            ...HIGHLIGHT_COLORS.map((c) => ({ label: tNow(c.label), onSelect: () => editor.chain().focus().setHighlight(c.id ? { color: c.id } : { color: null as unknown as string }).run() })),
+            { label: tNow('bubble.removeHighlight'), separatorBefore: true, onSelect: () => editor.chain().focus().unsetHighlight().run() }
           ]}
         />
       )}

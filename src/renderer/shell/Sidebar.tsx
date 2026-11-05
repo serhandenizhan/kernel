@@ -1,4 +1,5 @@
 import { useStore } from '../state/store'
+import { tNow } from '../lib/i18n'
 import { PageTree } from './PageTree'
 import { TemplateMenu } from './TemplateMenu'
 
@@ -12,14 +13,14 @@ export function Sidebar() {
       <div className="sidebar-drag" />
       <button className="search-trigger" onClick={() => s().setOverlay('search')}>
         <span>⌕</span>
-        <span>Ara</span>
+        <span>{tNow('sidebar.search')}</span>
         <kbd>⌘K</kbd>
       </button>
       <div className="sidebar-section">
         <span>{vaultName}</span>
         <span className="section-actions">
           <TemplateMenu />
-          <button className="icon-btn" data-testid="new-page" title="Yeni sayfa (⌘N)" onClick={() => void s().createPage(null)}>
+          <button className="icon-btn" data-testid="new-page" title={tNow('sidebar.newPage')} onClick={() => void s().createPage(null)}>
             +
           </button>
         </span>
@@ -36,13 +37,13 @@ export function Sidebar() {
       />
       <div className="sidebar-footer">
         <button className="footer-btn" data-testid="notion-import" onClick={() => s().setOverlay('notion')}>
-          <span>⇣</span> Notion'dan aktar
+          <span>⇣</span> {tNow('sidebar.notionImport')}
         </button>
         <button className="footer-btn" onClick={() => s().setOverlay('guide')}>
-          <span>?</span> Rehber
+          <span>?</span> {tNow('sidebar.guide')}
         </button>
         <button className="footer-btn" onClick={() => s().setOverlay('settings')}>
-          <span>⚙︎</span> Ayarlar
+          <span>⚙︎</span> {tNow('sidebar.settings')}
         </button>
       </div>
     </aside>

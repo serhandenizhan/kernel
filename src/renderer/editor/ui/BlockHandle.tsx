@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { Editor } from '@tiptap/react'
 import { NodeSelection } from '@tiptap/pm/state'
 import { ContextMenu, type MenuItem } from '../../shell/ContextMenu'
+import { tNow } from '../../lib/i18n'
 
 interface Target {
   pos: number
@@ -56,14 +57,14 @@ export function BlockHandle({ editor, container }: { editor: Editor; container: 
     const chainAt = () => editor.chain().focus().setNodeSelection(pos)
     const turn = (label: string, run: () => void): MenuItem => ({ label, onSelect: run })
     return [
-      turn('Metne dönüştür', () => chainAt().setTextSelection(pos + 1).setParagraph().run()),
-      turn('Başlık 1', () => chainAt().setTextSelection(pos + 1).setNode('heading', { level: 1 }).run()),
-      turn('Başlık 2', () => chainAt().setTextSelection(pos + 1).setNode('heading', { level: 2 }).run()),
-      turn('Başlık 3', () => chainAt().setTextSelection(pos + 1).setNode('heading', { level: 3 }).run()),
-      turn('Madde listesi', () => chainAt().setTextSelection(pos + 1).toggleBulletList().run()),
-      turn('Alıntı', () => chainAt().setTextSelection(pos + 1).toggleBlockquote().run()),
+      turn(tNow('block.toText'), () => chainAt().setTextSelection(pos + 1).setParagraph().run()),
+      turn(tNow('slash.heading', { level: 1 }), () => chainAt().setTextSelection(pos + 1).setNode('heading', { level: 1 }).run()),
+      turn(tNow('slash.heading', { level: 2 }), () => chainAt().setTextSelection(pos + 1).setNode('heading', { level: 2 }).run()),
+      turn(tNow('slash.heading', { level: 3 }), () => chainAt().setTextSelection(pos + 1).setNode('heading', { level: 3 }).run()),
+      turn(tNow('slash.bullet'), () => chainAt().setTextSelection(pos + 1).toggleBulletList().run()),
+      turn(tNow('slash.quote'), () => chainAt().setTextSelection(pos + 1).toggleBlockquote().run()),
       {
-        label: 'Çoğalt',
+        label: tNow('block.duplicate'),
         separatorBefore: true,
         onSelect: () => {
           const node = editor.state.doc.nodeAt(pos)
@@ -71,7 +72,7 @@ export function BlockHandle({ editor, container }: { editor: Editor; container: 
         }
       },
       {
-        label: 'Sil',
+        label: tNow('block.delete'),
         danger: true,
         onSelect: () => {
           const node = editor.state.doc.nodeAt(pos)
@@ -88,7 +89,7 @@ export function BlockHandle({ editor, container }: { editor: Editor; container: 
         className="block-handle"
         data-testid="block-handle"
         draggable
-        title="Sürükle: taşı · Tıkla: menü"
+        title={tNow('block.handle')}
         style={{ top: target.top }}
         onDragStart={onDragStart}
         onClick={(e) => setMenu({ x: e.clientX, y: e.clientY, pos: target.pos })}

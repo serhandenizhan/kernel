@@ -1,6 +1,7 @@
 import { useState, type DragEvent } from 'react'
 import type { TreeNode } from '@shared/types'
 import { useStore } from '../state/store'
+import { tNow } from '../lib/i18n'
 import { kernel } from '../lib/kernel'
 import { ContextMenu, type MenuItem } from './ContextMenu'
 import { PageIcon } from './PageHeader'
@@ -44,40 +45,40 @@ export function PageTree({ onRequestIcon, onRequestExport }: { onRequestIcon(id:
       }
       await store.refreshTree()
     } catch (e) {
-      store.toast(e instanceof Error ? e.message : 'Sayfa taşınamadı', 'error')
+      store.toast(e instanceof Error ? e.message : tNow('tree.moveFailed'), 'error')
     }
   }
 
   const menuItems = (node: TreeNode): MenuItem[] => {
     const s = useStore.getState()
     return [
-      { label: 'Yeni alt sayfa', onSelect: () => void s.createPage(node.id) },
-      { label: 'Yeniden adlandır', onSelect: () => s.setRenaming(node.id) },
-      { label: 'İkon değiştir', onSelect: () => onRequestIcon(node.id) },
-      { label: "Finder'da göster", onSelect: () => void kernel.vault.reveal(node.id) },
-      { label: 'PDF olarak dışa aktar', onSelect: () => onRequestExport(node.id) },
+      { label: tNow('tree.newChild'), onSelect: () => void s.createPage(node.id) },
+      { label: tNow('tree.rename'), onSelect: () => s.setRenaming(node.id) },
+      { label: tNow('tree.changeIcon'), onSelect: () => onRequestIcon(node.id) },
+      { label: tNow('tree.reveal'), onSelect: () => void kernel.vault.reveal(node.id) },
+      { label: tNow('tree.exportPdf'), onSelect: () => onRequestExport(node.id) },
       {
-        label: 'Şablon olarak kaydet',
+        label: tNow('tree.saveTemplate'),
         onSelect: async () => {
           const saved = await kernel.templates.saveAs(node.id, node.title)
-          s.toast(`"${saved}" şablonu kaydedildi`)
+          s.toast(tNow('tree.templateSaved', { name: saved }))
         }
       },
       {
-        label: 'Sürüm geçmişi',
+        label: tNow('tree.history'),
         onSelect: () => {
           s.openPage(node.id)
           s.setOverlay('history')
         }
       },
       {
-        label: 'Çöp kutusuna taşı',
+        label: tNow('tree.trash'),
         danger: true,
         separatorBefore: true,
         onSelect: async () => {
           await kernel.pages.trash(node.id)
           await s.refreshTree()
-          s.toast(`"${node.title}" çöp kutusuna taşındı`)
+          s.toast(tNow('tree.trashed', { name: node.title }))
         }
       }
     ]
@@ -176,7 +177,7 @@ function Row({
           <button
             className="icon-btn"
             data-testid="add-child"
-            title="Alt sayfa ekle"
+            title={tNow('tree.addChild')}
             onClick={(e) => {
               e.stopPropagation()
               void useStore.getState().createPage(node.id)

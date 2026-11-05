@@ -4,6 +4,7 @@ import { COVER_PRESETS, coverCss } from '../assets/covers'
 import { toVaultUrl } from '../editor/nodes/Image'
 import { activeEditor } from '../editor/Editor'
 import { useStore } from '../state/store'
+import { tNow } from '../lib/i18n'
 import { IconPicker } from './IconPicker'
 import { CoverPicker } from './CoverPicker'
 
@@ -78,20 +79,20 @@ export function PageHeader({ initialMeta }: { initialMeta: PageMeta }) {
                   void update({ coverPosition: Math.round(pos * 100) / 100 })
                 }}
               >
-                Konumu kaydet
+                {tNow('header.coverSave')}
               </button>
             ) : (
               <>
                 <button className="glass-btn" data-testid="cover-change" onClick={(e) => setCoverPicker(e.currentTarget.getBoundingClientRect())}>
-                  Değiştir
+                  {tNow('header.coverChange')}
                 </button>
                 {isImageCover && (
                   <button className="glass-btn" data-testid="cover-reposition" onClick={() => setRepositioning(true)}>
-                    Konumlandır
+                    {tNow('header.coverReposition')}
                   </button>
                 )}
                 <button className="glass-btn" onClick={() => void update({ cover: undefined, coverPosition: undefined })}>
-                  Kaldır
+                  {tNow('header.coverRemove')}
                 </button>
               </>
             )}
@@ -107,12 +108,12 @@ export function PageHeader({ initialMeta }: { initialMeta: PageMeta }) {
         <div className="header-actions">
           {!meta.icon && (
             <button ref={addIconRef} className="ghost-btn" data-testid="add-icon" onClick={(e) => setIconPicker(e.currentTarget.getBoundingClientRect())}>
-              ☺ İkon ekle
+              ☺ {tNow('header.addIcon')}
             </button>
           )}
           {!meta.cover && (
             <button className="ghost-btn" data-testid="add-cover" onClick={() => void update({ cover: COVER_PRESETS[Math.floor(Math.random() * COVER_PRESETS.length)]!.id })}>
-              ▭ Kapak ekle
+              ▭ {tNow('header.addCover')}
             </button>
           )}
         </div>

@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
 import { toVaultUrl } from '../nodes/Image'
+import { tNow } from '../../lib/i18n'
 
 // Görsel: köşeden sürükleyerek genişlik, altında alt yazı alanı
 export function ImageView({ node, updateAttributes, selected, editor }: NodeViewProps) {
@@ -28,12 +29,12 @@ export function ImageView({ node, updateAttributes, selected, editor }: NodeView
     <NodeViewWrapper as="figure" className={`image-block${selected ? ' selected' : ''}`} data-drag-handle>
       <div className="image-frame" style={width ? { width } : undefined}>
         <img ref={imgRef} src={toVaultUrl(String(node.attrs['src'] ?? ''))} alt={String(node.attrs['alt'] ?? '')} style={width ? { width } : undefined} draggable={false} />
-        {editor.isEditable && <span className="image-resize" onMouseDown={startResize} title="Boyutlandır" />}
+        {editor.isEditable && <span className="image-resize" onMouseDown={startResize} title={tNow('image.resize')} />}
       </div>
       <input
         className="image-caption"
         data-testid="image-caption"
-        placeholder="Alt yazı ekle"
+        placeholder={tNow('image.caption')}
         value={String(node.attrs['caption'] ?? '')}
         readOnly={!editor.isEditable}
         onChange={(e) => updateAttributes({ caption: e.target.value })}

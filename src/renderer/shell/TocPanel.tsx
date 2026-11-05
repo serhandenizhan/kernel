@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useActiveEditor } from '../editor/Editor'
 import { useStore } from '../state/store'
+import { tNow } from '../lib/i18n'
 
 interface Heading {
   pos: number
@@ -54,9 +55,9 @@ export function TocPanel() {
   if (!visible || !editor) return null
   const minLevel = Math.min(...headings.map((h) => h.level), 6)
   return (
-    <nav className="toc glass" aria-label="İçindekiler">
-      <div className="toc-title">İçindekiler</div>
-      {headings.length === 0 && <div className="toc-empty">Bu sayfada başlık yok</div>}
+    <nav className="toc glass" aria-label={tNow('toc.title')}>
+      <div className="toc-title">{tNow('toc.title')}</div>
+      {headings.length === 0 && <div className="toc-empty">{tNow('toc.empty')}</div>}
       {headings.map((h) => (
         <button
           key={h.pos}
@@ -68,7 +69,7 @@ export function TocPanel() {
             dom?.scrollIntoView({ behavior: 'smooth', block: 'start' })
           }}
         >
-          {h.text || 'Başlıksız'}
+          {h.text || tNow('toc.untitledHeading')}
         </button>
       ))}
     </nav>

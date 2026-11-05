@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { COVER_PRESETS } from '../assets/covers'
 import { kernel } from '../lib/kernel'
+import { tNow } from '../lib/i18n'
 
 // Kapak seçici: hazır Kernel kapakları ya da kendi görselin
 export function CoverPicker({ anchor, onPick, onClose }: { anchor: DOMRect; onPick(cover: string): void; onClose(): void }) {
@@ -19,14 +20,14 @@ export function CoverPicker({ anchor, onPick, onClose }: { anchor: DOMRect; onPi
 
   return (
     <div ref={ref} className="cover-picker glass" style={{ left: Math.max(8, anchor.right - 420), top: anchor.bottom + 6 }}>
-      <div className="picker-title">Hazır kapaklar</div>
+      <div className="picker-title">{tNow('cover.presets')}</div>
       <div className="cover-grid">
         {COVER_PRESETS.map((p) => (
-          <button key={p.id} className="cover-option" data-testid={`cover-preset-${p.id}`} title={p.label} style={{ background: p.css }} onClick={() => onPick(p.id)} />
+          <button key={p.id} className="cover-option" data-testid={`cover-preset-${p.id}`} title={tNow(p.label)} style={{ background: p.css }} onClick={() => onPick(p.id)} />
         ))}
       </div>
       <label className="btn small upload-btn">
-        Görsel yükle
+        {tNow('cover.upload')}
         <input
           type="file"
           accept="image/*"

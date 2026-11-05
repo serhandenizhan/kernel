@@ -4,6 +4,7 @@ import { looksLikeMermaid } from '@core/smart-paste/language'
 import { getLoadedHighlighter, HIGHLIGHT_LANGUAGES, THEMES } from '../../lib/shiki'
 import { MermaidPreview } from './MermaidView'
 import { LanguagePicker, languageLabel as label } from './LanguagePicker'
+import { tNow } from '../../lib/i18n'
 
 const CHUNK_LINES = 25
 
@@ -22,12 +23,12 @@ function StaticCode({ code, language }: { code: string; language: string }) {
   const lines = code.split('\n')
   const chunks: string[] = []
   for (let i = 0; i < lines.length; i += CHUNK_LINES) chunks.push(lines.slice(i, i + CHUNK_LINES).join('\n'))
-  const name = language ? label(language) : 'Düz metin'
+  const name = language ? label(language) : tNow('code.plain')
   return (
     <NodeViewWrapper className="code-block static" data-language={language || undefined}>
       {chunks.map((chunk, i) => (
         <div key={i} className="code-chunk">
-          <div className="code-chunk-label">{i === 0 ? name : `${name} · devam`}</div>
+          <div className="code-chunk-label">{i === 0 ? name : tNow('code.continued', { name })}</div>
           {hl ? (
             <div dangerouslySetInnerHTML={{ __html: hl.codeToHtml(chunk, { lang: HIGHLIGHT_LANGUAGES.includes(language) ? language : 'text', themes: THEMES, defaultColor: false }) }} />
           ) : (
@@ -59,10 +60,10 @@ export function CodeBlockView({ node, updateAttributes, editor }: NodeViewProps)
         <LanguagePicker value={language || null} disabled={!editor.isEditable} onChange={(v) => updateAttributes({ language: v })} />
         {isMermaid && (
           <button className="code-btn" data-testid="mermaid-toggle" onClick={() => setShowCode(!showCode)}>
-            {showCode ? 'Önizleme' : 'Kod'}
+            {showCode ? tNow('code.preview') : tNow('code.code')}
           </button>
         )}
-        <button className="code-btn" title="Satır numaraları" onClick={() => updateAttributes({ lineNumbers: !lineNumbers })}>
+        <button className="code-btn" title={tNow('code.lineNumbers')} onClick={() => updateAttributes({ lineNumbers: !lineNumbers })}>
           #
         </button>
         <button
@@ -73,7 +74,7 @@ export function CodeBlockView({ node, updateAttributes, editor }: NodeViewProps)
             setTimeout(() => setCopied(false), 1200)
           }}
         >
-          {copied ? 'Kopyalandı' : 'Kopyala'}
+          {copied ? tNow('code.copied') : tNow('code.copy')}
         </button>
       </div>
       {isMermaid && !showCode && <MermaidPreview code={node.textContent} />}

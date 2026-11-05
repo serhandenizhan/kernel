@@ -1,13 +1,14 @@
 import { Node, mergeAttributes } from '@tiptap/core'
 import { resolveWikiTarget } from '@core/wiki'
 import { useStore } from '../../state/store'
+import { tNow } from '../../lib/i18n'
 
 /** [[Hedef]] linkini açar; bulunamazsa uyarır */
 export function openWikiTarget(target: string): void {
   const s = useStore.getState()
   const id = resolveWikiTarget(s.tree, target)
   if (id) s.openPage(id)
-  else s.toast(`Sayfa bulunamadı: ${target}`, 'error')
+  else s.toast(tNow('editor.pageNotFound', { target }), 'error')
 }
 
 // [[Sayfa adı]] / [[Sayfa adı|görünen ad]]: tıklanabilir iç link (Faz 3'te seçici ve geri bağlantılar eklenecek)

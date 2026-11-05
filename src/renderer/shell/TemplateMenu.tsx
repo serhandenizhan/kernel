@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { kernel } from '../lib/kernel'
 import { useStore } from '../state/store'
 import { ContextMenu } from './ContextMenu'
+import { tNow } from '../lib/i18n'
 
 // "+" yanındaki ▾: şablondan yeni sayfa
 export function TemplateMenu() {
@@ -11,7 +12,7 @@ export function TemplateMenu() {
       <button
         className="icon-btn"
         data-testid="template-menu"
-        title="Şablondan yeni sayfa"
+        title={tNow('sidebar.fromTemplate')}
         onClick={async (e) => {
           const r = e.currentTarget.getBoundingClientRect()
           setMenu({ x: r.left, y: r.bottom + 4, names: await kernel.templates.list() })

@@ -6,6 +6,7 @@ import { convertPaste } from '@core/smart-paste'
 import { useStore } from '../state/store'
 import { kernel } from '../lib/kernel'
 import { insertImageFiles } from './nodes/Image'
+import { tNow } from '../lib/i18n'
 
 interface LastPaste {
   from: number
@@ -44,7 +45,7 @@ async function downloadRemoteImages(editor: Editor, doc: JSONContent): Promise<v
   for (const url of urls) {
     const local = await kernel.attachments.fetchRemote(url)
     if (!local) {
-      useStore.getState().toast('Bir görsel indirilemedi, bağlantı olarak bırakıldı', 'error')
+      useStore.getState().toast(tNow('editor.imageFailed'), 'error')
       continue
     }
     const tr = editor.state.tr
@@ -133,7 +134,7 @@ export const SmartPaste = Extension.create<object, SmartPasteStorage>({
             if (result.suggestions.length) view.dispatch(view.state.tr.setMeta(suggestKey, 'refresh').setMeta('smartPaste', true))
             if (result.warnings.some((w) => w.kind === 'invalid-latex')) {
               const n = result.warnings.filter((w) => w.kind === 'invalid-latex').length
-              useStore.getState().toast(`${n} formül doğrulanamadı, metin olarak bırakıldı`)
+              useStore.getState().toast(tNow('editor.invalidFormulas', { count: n }))
             }
             void downloadRemoteImages(editor, result.doc)
             window.dispatchEvent(new CustomEvent('kernel:tip', { detail: 'first-paste' }))
@@ -157,7 +158,7 @@ export const SmartPaste = Extension.create<object, SmartPasteStorage>({
                   const chip = document.createElement('button')
                   chip.className = 'suggest-math'
                   chip.dataset['testid'] = 'suggest-math'
-                  chip.textContent = 'Formüle çevir'
+                  chip.textContent = tNow('editor.toFormula')
                   chip.onmousedown = (e) => e.preventDefault()
                   chip.onclick = () => {
                     storage.suggestions.delete(line)

@@ -1,5 +1,6 @@
 import { kernel } from '../lib/kernel'
 import { useStore } from '../state/store'
+import { tNow } from '../lib/i18n'
 import logo from '../assets/logo.svg'
 
 // Kasa yokken (ilk açılış ya da kayıtlı klasör bulunamadığında) gösterilir
@@ -11,13 +12,13 @@ export function VaultPicker() {
   return (
     <div className="vault-picker" data-testid="vault-picker">
       <img src={logo} width={88} height={88} alt="" />
-      <h1>Kernel'e hoş geldin</h1>
-      <p>Notların, bilgisayarında senin seçtiğin bir klasörde düz Markdown dosyaları olarak durur. Önerilen yer: Belgeler/Kernel.</p>
+      <h1>{tNow('vault.welcome')}</h1>
+      <p>{tNow('vault.intro')}</p>
       <button className="btn primary" onClick={() => void choose(true)}>
-        Kernel kasası oluştur
+        {tNow('vault.create')}
       </button>
       <button className="btn" onClick={() => void choose(false)}>
-        Mevcut bir klasörü seç
+        {tNow('vault.choose')}
       </button>
     </div>
   )

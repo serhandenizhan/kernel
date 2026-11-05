@@ -15,7 +15,8 @@
     "test:e2e": "electron-vite build && playwright test test/e2e",
     "dist": "electron-vite build && electron-builder --mac --arm64",
     "icon": "node scripts/make-icon.mjs build/icon.svg build/icon.icns",
-    "check:private": "node scripts/check-private-leak.mjs"
+    "check:private": "node scripts/check-private-leak.mjs",
+    "check:i18n": "node scripts/check-i18n.mjs"
   },
   "devDependencies": {
     "@floating-ui/dom": "^1.8.0",

@@ -27,6 +27,8 @@ export const IPC = {
   eventMenuCommand: 'event:menu-command',
   templatesList: 'templates:list',
   pinsList: 'pins:list',
+  homeData: 'home:data',
+  eventHomeChanged: 'event:home-changed',
   pinsSet: 'pins:set',
   templatesCreate: 'templates:create',
   templatesSaveAs: 'templates:save-as',

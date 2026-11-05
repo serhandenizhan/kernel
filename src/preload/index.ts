@@ -44,6 +44,7 @@ const api: KernelApi = {
     onProgress: (cb: (p: never) => void) => on(IPC.notionProgress, cb)
   } as KernelApi['notion'],
   pins: { list: inv(IPC.pinsList), set: inv(IPC.pinsSet) } as KernelApi['pins'],
+  home: { data: inv(IPC.homeData) } as KernelApi['home'],
   templates: { list: inv(IPC.templatesList), create: inv(IPC.templatesCreate), saveAs: inv(IPC.templatesSaveAs) } as KernelApi['templates'],
   backup: { now: inv(IPC.backupNow), status: inv(IPC.backupStatus), chooseFolder: inv(IPC.backupChooseFolder) } as KernelApi['backup'],
   settings: { get: inv(IPC.settingsGet), set: inv(IPC.settingsSet) } as KernelApi['settings'],
@@ -64,7 +65,8 @@ const api: KernelApi = {
     onTreeChanged: (cb) => on(IPC.eventTreeChanged, cb),
     onPageChangedExternally: (cb) => on(IPC.eventPageChanged, cb),
     onToast: (cb) => on(IPC.eventToast, cb),
-    onMenuCommand: (cb) => on(IPC.eventMenuCommand, cb)
+    onMenuCommand: (cb) => on(IPC.eventMenuCommand, cb),
+    onHomeChanged: (cb) => on(IPC.eventHomeChanged, cb)
   }
 }
 

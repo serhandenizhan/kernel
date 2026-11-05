@@ -23,6 +23,37 @@ export interface PageSummary {
   childCount: number
 }
 
+export interface HomeItem {
+  id: string
+  title: string
+  icon?: string
+  /** en üst seviyedeki atanın (dersin) başlığı; üst seviye sayfada yok */
+  parentTitle?: string
+  /** ilgili tarih (ISO): düzenlenme ya da oluşturulma */
+  at?: string
+}
+
+export interface HomeCourse {
+  id: string
+  title: string
+  icon?: string
+  cover?: string
+  childCount: number
+  descendantCount: number
+  /** alt sayfalar dahil en yeni düzenleme */
+  lastUpdated?: string
+}
+
+export interface HomeData {
+  courses: HomeCourse[]
+  pins: HomeItem[]
+  recentEdited: HomeItem[]
+  recentAdded: HomeItem[]
+  /** tam 84 gün, bugünle biter, eskiden yeniye */
+  activity: { day: string; count: number }[]
+  totalPages: number
+}
+
 export interface TreeNode {
   id: string
   title: string
@@ -165,6 +196,8 @@ export interface KernelApi {
     pendingResume(): Promise<boolean>
     onProgress(cb: (p: ImportProgress) => void): () => void
   }
+  /** ana sayfa verisi (spec §18.2) */
+  home: { data(): Promise<HomeData> }
   /** sabitlenen sayfalar (.kernel/pins.json) */
   pins: {
     list(): Promise<string[]>
@@ -195,6 +228,8 @@ export interface KernelApi {
     onPageChangedExternally(cb: (id: string) => void): () => void
     /** Ana süreçten gelen bildirim (örn. otomatik yedek hatası) */
     onToast(cb: (message: string, kind: 'info' | 'error') => void): () => void
+    /** ana sayfa verisi değişti (500 ms içinde birleştirilmiş) */
+    onHomeChanged(cb: () => void): () => void
     /** uygulama menüsünden gelen komut */
     onMenuCommand(cb: (cmd: 'settings' | 'toggle-sidebar' | 'toggle-toc') => void): () => void
   }

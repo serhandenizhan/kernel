@@ -23,6 +23,17 @@ import { splitFrontmatter } from './vault/frontmatter'
 import { log } from './log'
 import { PinStore } from './pins'
 import { ActivityStore } from './activity'
+import { computeHome, localDay } from '@core/home'
+
+// ana sayfa canlı yenilemesi: değişiklikler 500 ms içinde tek olayda birleştirilir
+let homeTimer: ReturnType<typeof setTimeout> | null = null
+function notifyHome(): void {
+  if (homeTimer) clearTimeout(homeTimer)
+  homeTimer = setTimeout(() => {
+    homeTimer = null
+    broadcast(IPC.eventHomeChanged)
+  }, 500)
+}
 
 function broadcast(channel: string, ...args: unknown[]): void {
   for (const w of BrowserWindow.getAllWindows()) w.webContents.send(channel, ...args)
@@ -53,7 +64,13 @@ export async function openVault(path: string): Promise<void> {
       broadcast(IPC.eventPageChanged, e.id)
       void search?.update(vault, e.id)
     }
+    notifyHome()
   })
+  // ilk kurulumda ısı haritası sayfaların son düzenlenme günleriyle kabaca doldurulur
+  void vault
+    .summaries()
+    .then((pages) => activity?.seedIfMissing(pages))
+    .catch((e) => log.warn('Etkinlik başlangıcı yazılamadı', e))
   log.info('Kasa açıldı', path)
 }
 
@@ -152,22 +169,30 @@ export function registerIpc(): void {
     void search?.update(vault, id)
     // ana sayfa ısı haritası: bugün düzenlenen sayfalar
     void activity?.record(id).catch((e) => log.warn('Etkinlik kaydedilemedi', e))
+    notifyHome()
     return res
   })
-  h(IPC.pagesCreate, (parentId: string | null, title?: string) => requireVault().create(parentId, title))
+  h(IPC.pagesCreate, async (parentId: string | null, title?: string) => {
+    const node = await requireVault().create(parentId, title)
+    notifyHome()
+    return node
+  })
   h(IPC.pagesRename, async (id: string, title: string) => {
     const node = await requireVault().rename(id, title)
     void search?.build(requireVault())
+    notifyHome()
     return node
   })
   h(IPC.pagesMove, async (id: string, parentId: string | null, index: number) => {
     await requireVault().move(id, parentId, index)
     void search?.build(requireVault())
+    notifyHome()
   })
   h(IPC.pagesTrash, async (id: string) => {
     await requireVault().trash(id, (p) => shell.trashItem(p))
     search?.remove(id)
     recentIds = recentIds.filter((x) => x !== id)
+    notifyHome()
   })
 
   h(IPC.attachmentsSave, (bytes: Uint8Array, ext: string, nameHint?: string) => requireVault().saveAttachment(bytes, ext, nameHint))
@@ -229,7 +254,17 @@ export function registerIpc(): void {
     walk(await vault.tree())
     return new PinStore(vault.root).list(ids)
   })
-  h(IPC.pinsSet, (ids: string[]) => new PinStore(requireVault().root).set(ids))
+  h(IPC.pinsSet, async (ids: string[]) => {
+    await new PinStore(requireVault().root).set(ids)
+    notifyHome()
+  })
+  h(IPC.homeData, async () => {
+    const vault = requireVault()
+    const pages = await vault.summaries()
+    const ids = new Set(pages.map((p) => p.id))
+    const [pins, act] = await Promise.all([new PinStore(vault.root).list(ids), activity?.read() ?? {}])
+    return computeHome(pages, pins, act, localDay(new Date()))
+  })
   h(IPC.templatesList, async () => {
     const t = new TemplateStore(requireVault().root, undefined, mainLang())
     await t.ensureDefault()

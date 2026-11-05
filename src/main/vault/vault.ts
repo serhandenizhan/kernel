@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs'
 import { basename, dirname, join, relative, sep } from 'node:path'
 import { createHash, randomBytes } from 'node:crypto'
 import { ulid } from 'ulid'
-import type { PageData, PageMeta, TreeNode } from '@shared/types'
+import type { PageData, PageMeta, TreeNode, PageSummary } from '@shared/types'
 import { extraKeys, joinFrontmatter, splitFrontmatter } from './frontmatter'
 import { foldKey, sanitizeTitle, uniqueName } from './names'
 import { writeAtomic } from './atomic'
@@ -19,6 +19,9 @@ const key = foldKey
 interface Cached {
   id: string
   icon?: string
+  cover?: string
+  created?: string
+  updated?: string
   mtimeMs: number
   /** ikili veri ya da bozuk YAML: dosyaya asla yazılmaz */
   readOnly?: boolean
@@ -122,7 +125,8 @@ export class Vault {
     const c = this.cache.get(file)
     if (c && c.mtimeMs === st.mtimeMs) return c
     const { meta } = splitFrontmatter(await readFile(file, 'utf8'))
-    const entry: Cached = { id: typeof meta['id'] === 'string' ? meta['id'] : '', icon: typeof meta['icon'] === 'string' ? meta['icon'] : undefined, mtimeMs: st.mtimeMs }
+    const str = (k: string) => (typeof meta[k] === 'string' ? (meta[k] as string) : meta[k] instanceof Date ? (meta[k] as Date).toISOString() : undefined)
+    const entry: Cached = { id: str('id') ?? '', icon: str('icon'), cover: str('cover'), created: str('created'), updated: str('updated'), mtimeMs: st.mtimeMs }
     this.cache.set(file, entry)
     return entry
   }
@@ -226,6 +230,25 @@ export class Vault {
       return i === -1 ? Number.MAX_SAFE_INTEGER : i
     }
     return nodes.sort((a, b) => rank(a.id) - rank(b.id) || a.title.localeCompare(b.title, 'tr'))
+  }
+
+  /** Ana sayfa için tüm sayfaların özeti, ağaç sırasıyla (frontmatter önbellekten okunur) */
+  async summaries(): Promise<PageSummary[]> {
+    const out: PageSummary[] = []
+    const walk = async (nodes: TreeNode[], parentId: string | null) => {
+      for (const n of nodes) {
+        const meta = await this.metaOf(join(this.root, n.path))
+        const s: PageSummary = { id: n.id, title: n.title, path: n.path, parentId, childCount: n.children.length }
+        if (n.icon) s.icon = n.icon
+        if (meta.cover) s.cover = meta.cover
+        if (meta.created) s.created = meta.created
+        if (meta.updated) s.updated = meta.updated
+        out.push(s)
+        await walk(n.children, n.id)
+      }
+    }
+    await walk(await this.tree(), null)
+    return out
   }
 
   async read(id: string): Promise<PageData> {

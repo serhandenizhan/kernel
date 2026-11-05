@@ -52,6 +52,25 @@ const CPP_ONLY = /std::|\bcout\b|\bcin\b|#include\s*<(?:iostream|vector|string|m
 // Etiketsiz kodun dilini tahmin eder; emin değilse null
 const MERMAID_START = /^(?:(?:graph|flowchart)\s+(?:TD|TB|LR|RL|BT)\b|(?:sequenceDiagram|classDiagram|stateDiagram(?:-v2)?|erDiagram|gantt|pie|mindmap|journey)\b)/
 
+// Mermaid'in tanıdığı tüm diyagram türleri (açıkça "mermaid" etiketli kodun gerçekten diyagram olup olmadığı için)
+const MERMAID_ANY = /^(?:graph|flowchart|sequenceDiagram|classDiagram(?:-v2)?|stateDiagram(?:-v2)?|erDiagram|gantt|pie|mindmap|journey|timeline|gitGraph|quadrantChart|requirementDiagram|C4(?:Context|Container|Component|Dynamic|Deployment)|sankey(?:-beta)?|xychart(?:-beta)?|block(?:-beta)?|packet(?:-beta)?|architecture(?:-beta)?|kanban|zenuml|radar(?:-beta)?|treemap(?:-beta)?)\b/
+
+/** Kod bir Mermaid diyagramı mı (yorum, %%{init}%% ve --- yapılandırma bloğu atlanır) */
+export function looksLikeMermaid(code: string): boolean {
+  const lines = code.split('\n')
+  let i = 0
+  if (lines[0]?.trim() === '---') {
+    i = lines.findIndex((l, j) => j > 0 && l.trim() === '---') + 1
+    if (i === 0) return false
+  }
+  for (; i < lines.length; i++) {
+    const l = lines[i]!.trim()
+    if (!l || l.startsWith('%%')) continue
+    return MERMAID_ANY.test(l)
+  }
+  return false
+}
+
 export function detectLanguage(code: string): string | null {
   if (!code.trim()) return null
   // Mermaid diyagramları ilk satırlarından tanınır (highlight.js bilmez)

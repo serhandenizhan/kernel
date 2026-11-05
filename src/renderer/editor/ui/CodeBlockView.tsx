@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NodeViewContent, NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
-import { SUPPORTED_LANGUAGES, normalizeLanguage } from '@core/smart-paste/language'
+import { SUPPORTED_LANGUAGES, looksLikeMermaid, normalizeLanguage } from '@core/smart-paste/language'
 import { getLoadedHighlighter, HIGHLIGHT_LANGUAGES, THEMES } from '../../lib/shiki'
 import { MermaidPreview } from './MermaidView'
 
@@ -8,7 +8,8 @@ const CHUNK_LINES = 25
 
 /** Baskı (salt okunur) için: kod 25 satırlık parçalar halinde, devam parçalarında etiket tekrarlanır */
 function StaticCode({ code, language }: { code: string; language: string }) {
-  if (language === 'mermaid') {
+  // içi diyagram olmayan "mermaid" kodu düz kod olarak basılır
+  if (language === 'mermaid' && looksLikeMermaid(code)) {
     return (
       <NodeViewWrapper className="code-block static mermaid-block">
         <MermaidPreview code={code} />
@@ -49,7 +50,8 @@ export function CodeBlockView({ node, updateAttributes, editor }: NodeViewProps)
   const [copied, setCopied] = useState(false)
   const [showCode, setShowCode] = useState(false)
   const lines = node.textContent.split('\n').length
-  const isMermaid = language === 'mermaid'
+  // "mermaid" etiketli ama diyagram olmayan kod (ör. düz metin ağaç) hata yerine kod olarak görünür
+  const isMermaid = language === 'mermaid' && looksLikeMermaid(node.textContent)
   if (!editor.isEditable) return <StaticCode code={node.textContent} language={language} />
 
   return (

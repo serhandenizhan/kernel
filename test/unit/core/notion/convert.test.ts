@@ -117,6 +117,14 @@ describe('yeni ve bilinmeyen Notion blokları', () => {
   })
 })
 
+describe('Notion mermaid kod bloğu', () => {
+  it('içi diyagram olmayan "mermaid" bloğu düz metin olur, gerçek diyagram mermaid kalır', () => {
+    const { c } = ctx()
+    const out = convertBlocks([B.code('Gezegenler\n├── Mars\n└── Venüs', 'mermaid'), B.code('graph TD\n  A-->B', 'mermaid')], c)
+    expect(out.map((n) => n.attrs?.['language'])).toEqual([null, 'mermaid'])
+  })
+})
+
 describe('pageMeta ve blok sayımı', () => {
   it('emoji ikon ve indirilen kapak', () => {
     const { c } = ctx({ 'https://f/kapak.jpg': 'attachments/kapak-1.jpg' })

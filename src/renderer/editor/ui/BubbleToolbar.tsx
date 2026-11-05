@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Editor } from '@tiptap/react'
 import { BubbleMenu } from '@tiptap/react/menus'
+import { NodeSelection } from '@tiptap/pm/state'
 import { ContextMenu } from '../../shell/ContextMenu'
 
 export const HIGHLIGHT_COLORS: { id: string | null; label: string }[] = [
@@ -25,7 +26,7 @@ export function BubbleToolbar({ editor }: { editor: Editor }) {
     <BubbleMenu
       editor={editor}
       pluginKey="bubbleToolbar"
-      shouldShow={({ editor: e, from, to }) => e.isEditable && from !== to && !e.isActive('codeBlock') && !e.isActive('image') && !e.isActive('blockMath')}
+      shouldShow={({ editor: e, from, to, state }) => e.isEditable && from !== to && !(state.selection instanceof NodeSelection && state.selection.node.isBlock) && !e.isActive('codeBlock') && !e.isActive('image') && !e.isActive('blockMath')}
       options={{ placement: 'top' }}
       className="bubble-toolbar glass"
       data-testid="bubble-toolbar"

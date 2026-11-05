@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useEditor, EditorContent, type Editor as TiptapEditor } from '@tiptap/react'
 import { create } from 'zustand'
+import { Selection } from '@tiptap/pm/state'
 import type { PageData, PageMeta } from '@shared/types'
 import { markdownToDoc } from '@core/markdown/parse'
 import { docToMarkdown } from '@core/markdown/serialize'
@@ -16,6 +17,12 @@ import { BubbleToolbar } from './ui/BubbleToolbar'
 import { BlockHandle } from './ui/BlockHandle'
 
 /** Uygulama kapanırken açık sayfanın bekleyen kaydını yapar */
+/** Açılışta imleci ilk metin konumuna koyar; sayfa ayırıcı çizgi ya da görselle başlıyorsa o blok seçilmesin */
+function caretToFirstText(ed: TiptapEditor): void {
+  const sel = Selection.findFrom(ed.state.doc.resolve(0), 1, true)
+  if (sel) ed.view.dispatch(ed.state.tr.setSelection(sel).setMeta('addToHistory', false))
+}
+
 export const activeEditor: { flush: (() => Promise<boolean>) | null; editor: TiptapEditor | null; meta: PageMeta | null; setMeta: ((m: PageMeta) => void) | null } = {
   flush: null,
   editor: null,
@@ -85,6 +92,7 @@ function LiveEditor({ page, initial }: { page: PageData; initial: ReturnType<typ
       extensions: buildExtensions(),
       content: initial,
       autofocus: false,
+      onCreate: ({ editor: ed }) => caretToFirstText(ed),
       editorProps: { attributes: { class: 'kernel-editor', 'data-testid': 'editor', spellcheck: 'true' } },
       onUpdate: ({ editor: ed }) => {
         docRef.current = ed.getJSON()
@@ -126,6 +134,7 @@ function LiveEditor({ page, initial }: { page: PageData; initial: ReturnType<typ
         metaRef.current = fresh.meta
         try {
           editorRef.current.commands.setContent(markdownToDoc(fresh.markdown), { emitUpdate: false })
+          caretToFirstText(editorRef.current)
         } catch {
           useStore.getState().toast('Dosya dışarıda değişti ama okunamadı', 'error')
         }

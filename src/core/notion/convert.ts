@@ -1,5 +1,5 @@
 import type { JSONContent } from '@tiptap/core'
-import { normalizeLanguage } from '../smart-paste/language'
+import { looksLikeMermaid, normalizeLanguage } from '../smart-paste/language'
 import type { NotionBlock, NotionFile, NotionPage, NotionRichText } from './types'
 import { plainText, richTextToInline } from './rich-text'
 
@@ -93,7 +93,10 @@ function convertOne(b: NotionBlock, ctx: ConvertContext): JSONContent[] {
     }
     case 'code': {
       const text = plainText(rt(b))
-      const node: JSONContent = { type: 'codeBlock', attrs: { language: codeLanguage(d['language']), lineNumbers: false } }
+      let language = codeLanguage(d['language'])
+      // Notion'da "mermaid" seçilmiş ama içi diyagram değilse (ör. düz metin ağaç) düz metin olarak gelir
+      if (language === 'mermaid' && !looksLikeMermaid(text)) language = null
+      const node: JSONContent = { type: 'codeBlock', attrs: { language, lineNumbers: false } }
       if (text) node.content = [{ type: 'text', text }]
       return [node]
     }

@@ -866,3 +866,101 @@ mark[data-color='gray'] { --hl: #e3e8ec; }
   border-radius: 6px;
   padding-left: 6px;
 }
+
+/* --- grafikler (```chart): renkler veriden, yazı/eksen/ızgara temadan --- */
+.kchart {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  overflow: visible;
+  font-family: var(--font-ui);
+}
+.kchart text {
+  fill: var(--text-2);
+  font-size: 12px;
+}
+.kchart .kc-title {
+  fill: var(--text);
+  font-size: 15px;
+  font-weight: 650;
+}
+.kchart .kc-value,
+.kchart .kc-total {
+  fill: var(--text);
+  font-weight: 600;
+}
+.kchart .kc-total {
+  font-size: 22px;
+}
+.kchart .kc-slice-label {
+  fill: #fff;
+  font-size: 12px;
+  font-weight: 650;
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.18);
+  stroke-width: 2px;
+}
+.kchart .kc-grid {
+  stroke: color-mix(in srgb, var(--text-3) 22%, transparent);
+  stroke-width: 1;
+}
+.kchart .kc-axis-base,
+.kchart .kc-axis-line {
+  stroke: color-mix(in srgb, var(--text-2) 70%, transparent);
+  stroke-width: 1.4;
+}
+.kchart .kc-axis-name {
+  fill: var(--text);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 14px;
+}
+.kchart .kc-tick {
+  font-size: 11px;
+  fill: var(--text-3);
+}
+.kchart .kc-point-label,
+.kchart .kc-node-label {
+  fill: var(--text);
+  font-weight: 550;
+}
+.kchart .kc-point {
+  stroke: var(--paper-top, #fff);
+  stroke-width: 2;
+}
+.kchart .kc-dot {
+  stroke: var(--paper-top, #fff);
+  stroke-width: 1.5;
+}
+.kchart .kc-guide {
+  stroke: var(--text-3);
+  stroke-dasharray: 3 3;
+}
+.kchart .kc-empty {
+  stroke: var(--text-3);
+  stroke-dasharray: 4 4;
+}
+.kchart .kc-hole {
+  fill: var(--paper-top, #fff);
+}
+.kchart .kc-edge {
+  stroke: color-mix(in srgb, var(--text-2) 75%, transparent);
+  stroke-width: 1.6;
+}
+.kchart .kc-arrow {
+  fill: color-mix(in srgb, var(--text-2) 75%, transparent);
+}
+.kchart .kc-edge-label-bg {
+  fill: var(--paper-top, #fff);
+}
+.kchart .kc-edge-label {
+  font-size: 11px;
+}
+.kchart .kc-bar,
+.kchart .kc-slice {
+  transition: opacity 0.15s ease;
+}
+.kchart .kc-slice {
+  stroke: var(--paper-top, #fff);
+  stroke-width: 2;
+}

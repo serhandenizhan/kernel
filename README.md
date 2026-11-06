@@ -18,7 +18,8 @@
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/home.png" width="860" alt="Kernel ana sayfa">
+  <img src="docs/screenshots/home-dark-tr.png" width="49%" alt="Kernel ana sayfa (koyu tema, Türkçe)">
+  <img src="docs/screenshots/home-light-en.png" width="49%" alt="Kernel home (light theme, English)">
 </p>
 
 ---

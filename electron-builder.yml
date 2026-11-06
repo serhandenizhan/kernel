@@ -22,10 +22,10 @@ mac:
     - target: zip
       arch: arm64
   identity: "-"
+  # dmg kendi adını aşağıda alır; zip bu adı kullanır (Kernel-0.7.0-arm64-mac.zip)
+  artifactName: Kernel-${version}-${arch}-mac.${ext}
   hardenedRuntime: false
   darkModeSupport: true
-zip:
-  artifactName: Kernel-${version}-${arch}-mac.${ext}
 dmg:
   title: Kernel
   artifactName: Kernel-${version}-${arch}.${ext}

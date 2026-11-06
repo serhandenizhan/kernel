@@ -65,6 +65,12 @@ Kernel: lokal, açık kaynak, Markdown tabanlı macOS + Windows not uygulaması 
 - İçindekiler şeridi: `TocPanel` 2+ başlıkta sağ kenarda çizgiler (`toc-rail`), Cmd+Shift+T sabit paneli.
 - Yapıştırma: kod bloğuna çitli metin → `unfence`; HTML'deki SVG'ler `extractSvgs` (`src/core/smart-paste/svg.ts`, temizlenir) → `attachments/*.svg`.
 
+## Notlar (uygulama içi güncelleme, kartlar, yazı tipi)
+- Güncelleme: `parseRelease` `install` alanı (macOS `Kernel-<v>-arm64-mac.zip`, Windows exe). `src/main/update-install.ts` indirir → macOS'ta zip açılır, Info.plist kimliği + sürümü denetlenir, `macSwapScript` uygulama kapanınca paketi değiştirip açar; Windows'ta exe `/S --updated --force-run`. Kurulacak dosya yalnızca ana sürecin son denetiminden gelir. Testler: `KERNEL_TEST_UPDATE_ASSET` (yerel dosya), `KERNEL_TEST_UPDATE_DRYRUN` (plan dosyası; hiçbir şey çalışmaz).
+- Sürüm notları: `docs/release-notes/<etiket>.md` (`<!-- tr -->`/`<!-- en -->`/`<!-- de -->` bölümleri) release iş akışında not olur; `src/core/release-notes.ts` arayüz dilini seçer, GitHub otomatik notunun teknik satırlarını atar.
+- Kartlar: `CardHighlight` (`::` satırı `card-line`/`card-q`/`card-sep`/`card-a`; katlanır kartın DOM'una `data-card` süslemeyle verilir — düğüm görünümü özel özellikleri yazmıyor; boş cevapta `card-empty` ipucu).
+- Yazı tipi: varsayılan `bodyFont: 'plex'` (IBM Plex Sans, `@fontsource-variable/ibm-plex-sans`, uygulamayla gelir); ayar şeması 3.
+
 ## Mimari
 - `src/main` — Electron ana süreç (pencere, kasa, arama, PDF)
 - `src/preload` — `window.kernel` köprüsü

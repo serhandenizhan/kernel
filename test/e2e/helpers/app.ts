@@ -46,3 +46,11 @@ export const isMacOS = process.platform === 'darwin'
 export const keyText = (label: string): string => keyLabel(label, isMacOS)
 /** İmlecin solundaki kelimeyi seçen tuş */
 export const SELECT_WORD_LEFT = isMacOS ? 'Shift+Alt+ArrowLeft' : 'Shift+Control+ArrowLeft'
+
+/** İmleci belgenin sonuna taşır ve yeni satır açar (klavye kısayolu platforma göre değişmesin) */
+export async function newLineAtEnd(win: Page): Promise<void> {
+  await win.evaluate(() => (document.querySelector('.ProseMirror') as unknown as { editor: { commands: { focus(p: string): void } } }).editor.commands.focus('end'))
+  // TipTap odağı bir sonraki karede verir: editör gerçekten odaklanınca devam
+  await win.waitForFunction(() => document.activeElement?.classList.contains('ProseMirror') === true)
+  await win.keyboard.press('Enter')
+}

@@ -1,7 +1,7 @@
 import { test, expect, type Locator } from '@playwright/test'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { launch, tmpVault } from './helpers/app'
+import { launch, newLineAtEnd, tmpVault } from './helpers/app'
 
 // Menüler imlecin / düğmenin yanında açılmalı (sayfa yüzeyinin cam efekti onları kaydırmamalı)
 const box = async (l: Locator) => (await l.boundingBox())!
@@ -116,8 +116,7 @@ test('sayfanın altında "/" menüsü yukarı açılırken satıra bitişik duru
   const { app, win } = await launch(vault)
   await win.getByTestId('tree-row').filter({ hasText: 'Uzun' }).click()
   await win.getByText('satır 59').click()
-  await win.keyboard.press('End')
-  await win.keyboard.press('Enter')
+  await newLineAtEnd(win)
   await win.keyboard.type('/akış')
   const line = await box(win.locator('.kernel-editor p').last())
   const menu = await box(win.getByTestId('slash-menu'))

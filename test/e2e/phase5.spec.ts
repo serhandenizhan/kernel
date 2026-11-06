@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test'
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { launch, tmpVault } from './helpers/app'
+import { launch, newLineAtEnd, tmpVault } from './helpers/app'
 
 const body = (vault: string, file: string) => readFileSync(join(vault, file), 'utf8').replace(/^---[\s\S]*?---\n/, '')
 
@@ -19,9 +19,8 @@ test('kod bloğuna çitli kod yapıştırınca çitler atılır, dil atanır ve 
   writeFileSync(join(vault, 'Kod.md'), 'giriş\n')
   const { app, win } = await launch(vault)
   await win.getByTestId('tree-row').filter({ hasText: 'Kod' }).click()
-  await win.getByText('giriş').click()
-  await win.keyboard.press('End')
-  await win.keyboard.press('Enter')
+  await expect(win.getByText('giriş')).toBeVisible()
+  await newLineAtEnd(win)
   await win.keyboard.type('``` ')
   await paste(win, '```mermaid\nflowchart LR\n  Alfa --> Beta\n```')
   await expect(win.locator('.mermaid-preview svg')).toBeVisible({ timeout: 15_000 })

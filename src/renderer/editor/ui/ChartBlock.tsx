@@ -48,6 +48,14 @@ function NumInput({ value, onValue, ...rest }: { value: number; onValue(n: numbe
   )
 }
 
+/** Palet penceresi ekranda kalsın: altta yer yoksa düğmenin üstünde, sağ kenarı taşmasın */
+const SWATCH_W = 170
+const SWATCH_H = 96
+function swatchPosition(anchor: DOMRect): React.CSSProperties {
+  const left = Math.max(8, Math.min(anchor.left, window.innerWidth - SWATCH_W - 8))
+  return anchor.bottom + 6 + SWATCH_H > window.innerHeight ? { left, bottom: window.innerHeight - anchor.top + 6 } : { left, top: anchor.bottom + 6 }
+}
+
 /** Renk seçici: paletten tıkla ya da özel renk */
 function ColorButton({ value, onChange, testid }: { value: string; onChange(c: string): void; testid: string }) {
   const [anchor, setAnchor] = useState<DOMRect | null>(null)
@@ -63,7 +71,7 @@ function ColorButton({ value, onChange, testid }: { value: string; onChange(c: s
       <button type="button" className="chart-color" data-testid={testid} style={{ background: value }} aria-label={tNow('chart.color')} onClick={(e) => setAnchor(e.currentTarget.getBoundingClientRect())} />
       {anchor &&
         createPortal(
-          <div ref={ref} className="chart-swatches glass glass-pop" style={{ left: anchor.left, top: anchor.bottom + 6 }}>
+          <div ref={ref} className="chart-swatches glass glass-pop" style={swatchPosition(anchor)}>
             {PALETTE.map((c) => (
               <button
                 key={c}

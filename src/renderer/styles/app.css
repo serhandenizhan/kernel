@@ -957,6 +957,9 @@ button {
   color: var(--text);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
 }
+.segment.plex {
+  font-family: var(--font-plex);
+}
 .segment.serif {
   font-family: ui-serif, 'New York', Georgia, serif;
 }

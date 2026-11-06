@@ -58,7 +58,8 @@ export function SettingsDialog() {
               label={t('settings.font')}
               value={settings.bodyFont}
               options={[
-                { value: 'sans', label: 'SF Pro' },
+                { value: 'plex', label: 'IBM Plex', className: 'plex' },
+                { value: 'sans', label: isMac ? 'SF Pro' : 'Segoe UI' },
                 { value: 'serif', label: 'New York', className: 'serif' }
               ]}
               onChange={(bodyFont) => set({ bodyFont })}

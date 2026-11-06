@@ -26,6 +26,7 @@
   --glass-shadow: 0 12px 40px rgba(20, 35, 43, 0.18), 0 2px 8px rgba(20, 35, 43, 0.08);
   --font-ui: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
   --font-body: var(--font-ui);
+  --font-plex: 'IBM Plex Sans Variable', 'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif;
   --font-serif: ui-serif, 'New York', Cambria, Georgia, serif;
   --font-display: -apple-system, 'SF Pro Display', BlinkMacSystemFont, 'Segoe UI Variable Display', 'Segoe UI', sans-serif;
   --font-rounded: ui-rounded, 'SF Pro Rounded', -apple-system, 'Segoe UI Variable Display', 'Segoe UI', sans-serif;
@@ -84,6 +85,9 @@
   --graph-5: #e57a6e;
 }
 
+:root[data-body-font='plex'] {
+  --font-body: var(--font-plex);
+}
 :root[data-body-font='serif'] {
   --font-body: var(--font-serif);
 }

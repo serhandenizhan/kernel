@@ -8,7 +8,7 @@ const file = (root: string) => join(root, '.kernel', 'settings.json')
 // tanınmayan değerler varsayılana döner (elle düzenlenmiş ya da yeni sürümün yazdığı dosya uygulamayı çökertmesin)
 const ALLOWED = {
   theme: ['system', 'light', 'dark'],
-  bodyFont: ['serif', 'sans'],
+  bodyFont: ['plex', 'serif', 'sans'],
   pageWidth: ['narrow', 'normal', 'wide'],
   language: ['system', 'tr', 'en', 'de'],
   startView: ['home', 'last']
@@ -36,7 +36,7 @@ function merge(base: Settings, patch: Partial<Settings>): Settings {
   })
 }
 
-export const SETTINGS_SCHEMA = 2
+export const SETTINGS_SCHEMA = 3
 
 export async function readSettings(root: string): Promise<Settings> {
   let raw: Partial<Settings>
@@ -46,9 +46,9 @@ export async function readSettings(root: string): Promise<Settings> {
     return structuredClone(DEFAULT_SETTINGS)
   }
   const settings = merge(DEFAULT_SETTINGS, raw)
-  // şema 2 göçü: not fontu bir kerelik SF Pro'ya geçer (kullanıcı serif'i beğenmedi, spec §18.1)
+  // şema 3 göçü: not fontu bir kerelik IBM Plex Sans'a geçer (kullanıcı isteği, 2026-11-07; önceki göç SF Pro'ya idi)
   if (!raw.schema || raw.schema < SETTINGS_SCHEMA) {
-    settings.bodyFont = 'sans'
+    settings.bodyFont = 'plex'
     settings.schema = SETTINGS_SCHEMA
     try {
       await writeAtomic(file(root), JSON.stringify(settings, null, 2))

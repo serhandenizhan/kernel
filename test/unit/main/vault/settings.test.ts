@@ -10,19 +10,25 @@ beforeEach(() => {
   mkdirSync(join(root, '.kernel'))
 })
 
-describe('ayar şeması 2', () => {
-  it("şeması olmayan eski ayar bir kerelik SF Pro'ya geçer ve diske yazılır", async () => {
+describe('ayar şeması 3', () => {
+  it("eski ayar bir kerelik IBM Plex Sans'a geçer ve diske yazılır", async () => {
     writeFileSync(join(root, '.kernel', 'settings.json'), JSON.stringify({ bodyFont: 'serif', theme: 'dark' }))
     const s = await readSettings(root)
-    expect(s).toMatchObject({ bodyFont: 'sans', theme: 'dark', schema: 2, language: 'system', startView: 'home' })
-    expect(JSON.parse(readFileSync(join(root, '.kernel', 'settings.json'), 'utf8')).schema).toBe(2)
+    expect(s).toMatchObject({ bodyFont: 'plex', theme: 'dark', schema: 3, language: 'system', startView: 'home' })
+    expect(JSON.parse(readFileSync(join(root, '.kernel', 'settings.json'), 'utf8')).schema).toBe(3)
   })
-  it("şema 2'de kullanıcının serif seçimi korunur", async () => {
-    writeFileSync(join(root, '.kernel', 'settings.json'), JSON.stringify({ bodyFont: 'serif', schema: 2 }))
+  it("şema 2'deki SF Pro seçimi de bir kerelik Plex'e geçer", async () => {
+    writeFileSync(join(root, '.kernel', 'settings.json'), JSON.stringify({ bodyFont: 'sans', schema: 2 }))
+    expect((await readSettings(root)).bodyFont).toBe('plex')
+  })
+  it("şema 3'te kullanıcının seçimi korunur", async () => {
+    writeFileSync(join(root, '.kernel', 'settings.json'), JSON.stringify({ bodyFont: 'serif', schema: 3 }))
     expect((await readSettings(root)).bodyFont).toBe('serif')
+    writeFileSync(join(root, '.kernel', 'settings.json'), JSON.stringify({ bodyFont: 'sans', schema: 3 }))
+    expect((await readSettings(root)).bodyFont).toBe('sans')
   })
   it('ayar dosyası yoksa varsayılanlar (göç yazımı yapılmaz)', async () => {
-    expect(await readSettings(root)).toMatchObject({ bodyFont: 'sans', schema: 2 })
+    expect(await readSettings(root)).toMatchObject({ bodyFont: 'plex', schema: 3 })
     expect(existsSync(join(root, '.kernel', 'settings.json'))).toBe(false)
   })
 })
@@ -36,8 +42,8 @@ describe('writeSettings', () => {
 
 describe('ayar doğrulama', () => {
   it('tanınmayan değerler varsayılana döner', async () => {
-    writeFileSync(join(root, '.kernel', 'settings.json'), JSON.stringify({ schema: 2, language: 'fr', startView: 'x', bodyFont: 'comic', theme: 'pink', pageWidth: 9 }))
-    expect(await readSettings(root)).toMatchObject({ language: 'system', startView: 'home', bodyFont: 'sans', theme: 'system', pageWidth: 'normal' })
+    writeFileSync(join(root, '.kernel', 'settings.json'), JSON.stringify({ schema: 3, language: 'fr', startView: 'x', bodyFont: 'comic', theme: 'pink', pageWidth: 9 }))
+    expect(await readSettings(root)).toMatchObject({ language: 'system', startView: 'home', bodyFont: 'plex', theme: 'system', pageWidth: 'normal' })
   })
   it('yazarken de tanınmayan değer saklanmaz', async () => {
     expect(await writeSettings(root, { language: 'xx' as never })).toMatchObject({ language: 'system' })

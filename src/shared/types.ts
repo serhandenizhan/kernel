@@ -122,7 +122,8 @@ export type Lang = 'tr' | 'en' | 'de'
 
 export interface Settings {
   theme: 'system' | 'light' | 'dark'
-  bodyFont: 'serif' | 'sans'
+  /** plex: IBM Plex Sans (uygulamayla gelir, varsayılan); sans: sistem (SF Pro); serif: New York */
+  bodyFont: 'plex' | 'serif' | 'sans'
   pageWidth: 'narrow' | 'normal' | 'wide'
   paste: PasteSettings
   tips: { enabled: boolean; seen: string[] }
@@ -140,7 +141,7 @@ export interface Settings {
 
 export const DEFAULT_SETTINGS: Settings = {
   theme: 'system',
-  bodyFont: 'sans',
+  bodyFont: 'plex',
   pageWidth: 'normal',
   paste: { stripCitations: true, latexLineHeuristic: true, unfencedCodeHeuristic: true },
   tips: { enabled: true, seen: [] },
@@ -149,7 +150,7 @@ export const DEFAULT_SETTINGS: Settings = {
   language: 'system',
   startView: 'home',
   updates: { check: true, skipped: null },
-  schema: 2
+  schema: 3
 }
 
 /** Yeni sürüm bilgisi (GitHub releases) */

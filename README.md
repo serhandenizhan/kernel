@@ -33,14 +33,14 @@ Kernel, ders notları ve kişisel bilgi için yapılmış, macOS ve Windows'ta �
 - **Rahat yazma** — `/` blok menüsü, başlıklar, listeler, callout'lar, toggle'lar, tablolar, kod blokları ve Mermaid diyagramları.
 - **Formüller** — `$…$` ve `$$…$$` ile LaTeX; akıllı yapıştırma, ChatGPT ya da web sayfalarından kopyalanan formülleri, kodu ve biçimi (başlık, liste, tablo, link) korur.
 - **Bilgi ağı** — `[[` ile sayfalar arası link, her sayfanın altında geri bağlantılar, `#etiket`ler ve tüm notların grafı. Bir sayfanın adını değiştirince linkler kendiliğinden güncellenir.
-- **Grafikler ve diyagramlar** — `/` ile sütun, çizgi, alan, pasta, halka, dağılım, radar grafiği, akış diyagramı ve x,y(,z) koordinat düzlemi; ad, sayı ve renk yazarak doldurulur, sürükleyerek sıralanır.
+- **Grafikler, diyagramlar ve tablolar — çok basit** — `/` yaz, türü seç: sütun, çizgi, alan, pasta, halka, dağılım, radar grafiği, akış diyagramı ya da x,y(,z) koordinat düzlemi. Kod ya da formül yok; her satıra ad ve sayı yaz, renk kutusundan rengini seç, sürükleyerek sırala. Tablolar da `/tablo` ile tek adımda eklenir.
 - **Flashcard'lar** — bir satıra `Soru :: Cevap` yaz ya da `/` menüsünden kart ekle; Kernel kartları FSRS ile aralıklı tekrar takvimine koyar. Sınav modu ve ana sayfada "Bugünün tekrarı".
 - **Ana sayfa** — dersler kartlar halinde, son notlar, sabitlenenler ve etkinlik haritası.
 - **Sekmeler ve bölünmüş ekran**, sağ kenarda açılan içindekiler, komut paleti (⌘P), arama (⌘K), odak modu (⌘⇧F).
 - **Notion'dan geçiş** — sayfaların, alt sayfaların ve görsellerin Markdown'a aktarılır.
 - **Dışa aktarma** — PDF, Markdown ve HTML; gömülü PDF'ler.
 - **Güvence** — otomatik kayıt, sürüm geçmişi, otomatik yedek.
-- **Grafik yapıştırma** — Claude artifact'lerinden kopyalanan grafikler görsel olarak gelir; kod bloğuna yapıştırılan ```` ``` ```` çitleri kendiliğinden atılır.
+- **Yapıştırınca bozulmaz** — Claude artifact'leri ve web sayfalarından kopyaladığın grafikler olduğu gibi, renkleri ve düzeni bozulmadan notuna gelir (görsel olarak kaydedilir). Kod bloğuna yapıştırılan ```` ``` ```` çitleri de kendiliğinden atılır.
 - **Türkçe, İngilizce ve Almanca** arayüz; açık ve koyu tema.
 - **Güncelleme bildirimi** — yeni sürüm çıkınca açılışta sorar.
 
@@ -87,14 +87,14 @@ Kernel is a note app for macOS and Windows, built for lecture notes and personal
 - **Comfortable writing** — `/` block menu, headings, lists, callouts, toggles, tables, code blocks and Mermaid diagrams.
 - **Math** — LaTeX with `$…$` and `$$…$$`; smart paste keeps formulas, code and formatting (headings, lists, tables, links) copied from ChatGPT or web pages.
 - **Knowledge graph** — link pages with `[[`, see backlinks under every page, use `#tags`, and explore a graph of all your notes. Renaming a page updates its links everywhere.
-- **Charts and diagrams** — insert column, line, area, pie, donut, scatter and radar charts, flow diagrams and an x,y(,z) coordinate plane with `/`; fill in names, numbers and colors, drag to reorder.
+- **Charts, diagrams and tables — really simple** — type `/` and pick a type: column, line, area, pie, donut, scatter or radar chart, a flow diagram or an x,y(,z) coordinate plane. No code, no formulas: give each row a name and a number, pick a color, drag to reorder. Tables are one step away with `/table`.
 - **Flashcards** — write `Question :: Answer` on a line or add one from the `/` menu; Kernel schedules cards with FSRS spaced repetition. Exam mode and "Today's review" on the home page.
 - **Home page** — courses as cards, recent notes, pinned pages and an activity map.
 - **Tabs and split view**, a hover table of contents, command palette (⌘P), search (⌘K), focus mode (⌘⇧F).
 - **Move from Notion** — pages, subpages and images are imported as Markdown.
 - **Export** — PDF, Markdown and HTML; embedded PDFs.
 - **Peace of mind** — autosave, version history, automatic backups.
-- **Smart paste for charts** — charts copied from Claude artifacts arrive as images; fenced code pasted into a code block drops its fences.
+- **Pastes stay intact** — charts copied from Claude artifacts and web pages arrive exactly as they looked, colors and layout unchanged (saved as images). Fenced code pasted into a code block drops its fences automatically.
 - **Turkish, English and German** interface; light and dark themes.
 - **Update notice** — asks on launch when a new version is out.
 

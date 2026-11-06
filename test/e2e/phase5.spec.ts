@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
-import { readFileSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { launch, tmpVault } from './helpers/app'
 
@@ -198,5 +199,23 @@ test('artifact gibi HTML içindeki SVG grafik yapıştırılınca görsel olarak
   expect(svg).toContain('#2f8f6f')
   expect(body(vault, 'A.md')).toMatch(/### Skorlar[\s\S]*attachments[\s\S]*Açıklama/)
   await expect(win.locator('.kernel-editor img[src*=".svg"]')).toBeVisible()
+  await app.close()
+})
+
+test('grafik HTML dışa aktarımında vektörel SVG olarak yer alır', async () => {
+  const vault = tmpVault()
+  const out = mkdtempSync(join(tmpdir(), 'kernel-exp-'))
+  writeFileSync(join(vault, 'Rapor.md'), '```chart\n{"type":"pie","series":[{"name":"","color":"#14a38b"}],"rows":[{"label":"Kira","values":[60],"color":"#14a38b"},{"label":"Yemek","values":[40],"color":"#4f7cff"}]}\n```\n')
+  const { app, win } = await launch(vault, { KERNEL_TEST_PDF_DIR: out })
+  await win.getByTestId('tree-row').filter({ hasText: 'Rapor' }).click()
+  await expect(win.getByTestId('chart-block')).toBeVisible()
+  await win.keyboard.press('ControlOrMeta+e')
+  await win.getByTestId('export-format').selectOption('html')
+  await win.getByTestId('pdf-export').click()
+  await expect(win.getByTestId('toast').filter({ hasText: 'kaydedildi' })).toBeVisible({ timeout: 30_000 })
+  const html = readFileSync(join(out, 'Rapor.html'), 'utf8')
+  expect(html).toContain('class="kchart"')
+  expect(html).toContain('Kira')
+  expect(html).not.toContain('&quot;type&quot;:&quot;pie&quot;')
   await app.close()
 })

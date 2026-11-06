@@ -51,7 +51,12 @@ const api: KernelApi = {
   templates: { list: inv(IPC.templatesList), create: inv(IPC.templatesCreate), saveAs: inv(IPC.templatesSaveAs) } as KernelApi['templates'],
   backup: { now: inv(IPC.backupNow), status: inv(IPC.backupStatus), chooseFolder: inv(IPC.backupChooseFolder) } as KernelApi['backup'],
   settings: { get: inv(IPC.settingsGet), set: inv(IPC.settingsSet) } as KernelApi['settings'],
-  updates: { check: inv(IPC.updatesCheck), open: inv(IPC.updatesOpen) } as KernelApi['updates'],
+  updates: {
+    check: inv(IPC.updatesCheck),
+    open: inv(IPC.updatesOpen),
+    install: inv(IPC.updatesInstall),
+    onProgress: (cb: (r: never) => void) => on(IPC.updatesProgress, cb)
+  } as KernelApi['updates'],
   app: {
     locale: inv(IPC.appLocale),
     platform: process.platform,

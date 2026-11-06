@@ -18,9 +18,14 @@ mac:
       arch: arm64
     - target: dmg
       arch: arm64
+    # uygulama içi güncelleme bu zip'i indirir (src/main/update-install.ts)
+    - target: zip
+      arch: arm64
   identity: "-"
   hardenedRuntime: false
   darkModeSupport: true
+zip:
+  artifactName: Kernel-${version}-${arch}-mac.${ext}
 dmg:
   title: Kernel
   artifactName: Kernel-${version}-${arch}.${ext}

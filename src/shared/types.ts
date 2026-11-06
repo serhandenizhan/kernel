@@ -159,6 +159,8 @@ export interface UpdateOffer {
   url: string
   page: string
   notes: string
+  /** uygulama içinde kurulabilir mi (değilse İndir tarayıcıda açar) */
+  install: string | null
   /** çalışan sürüm */
   current: string
 }
@@ -254,6 +256,10 @@ export interface KernelApi {
     check(): Promise<UpdateOffer | null>
     /** indirme adresini varsayılan tarayıcıda açar (yalnızca bu deponun sürüm adresleri) */
     open(url: string): Promise<void>
+    /** son denetimde bulunan sürümü indirip kurar ve yeniden başlatır; kendini güncelleyemiyorsa 'manual' */
+    install(): Promise<'restarting' | 'manual'>
+    /** indirme ilerlemesi (0–1) */
+    onProgress(cb: (ratio: number) => void): () => void
   }
   app: {
     onFlushRequest(cb: () => Promise<boolean>): void

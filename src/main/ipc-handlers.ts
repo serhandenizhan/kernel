@@ -29,6 +29,8 @@ import { ActivityStore } from './activity'
 import { computeHome, localDay } from '@core/home'
 import { isReleaseUrl, shouldOffer } from '@core/update'
 import { fetchLatestRelease } from './updates'
+import { installUpdate } from './update-install'
+import type { UpdateInfo } from '@core/update'
 import { track } from './pending'
 
 // ana sayfa canlı yenilemesi: değişiklikler 500 ms içinde tek olayda birleştirilir
@@ -50,6 +52,8 @@ function notifyLinks(): void {
     broadcast(IPC.eventLinksChanged)
   }, 500)
 }
+
+let lastOffer: UpdateInfo | null = null
 
 function broadcast(channel: string, ...args: unknown[]): void {
   for (const w of BrowserWindow.getAllWindows()) w.webContents.send(channel, ...args)
@@ -399,7 +403,19 @@ export function registerIpc(): void {
     const { updates } = await readSettings(requireVault().root)
     if (!updates.check) return null
     const info = await fetchLatestRelease()
-    return info && shouldOffer(info, app.getVersion(), updates.skipped) ? { ...info, current: app.getVersion() } : null
+    if (!info || !shouldOffer(info, app.getVersion(), updates.skipped)) return null
+    lastOffer = info
+    return { ...info, current: app.getVersion() }
+  })
+  // kurulacak dosya arayüzden alınmaz: yalnızca ana sürecin kendi bulduğu sürüm kurulur
+  h(IPC.updatesInstall, async () => {
+    if (!lastOffer) return 'manual'
+    try {
+      return await installUpdate(lastOffer, (r) => broadcast(IPC.updatesProgress, r))
+    } catch (e) {
+      log.warn(`update install failed: ${String(e)}`)
+      return 'manual'
+    }
   })
   h(IPC.updatesOpen, async (url: string) => {
     // yalnızca bu deponun sürüm adresleri açılır

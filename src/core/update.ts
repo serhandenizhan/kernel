@@ -7,6 +7,8 @@ export interface UpdateInfo {
   /** sürüm sayfası */
   page: string
   notes: string
+  /** uygulama içinde indirilip kurulacak dosya (macOS: zip, Windows: kurulum); yoksa null ve elle indirilir */
+  install: string | null
 }
 
 /** Yalnızca bu deponun adreslerine izin verilir (yanıt bozuk ya da sahte olsa bile başka siteye gidilmez) */
@@ -53,8 +55,16 @@ export function parseRelease(json: unknown, platform: string): UpdateInfo | null
   if (!/^\d+(\.\d+)*/.test(version) || !isReleaseUrl(page)) return null
   const assets = Array.isArray(r['assets']) ? (r['assets'] as Record<string, unknown>[]) : []
   const want = platform === 'win32' ? /\.exe$/i : platform === 'darwin' ? /arm64\.dmg$/i : null
-  const asset = want ? assets.find((a) => want.test(str(a?.['name'])) && isReleaseUrl(str(a?.['browser_download_url']))) : undefined
-  return { version, url: asset ? str(asset['browser_download_url']) : page, page, notes: str(r['body']) }
+  const find = (re: RegExp | null) => (re ? assets.find((a) => re.test(str(a?.['name'])) && isReleaseUrl(str(a?.['browser_download_url']))) : undefined)
+  const asset = find(want)
+  const inst = find(platform === 'win32' ? /\.exe$/i : platform === 'darwin' ? /arm64-mac\.zip$/i : null)
+  return {
+    version,
+    url: asset ? str(asset['browser_download_url']) : page,
+    page,
+    notes: str(r['body']),
+    install: inst ? str(inst['browser_download_url']) : null
+  }
 }
 
 /** Yeni ve atlanmamış sürüm varsa true */
@@ -62,4 +72,34 @@ export function shouldOffer(info: UpdateInfo | null, current: string, skipped: s
   if (!info) return false
   if (skipped && compareVersions(info.version, skipped) === 0) return false
   return compareVersions(info.version, current) > 0
+}
+
+/** macOS: çalışan dosyadan (…/Kernel.app/Contents/MacOS/Kernel) uygulama paketinin yolu */
+export function macBundleFromExe(exe: string): string | null {
+  const m = /^(.+\.app)\/Contents\/MacOS\/[^/]+$/.exec(exe)
+  return m ? m[1]! : null
+}
+
+/** Disk görüntüsünden (/Volumes) ya da macOS'un karantina kopyasından (AppTranslocation) çalışırken paket değiştirilemez */
+export function canSelfUpdate(bundle: string): boolean {
+  return !bundle.startsWith('/Volumes/') && !bundle.includes('/AppTranslocation/')
+}
+
+/**
+ * macOS paket değiştirme betiği: $1 uygulamanın süreç kimliği, $2 kurulu paket, $3 yeni paket.
+ * Uygulama kapanınca eskisini yedeğe alır, yenisini yerine koyar; bir adım başarısız olursa eskisini geri koyar; sonra açar.
+ */
+export function macSwapScript(): string {
+  return [
+    '#!/bin/sh',
+    'i=0',
+    'while kill -0 "$1" 2>/dev/null && [ $i -lt 300 ]; do sleep 0.1; i=$((i+1)); done',
+    'rm -rf "$2.old"',
+    'if mv "$2" "$2.old"; then',
+    '  if mv "$3" "$2"; then rm -rf "$2.old"; else mv "$2.old" "$2"; fi',
+    'fi',
+    'xattr -dr com.apple.quarantine "$2" 2>/dev/null',
+    'open "$2"',
+    ''
+  ].join('\n')
 }

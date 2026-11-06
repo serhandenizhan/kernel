@@ -18,8 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # sürüm zaten varsa (elle oluşturulduysa) dokunulmaz
-      - run: gh release view "$TAG" || gh release create "$TAG" --title "Kernel ${TAG#v}" --generate-notes
+      # sürüm zaten varsa (elle oluşturulduysa) dokunulmaz; docs/release-notes/<etiket>.md varsa not olarak o kullanılır
+      - run: gh release view "$TAG" || gh release create "$TAG" --title "Kernel ${TAG#v}" $( [ -f "docs/release-notes/$TAG.md" ] && echo --notes-file "docs/release-notes/$TAG.md" || echo --generate-notes )
         env:
           GH_TOKEN: ${{ github.token }}
   build:
@@ -30,7 +30,7 @@ jobs:
         include:
           - os: macos-latest
             dist: dist
-            files: release/*.dmg
+            files: release/*.dmg release/*-mac.zip
           - os: windows-latest
             dist: dist:win
             files: release/*.exe

@@ -2,6 +2,8 @@ import type { Editor } from '@tiptap/core'
 import { insertImageFiles } from './nodes/Image'
 import { useMathEdit } from './ui/math-state'
 import { tNow } from '../lib/i18n'
+import { CHART_TYPES, defaultChart, serializeChart, type ChartType } from '@core/charts/spec'
+import { chartFocus, typeLabel } from './ui/ChartBlock'
 
 export interface SlashItem {
   id: string
@@ -28,6 +30,38 @@ const heading = (level: 1 | 2 | 3 | 4 | 5 | 6): SlashItem => ({
   keywords: ['baslik', 'heading', `h${level}`],
   icon: `H${level}`,
   run: (e) => e.chain().focus().setNode('heading', { level }).run()
+})
+
+const CHART_ICON: Record<ChartType, string> = { bar: '▮▮', hbar: '☰', line: '⟋', area: '◭', pie: '◔', donut: '◎', scatter: '⁘', radar: '✶', flow: '⇢', plane: '⊹' }
+const CHART_WORDS: Record<ChartType, string[]> = {
+  bar: ['sutun', 'column', 'bar'],
+  hbar: ['cubuk', 'yatay', 'bar'],
+  line: ['cizgi', 'line', 'trend'],
+  area: ['alan', 'area'],
+  pie: ['pasta', 'pie', 'yuzde', 'dilim'],
+  donut: ['halka', 'donut', 'yuzde'],
+  scatter: ['dagilim', 'scatter', 'nokta'],
+  radar: ['radar', 'orumcek'],
+  flow: ['akis', 'flowchart', 'diyagram', 'adim', 'surec'],
+  plane: ['duzlem', 'koordinat', 'eksen', 'xyz', 'grafik', '3b']
+}
+
+/** Grafik öğesi: kolay düzenlenen örnek veriyle ```chart bloğu ekler, düzenleme paneli açık gelir */
+const chartItem = (type: ChartType): SlashItem => ({
+  id: `chart-${type}`,
+  get label() {
+    return type === 'flow' ? tNow('slash.flow') : type === 'plane' ? tNow('slash.plane') : tNow('slash.chart', { type: typeLabel(type) })
+  },
+  keywords: ['grafik', 'chart', 'diyagram', ...CHART_WORDS[type]],
+  icon: CHART_ICON[type],
+  run: (e) => {
+    const L = { item: tNow('chart.sample.item'), series: tNow('chart.sample.series'), node: tNow('chart.sample.node'), point: tNow('chart.sample.point') }
+    chartFocus.pending = true
+    e.chain()
+      .focus()
+      .insertContent([{ type: 'codeBlock', attrs: { language: 'chart' }, content: [{ type: 'text', text: serializeChart(defaultChart(type, L)) }] }, { type: 'paragraph' }])
+      .run()
+  }
 })
 
 // "/" menüsündeki öğeler (Rehber de bunları listeler)
@@ -115,5 +149,6 @@ export const SLASH_ITEMS: SlashItem[] = [
   { id: 'image', get label() { return tNow('slash.image') }, keywords: ['resim', 'gorsel', 'image', 'foto'], icon: '🖼', run: (e) => pickFiles(e, 'image/*') },
   { id: 'pdf', get label() { return tNow('slash.pdf') }, keywords: ['pdf', 'slayt', 'belge', 'dosya'], icon: '📄', run: (e) => pickFiles(e, 'application/pdf') },
   { id: 'table', get label() { return tNow('slash.table') }, keywords: ['tablo', 'table'], icon: '▦', run: (e) => e.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run() },
-  { id: 'divider', get label() { return tNow('slash.divider') }, keywords: ['cizgi', 'ayirici', 'divider', 'hr'], icon: '—', run: (e) => e.chain().focus().setHorizontalRule().run() }
+  { id: 'divider', get label() { return tNow('slash.divider') }, keywords: ['cizgi', 'ayirici', 'divider', 'hr'], icon: '—', run: (e) => e.chain().focus().setHorizontalRule().run() },
+  ...CHART_TYPES.map(chartItem)
 ]

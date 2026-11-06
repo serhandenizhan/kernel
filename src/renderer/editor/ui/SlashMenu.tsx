@@ -13,10 +13,12 @@ export function SlashMenu() {
   }, [index])
 
   if (!open || !rect) return null
-  const top = rect.bottom + 6 + 320 > window.innerHeight ? Math.max(8, rect.top - 326) : rect.bottom + 6
+  // altta yer yoksa yukarı açılır: alt kenarı satırın hemen üstüne yaslanır (menü kısa da olsa satıra bitişik)
+  const up = rect.bottom + 6 + 320 > window.innerHeight && rect.top > 200
+  const pos = up ? { left: rect.left, bottom: window.innerHeight - rect.top + 6 } : { left: rect.left, top: rect.bottom + 6 }
   // body'ye çizilir: sayfa yüzeyinin cam efekti (backdrop-filter) sabit konumlu menüleri kaydırmasın
   return createPortal(
-    <div className="slash-menu glass glass-pop" data-testid="slash-menu" style={{ left: rect.left, top }} onMouseDown={(e) => e.preventDefault()}>
+    <div className="slash-menu glass glass-pop" data-testid="slash-menu" style={pos} onMouseDown={(e) => e.preventDefault()}>
       {items.length === 0 ? (
         <div className="slash-empty">{tNow('slash.noMatch')}</div>
       ) : (

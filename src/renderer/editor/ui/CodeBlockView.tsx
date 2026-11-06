@@ -3,6 +3,8 @@ import { NodeViewContent, NodeViewWrapper, type NodeViewProps } from '@tiptap/re
 import { looksLikeMermaid } from '@core/smart-paste/language'
 import { getLoadedHighlighter, HIGHLIGHT_LANGUAGES, THEMES } from '../../lib/shiki'
 import { MermaidPreview } from './MermaidView'
+import { ChartBlockView, StaticChart } from './ChartBlock'
+import { parseChart } from '@core/charts/spec'
 import { LanguagePicker, languageLabel as label } from './LanguagePicker'
 import { tNow } from '../../lib/i18n'
 
@@ -10,6 +12,15 @@ const CHUNK_LINES = 25
 
 /** Baskı (salt okunur) için: kod 25 satırlık parçalar halinde, devam parçalarında etiket tekrarlanır */
 function StaticCode({ code, language }: { code: string; language: string }) {
+  const chart = language === 'chart' ? parseChart(code) : null
+  if (chart && 'spec' in chart) {
+    return (
+      <NodeViewWrapper className="code-block static chart-wrap">
+        <StaticChart spec={chart.spec} />
+        <NodeViewContent<'code'> as="code" style={{ display: 'none' }} />
+      </NodeViewWrapper>
+    )
+  }
   // içi diyagram olmayan "mermaid" kodu düz kod olarak basılır
   if (language === 'mermaid' && looksLikeMermaid(code)) {
     return (
@@ -44,7 +55,7 @@ function StaticCode({ code, language }: { code: string; language: string }) {
 
 
 // Kod bloğu: dil seçici (aranabilir), satır numarası, kopyala
-export function CodeBlockView({ node, updateAttributes, editor }: NodeViewProps) {
+export function CodeBlockView({ node, updateAttributes, editor, getPos }: NodeViewProps) {
   const language = (node.attrs['language'] as string | null) ?? ''
   const lineNumbers = Boolean(node.attrs['lineNumbers'])
   const [copied, setCopied] = useState(false)
@@ -53,6 +64,19 @@ export function CodeBlockView({ node, updateAttributes, editor }: NodeViewProps)
   // "mermaid" etiketli ama diyagram olmayan kod (ör. düz metin ağaç) hata yerine kod olarak görünür
   const isMermaid = language === 'mermaid' && looksLikeMermaid(node.textContent)
   if (!editor.isEditable) return <StaticCode code={node.textContent} language={language} />
+  // ```chart: grafik ve düzenleme paneli; JSON bozuksa kod olarak görünür ve uyarı çıkar
+  const chart = language === 'chart' ? parseChart(node.textContent) : null
+  if (chart && 'spec' in chart) {
+    return (
+      <NodeViewWrapper className="code-block chart-wrap" data-language="chart">
+        <ChartBlockView spec={chart.spec} editor={editor} getPos={getPos}>
+          <pre>
+            <NodeViewContent<'code'> as="code" />
+          </pre>
+        </ChartBlockView>
+      </NodeViewWrapper>
+    )
+  }
 
   return (
     <NodeViewWrapper className={`code-block${lineNumbers ? ' with-lines' : ''}`} data-language={language || undefined}>
@@ -77,6 +101,11 @@ export function CodeBlockView({ node, updateAttributes, editor }: NodeViewProps)
           {copied ? tNow('code.copied') : tNow('code.copy')}
         </button>
       </div>
+      {chart && 'error' in chart && (
+        <div className="chart-invalid" data-testid="chart-invalid" contentEditable={false}>
+          {tNow('chart.invalid')}
+        </div>
+      )}
       {isMermaid && !showCode && <MermaidPreview code={node.textContent} />}
       <pre data-lines={lines} style={isMermaid && !showCode ? { display: 'none' } : undefined}>
         {lineNumbers && (

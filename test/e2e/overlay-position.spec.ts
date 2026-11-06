@@ -109,3 +109,20 @@ test('şablondan yeni ders notunda başlık seçili gelir; yazılan ad sayfanın
   await expect.poll(() => existsSync(join(vault, 'Fizik 1.md'))).toBe(true)
   await app.close()
 })
+
+test('sayfanın altında "/" menüsü yukarı açılırken satıra bitişik durur', async () => {
+  const vault = tmpVault()
+  writeFileSync(join(vault, 'Uzun.md'), Array.from({ length: 60 }, (_, i) => `satır ${i}`).join('\n\n') + '\n')
+  const { app, win } = await launch(vault)
+  await win.getByTestId('tree-row').filter({ hasText: 'Uzun' }).click()
+  await win.getByText('satır 59').click()
+  await win.keyboard.press('End')
+  await win.keyboard.press('Enter')
+  await win.keyboard.type('/akış')
+  const line = await box(win.locator('.kernel-editor p').last())
+  const menu = await box(win.getByTestId('slash-menu'))
+  // menü ya hemen altta ya da hemen üstte: arada boşluk yok
+  const gap = menu.y > line.y ? menu.y - (line.y + line.height) : line.y - (menu.y + menu.height)
+  expect(gap).toBeLessThan(24)
+  await app.close()
+})

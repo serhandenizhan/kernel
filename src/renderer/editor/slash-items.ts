@@ -42,6 +42,43 @@ export const SLASH_ITEMS: SlashItem[] = [
   { id: 'bullet', get label() { return tNow('slash.bullet') }, keywords: ['liste', 'madde', 'bullet'], icon: '•', run: (e) => e.chain().focus().toggleBulletList().run() },
   { id: 'ordered', get label() { return tNow('slash.ordered') }, keywords: ['liste', 'numara', 'sirali'], icon: '1.', run: (e) => e.chain().focus().toggleOrderedList().run() },
   { id: 'task', get label() { return tNow('slash.task') }, keywords: ['todo', 'gorev', 'checkbox', 'yapilacak'], icon: '☑', run: (e) => e.chain().focus().toggleTaskList().run() },
+  {
+    id: 'card',
+    get label() { return tNow('slash.card') },
+    keywords: ['kart', 'flashcard', 'soru', 'cevap', 'tekrar', 'card'],
+    icon: '⇄',
+    // "Soru :: Cevap" satırı; soru seçili gelir, yazınca yerine geçer
+    run: (e) => {
+      const q = tNow('slash.cardQuestion')
+      const line = `${q} :: ${tNow('slash.cardAnswer')}`
+      e.chain().focus().setParagraph().insertContent(line).run()
+      const end = e.state.selection.from
+      e.commands.setTextSelection({ from: end - line.length, to: end - line.length + q.length })
+    }
+  },
+  {
+    id: 'cardToggle',
+    get label() { return tNow('slash.cardToggle') },
+    keywords: ['kart', 'katlanir', 'flashcard', 'soru', 'cevap', 'card'],
+    icon: '▸⇄',
+    // katlanır blok: başlık soru, içerik cevap; kart olarak işaretli gelir
+    run: (e) => {
+      e.chain().focus().setDetails().run()
+      const $from = e.state.selection.$from
+      for (let d = $from.depth; d > 0; d--) {
+        if ($from.node(d).type.name === 'details') {
+          const pos = $from.before(d)
+          const sel = e.state.selection
+          e.view.dispatch(e.state.tr.setNodeAttribute(pos, 'card', true))
+          // açık gelsin: özette Enter cevaba geçer
+          const dom = e.view.nodeDOM(pos) as HTMLElement | null
+          dom?.querySelector<HTMLButtonElement>(':scope > button')?.click()
+          e.chain().focus().setTextSelection(sel.from).run()
+          break
+        }
+      }
+    }
+  },
   { id: 'toggle', get label() { return tNow('slash.toggle') }, keywords: ['ac', 'kapa', 'details', 'katlanir'], icon: '▸', run: (e) => e.chain().focus().setDetails().run() },
   { id: 'callout', get label() { return tNow('slash.callout') }, keywords: ['not', 'uyari', 'ipucu', 'kutu'], icon: '💡', run: (e) => e.chain().focus().wrapIn('callout', { type: 'note' }).run() },
   { id: 'quote', get label() { return tNow('slash.quote') }, keywords: ['alinti', 'quote'], icon: '❝', run: (e) => e.chain().focus().toggleBlockquote().run() },

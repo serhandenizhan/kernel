@@ -1,3 +1,5 @@
+import { unfence } from '@core/smart-paste/unfence'
+import { normalizeLanguage } from '@core/smart-paste/language'
 import { Extension, type Editor, type JSONContent } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
@@ -115,7 +117,12 @@ export const SmartPaste = Extension.create<object, SmartPasteStorage>({
             if (!text && !html) return false
             // kod bloğunda her zaman ham metin
             if (editor.isActive('codeBlock')) {
-              view.dispatch(view.state.tr.insertText(text))
+              // tek bir ```dil … ``` bloğu yapıştırıldıysa çit satırları atılır; blokta dil yoksa çitteki dil atanır
+              const fenced = unfence(text)
+              const tr = view.state.tr.insertText(fenced ? fenced.code : text)
+              const block = view.state.selection.$from.parent
+              if (fenced?.lang && !block.attrs['language']) tr.setNodeMarkup(view.state.selection.$from.before(), undefined, { ...block.attrs, language: normalizeLanguage(fenced.lang) })
+              view.dispatch(tr)
               return true
             }
             const result = convertPaste({ text, html: html || undefined }, useStore.getState().settings.paste)

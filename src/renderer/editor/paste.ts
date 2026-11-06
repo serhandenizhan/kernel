@@ -58,6 +58,27 @@ async function downloadRemoteImages(editor: Editor, doc: JSONContent): Promise<v
   }
 }
 
+/** Yapıştırılan SVG grafikleri kasaya .svg görsel olarak kaydeder ve yer tutucu görselleri bağlar */
+async function saveSvgImages(editor: Editor, svgs: string[]): Promise<void> {
+  for (let i = 0; i < svgs.length; i++) {
+    const placeholder = `kernel-svg:${i}`
+    let local: string | null = null
+    try {
+      local = await kernel.attachments.save(new TextEncoder().encode(svgs[i]!), 'svg', 'grafik')
+    } catch {
+      local = null
+    }
+    const tr = editor.state.tr
+    editor.state.doc.descendants((node: PMNode, pos: number) => {
+      if (node.type.name !== 'image' || node.attrs['src'] !== placeholder) return
+      if (local) tr.setNodeMarkup(pos, undefined, { ...node.attrs, src: local })
+      else tr.delete(pos, pos + node.nodeSize)
+    })
+    if (!local) useStore.getState().toast(tNow('editor.imageFailed'), 'error')
+    if (tr.docChanged) editor.view.dispatch(tr)
+  }
+}
+
 // Akıllı yapıştırma: formül/kod algılama, Cmd+Z ile ham metne dönüş, Cmd+Shift+V ile ham yapıştırma
 export const SmartPaste = Extension.create<object, SmartPasteStorage>({
   name: 'smartPaste',
@@ -144,6 +165,7 @@ export const SmartPaste = Extension.create<object, SmartPasteStorage>({
               useStore.getState().toast(tNow('editor.invalidFormulas', { count: n }))
             }
             void downloadRemoteImages(editor, result.doc)
+            if (result.svgs.length) void saveSvgImages(editor, result.svgs)
             window.dispatchEvent(new CustomEvent('kernel:tip', { detail: 'first-paste' }))
             return true
           }

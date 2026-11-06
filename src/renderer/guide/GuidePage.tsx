@@ -172,7 +172,7 @@ export function GuidePage() {
           <p>{t('guide.lang.body')}</p>
         </section>
 
-        {(['links', 'tags', 'tabs', 'cards'] as const).map((k) => (
+        {(['links', 'tags', 'tabs', 'cards', 'charts', 'toc'] as const).map((k) => (
           <section className="guide-section" key={k} data-testid={`guide-${k}`}>
             <h2>{t(`guide.${k}.title`)}</h2>
             <p dangerouslySetInnerHTML={{ __html: t(`guide.${k}.body`) }} />

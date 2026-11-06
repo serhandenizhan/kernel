@@ -33,9 +33,10 @@ Kernel, ders notları ve kişisel bilgi için yapılmış, macOS ve Windows'ta �
 - **Rahat yazma** — `/` blok menüsü, başlıklar, listeler, callout'lar, toggle'lar, tablolar, kod blokları ve Mermaid diyagramları.
 - **Formüller** — `$…$` ve `$$…$$` ile LaTeX; akıllı yapıştırma, ChatGPT ya da web sayfalarından kopyalanan formülleri, kodu ve biçimi (başlık, liste, tablo, link) korur.
 - **Bilgi ağı** — `[[` ile sayfalar arası link, her sayfanın altında geri bağlantılar, `#etiket`ler ve tüm notların grafı. Bir sayfanın adını değiştirince linkler kendiliğinden güncellenir.
-- **Flashcard'lar** — bir satıra `Soru :: Cevap` yaz; Kernel kartları FSRS ile aralıklı tekrar takvimine koyar. Sınav modu ve ana sayfada "Bugünün tekrarı".
+- **Grafikler ve diyagramlar** — `/` ile sütun, çizgi, alan, pasta, halka, dağılım, radar grafiği, akış diyagramı ve x,y(,z) koordinat düzlemi; ad, sayı ve renk yazarak doldurulur, sürükleyerek sıralanır.
+- **Flashcard'lar** — bir satıra `Soru :: Cevap` yaz ya da `/` menüsünden kart ekle; Kernel kartları FSRS ile aralıklı tekrar takvimine koyar. Sınav modu ve ana sayfada "Bugünün tekrarı".
 - **Ana sayfa** — dersler kartlar halinde, son notlar, sabitlenenler ve etkinlik haritası.
-- **Sekmeler ve bölünmüş ekran**, komut paleti (⌘P), arama (⌘K), odak modu (⌘⇧F).
+- **Sekmeler ve bölünmüş ekran**, sağ kenarda açılan içindekiler, komut paleti (⌘P), arama (⌘K), odak modu (⌘⇧F).
 - **Notion'dan geçiş** — sayfaların, alt sayfaların ve görsellerin Markdown'a aktarılır.
 - **Dışa aktarma** — PDF, Markdown ve HTML; gömülü PDF'ler.
 - **Güvence** — otomatik kayıt, sürüm geçmişi, otomatik yedek.
@@ -80,9 +81,10 @@ Kernel is a note app for macOS and Windows, built for lecture notes and personal
 - **Comfortable writing** — `/` block menu, headings, lists, callouts, toggles, tables, code blocks and Mermaid diagrams.
 - **Math** — LaTeX with `$…$` and `$$…$$`; smart paste keeps formulas, code and formatting (headings, lists, tables, links) copied from ChatGPT or web pages.
 - **Knowledge graph** — link pages with `[[`, see backlinks under every page, use `#tags`, and explore a graph of all your notes. Renaming a page updates its links everywhere.
-- **Flashcards** — write `Question :: Answer` on a line; Kernel schedules cards with FSRS spaced repetition. Exam mode and "Today's review" on the home page.
+- **Charts and diagrams** — insert column, line, area, pie, donut, scatter and radar charts, flow diagrams and an x,y(,z) coordinate plane with `/`; fill in names, numbers and colors, drag to reorder.
+- **Flashcards** — write `Question :: Answer` on a line or add one from the `/` menu; Kernel schedules cards with FSRS spaced repetition. Exam mode and "Today's review" on the home page.
 - **Home page** — courses as cards, recent notes, pinned pages and an activity map.
-- **Tabs and split view**, command palette (⌘P), search (⌘K), focus mode (⌘⇧F).
+- **Tabs and split view**, a hover table of contents, command palette (⌘P), search (⌘K), focus mode (⌘⇧F).
 - **Move from Notion** — pages, subpages and images are imported as Markdown.
 - **Export** — PDF, Markdown and HTML; embedded PDFs.
 - **Peace of mind** — autosave, version history, automatic backups.

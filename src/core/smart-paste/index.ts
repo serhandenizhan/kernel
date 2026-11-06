@@ -27,6 +27,8 @@ export interface PasteResult {
   doc: JSONContent
   warnings: PasteWarning[]
   suggestions: PasteSuggestion[]
+  /** yapıştırılan HTML'deki temizlenmiş SVG grafikler; Markdown'da ![](kernel-svg:n) olarak yer tutar */
+  svgs: string[]
 }
 
 // Yapıştırılan metni / HTML'i Kernel belgesine çevirir (spec §7)
@@ -35,8 +37,9 @@ export function convertPaste(input: { text: string; html?: string }, options: Pa
   const suggestions: PasteSuggestion[] = []
 
   let src = input.text
+  const svgs: string[] = []
   if (input.html) {
-    const fromHtml = htmlToMarkdown(input.html)
+    const fromHtml = htmlToMarkdown(input.html, svgs)
     if (fromHtml !== null) src = fromHtml
   }
   src = src.replace(/\r\n?/g, '\n')
@@ -54,7 +57,7 @@ export function convertPaste(input: { text: string; html?: string }, options: Pa
   s = fixFenceLanguages(s)
 
   const doc = markdownToDoc(s)
-  return { markdown: docToMarkdown(doc), doc, warnings, suggestions }
+  return { markdown: docToMarkdown(doc), doc, warnings, suggestions, svgs }
 }
 
 function applyLatexLines(text: string, suggestions: PasteSuggestion[]): string {

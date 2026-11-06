@@ -5,6 +5,7 @@ Kernel: lokal, açık kaynak, Markdown tabanlı macOS + Windows not uygulaması 
 - Spec: `docs/superpowers/specs/2026-11-04-kernel-design.md`
 - Faz 1 planı: `docs/superpowers/plans/2026-11-04-kernel-phase-1-core.md`
 - Faz 4 planı: `docs/superpowers/plans/2026-11-05-kernel-phase-4-knowledge.md`
+- Faz 5 planı: `docs/superpowers/plans/2026-11-06-kernel-phase-5-charts.md`
 
 ## KESİN KURAL: Kullanıcı notları asla repoya girmez
 - Kasa varsayılan olarak `~/Documents/Kernel` (repo dışında). Testler yalnızca `os.tmpdir()` altında geçici kasa kullanır (`KERNEL_VAULT` env).
@@ -58,6 +59,11 @@ Kernel: lokal, açık kaynak, Markdown tabanlı macOS + Windows not uygulaması 
 - Yapıştırma: web HTML'inde başlık/liste/tablo/kalın/link varsa HTML kullanılır (`STRUCTURED`); HTML metnindeki ham LaTeX `rewriteRawMath` ile korunur.
 - Ad çakışması: yeniden adlandırma/taşıma bir başlığı belirsiz yaparsa, başka sayfayı gösteren `[[Ad]]` linkleri `[[Yol/Ad|Ad]]` olarak sabitlenir (`rewriteLinksAfterRelocate`).
 - CI: `.github/workflows/ci.yml` (macOS + Windows testleri), `release.yml` (`v*` etiketiyle dmg + exe yükler).
+
+## Notlar (Faz 5)
+- Grafikler: ```` ```chart ```` kod bloğunda JSON (`src/core/charts/spec.ts`: `parseChart` / `normalizeChart` / `serializeChart` / `defaultChart`; 10 tür). Çizim saf `src/core/charts/render.ts` → SVG metni; tema renkleri CSS sınıflarından (`kc-*`, `blocks.css`). Arayüz `src/renderer/editor/ui/ChartBlock.tsx` (`CodeBlockView` `chart` dilinde çağırır); düzenleme kod bloğunun metnini değiştirir (⌘Z çalışır). "/" grafik öğeleri `slash-items.ts` (`chartFocus` paneli açık getirir). Bozuk JSON kod olarak kalır + `chart-invalid` uyarısı.
+- İçindekiler şeridi: `TocPanel` 2+ başlıkta sağ kenarda çizgiler (`toc-rail`), Cmd+Shift+T sabit paneli.
+- Yapıştırma: kod bloğuna çitli metin → `unfence`; HTML'deki SVG'ler `extractSvgs` (`src/core/smart-paste/svg.ts`, temizlenir) → `attachments/*.svg`.
 
 ## Mimari
 - `src/main` — Electron ana süreç (pencere, kasa, arama, PDF)

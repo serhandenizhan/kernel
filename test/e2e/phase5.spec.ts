@@ -176,3 +176,27 @@ test('koordinat düzleminde z ekseni açılıp kapanır; akış diyagramına ad�
   await expect(flow.locator('.kc-edge')).toHaveCount(5)
   await app.close()
 })
+
+test('artifact gibi HTML içindeki SVG grafik yapıştırılınca görsel olarak kasaya kaydedilir', async () => {
+  const vault = tmpVault()
+  writeFileSync(join(vault, 'A.md'), 'giriş\n')
+  const { app, win } = await launch(vault)
+  await win.getByTestId('tree-row').filter({ hasText: 'A' }).click()
+  await win.getByText('giriş').click()
+  await win.keyboard.press('End')
+  await win.keyboard.press('Enter')
+  const html = '<h3>Skorlar</h3><svg viewBox="0 0 400 120"><rect x="10" y="10" width="300" height="30" fill="var(--olumlu, #2f8f6f)"/><text x="320" y="30" fill="currentColor">−2,37</text></svg><p>Açıklama</p>'
+  await win.evaluate((html) => {
+    const dt = new DataTransfer()
+    dt.setData('text/plain', 'Skorlar\n−2,37\nAçıklama')
+    dt.setData('text/html', html)
+    document.activeElement!.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }))
+  }, html)
+  await expect.poll(() => body(vault, 'A.md'), { timeout: 5000 }).toMatch(/!\[\]\(attachments\/[^)]+\.svg\)/)
+  const file = /attachments\/([^)]+\.svg)/.exec(body(vault, 'A.md'))![1]!
+  const svg = readFileSync(join(vault, 'attachments', file), 'utf8')
+  expect(svg).toContain('#2f8f6f')
+  expect(body(vault, 'A.md')).toMatch(/### Skorlar[\s\S]*attachments[\s\S]*Açıklama/)
+  await expect(win.locator('.kernel-editor img[src*=".svg"]')).toBeVisible()
+  await app.close()
+})

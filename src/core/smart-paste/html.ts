@@ -6,9 +6,10 @@ import remarkStringify from 'remark-stringify'
 import { toText } from 'hast-util-to-text'
 import type { Element, Root as HastRoot, ElementContent } from 'hast'
 import { isArtifactHtml, rewriteArtifact, type CalloutItem } from './artifact'
+import { extractSvgs } from './svg'
 
 // formül / kod ya da web sayfası biçimi (başlık, liste, tablo, alıntı, kalın, eğik, link) varsa HTML kullanılır; düz sarmalayıcıda düz metin
-const STRUCTURED = /application\/x-tex|math\/tex|<pre[\s>]|class="[^"]*\bkatex\b|<(h[1-6]|ul|ol|table|blockquote|strong|b|em|i|a)[\s>]/i
+const STRUCTURED = /application\/x-tex|math\/tex|<pre[\s>]|class="[^"]*\bkatex\b|<(h[1-6]|ul|ol|table|blockquote|strong|b|em|i|a|svg)[\s>]/i
 const placeholder = (n: number) => `KERNELMATH${n}X`
 
 const hasClass = (el: Element, name: string) => {
@@ -86,13 +87,15 @@ function tighten(n: MdNode): void {
 }
 
 // Zengin panodan gelen HTML'i Markdown'a çevirir; yapılandırılmış içerik (formül/kod) yoksa null
-export function htmlToMarkdown(html: string): string | null {
+export function htmlToMarkdown(html: string, svgs?: string[]): string | null {
   const artifact = isArtifactHtml(html)
   if (!STRUCTURED.test(html) && !artifact) return null
   const hast = unified().use(rehypeParse, { fragment: true }).parse(html)
   const items: MathItem[] = []
   rewriteMath(hast, items)
   rewriteRawMath(hast, items)
+  // SVG grafikler görsel olarak saklanmak üzere ayrılır (svgs verildiyse)
+  if (svgs) extractSvgs(hast, (n) => `KERNELSVG${n}X`, svgs)
   const callouts: CalloutItem[] = []
   if (artifact) rewriteArtifact(hast, callouts)
   const mdast = unified().use(rehypeRemark).runSync(hast)
@@ -104,6 +107,7 @@ export function htmlToMarkdown(html: string): string | null {
       const item = items[Number(n)]!
       return item.display ? `\n\n$$\n${item.latex}\n$$\n\n` : `$${item.latex}$`
     })
+    .replace(/KERNELSVG(\d+)X/g, (_, n: string) => `\n\n![](kernel-svg:${n})\n\n`)
     .replace(/KERNELCALLOUT(\d+)X/g, (_, n: string) => {
       const c = callouts[Number(n)]!
       return `[!${c.type}]${c.title ? ` ${c.title}` : ''}`

@@ -1196,3 +1196,62 @@ html:not([data-platform='darwin']) body {
 html:not([data-platform='darwin']) .sidebar-drag {
   height: 28px;
 }
+
+/* --- içindekiler şeridi: sağ kenarda ince çizgiler, üzerine gelince cam liste --- */
+.toc-rail {
+  position: absolute;
+  top: calc(var(--page-inset) + 120px);
+  right: calc(var(--page-inset) + 6px);
+  z-index: 20;
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 10px 8px 24px;
+}
+.toc-lines {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 9px;
+  padding: 4px 0;
+  transition: opacity 0.15s ease;
+}
+.toc-line {
+  height: 2px;
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--text-3) 55%, transparent);
+}
+.toc-line.active {
+  background: var(--accent);
+}
+.toc-pop {
+  position: absolute;
+  top: 0;
+  right: 4px;
+  width: 230px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 8px 6px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(6px);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    visibility 0.15s;
+}
+.toc-rail:hover .toc-pop,
+.toc-rail:focus-within .toc-pop {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+.toc-rail:hover .toc-lines,
+.toc-rail:focus-within .toc-lines {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .toc-pop,
+  .toc-lines {
+    transition: none;
+  }
+}

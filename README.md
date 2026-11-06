@@ -40,12 +40,18 @@ Kernel, ders notları ve kişisel bilgi için yapılmış, macOS ve Windows'ta �
 - **Notion'dan geçiş** — sayfaların, alt sayfaların ve görsellerin Markdown'a aktarılır.
 - **Dışa aktarma** — PDF, Markdown ve HTML; gömülü PDF'ler.
 - **Güvence** — otomatik kayıt, sürüm geçmişi, otomatik yedek.
+- **Grafik yapıştırma** — Claude artifact'lerinden kopyalanan grafikler görsel olarak gelir; kod bloğuna yapıştırılan ```` ``` ```` çitleri kendiliğinden atılır.
 - **Türkçe, İngilizce ve Almanca** arayüz; açık ve koyu tema.
 - **Güncelleme bildirimi** — yeni sürüm çıkınca açılışta sorar.
 
 <p align="center">
   <img src="docs/screenshots/editor.png" width="49%" alt="Editör">
   <img src="docs/screenshots/graph.png" width="49%" alt="Graf görünümü">
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/charts.png" width="49%" alt="Grafik ve kolay düzenleme paneli">
+  <img src="docs/screenshots/diagrams.png" width="49%" alt="Akış diyagramı, 3B koordinat düzlemi ve içindekiler">
 </p>
 
 ### Kurulum
@@ -88,8 +94,14 @@ Kernel is a note app for macOS and Windows, built for lecture notes and personal
 - **Move from Notion** — pages, subpages and images are imported as Markdown.
 - **Export** — PDF, Markdown and HTML; embedded PDFs.
 - **Peace of mind** — autosave, version history, automatic backups.
+- **Smart paste for charts** — charts copied from Claude artifacts arrive as images; fenced code pasted into a code block drops its fences.
 - **Turkish, English and German** interface; light and dark themes.
 - **Update notice** — asks on launch when a new version is out.
+
+<p align="center">
+  <img src="docs/screenshots/charts.png" width="49%" alt="Chart with the easy editor">
+  <img src="docs/screenshots/diagrams.png" width="49%" alt="Flow diagram, 3D coordinate plane and table of contents">
+</p>
 
 ### Install
 

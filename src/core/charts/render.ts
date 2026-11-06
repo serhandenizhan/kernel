@@ -383,37 +383,85 @@ export function layoutFlow(s: ChartSpec): { nodes: FlowBox[]; width: number; hei
   return { nodes: boxes, width: lr ? mainTotal : crossTotal, height: lr ? crossTotal : mainTotal }
 }
 
+/** Dik açılı, köşeleri yuvarlatılmış çizgi */
+function roundedPath(pts: [number, number][], r = 10): string {
+  let d = `M${r2(pts[0]![0])} ${r2(pts[0]![1])}`
+  for (let i = 1; i < pts.length - 1; i++) {
+    const [px, py] = pts[i - 1]!
+    const [cx, cy] = pts[i]!
+    const [nx, ny] = pts[i + 1]!
+    const k1 = Math.min(r, Math.hypot(cx - px, cy - py) / 2)
+    const k2 = Math.min(r, Math.hypot(nx - cx, ny - cy) / 2)
+    const sx = cx - Math.sign(cx - px) * k1
+    const sy = cy - Math.sign(cy - py) * k1
+    const ex = cx + Math.sign(nx - cx) * k2
+    const ey = cy + Math.sign(ny - cy) * k2
+    d += ` L${r2(sx)} ${r2(sy)} Q${r2(cx)} ${r2(cy)} ${r2(ex)} ${r2(ey)}`
+  }
+  const last = pts[pts.length - 1]!
+  return `${d} L${r2(last[0])} ${r2(last[1])}`
+}
+
 function flow(s: ChartSpec): string {
   const lay = layoutFlow(s)
   const top = s.title ? 40 : 0
-  const width = Math.max(W, lay.width)
-  const height = Math.max(120, lay.height + top)
-  const dx = (width - lay.width) / 2
-  const box = new Map(lay.nodes.map((b) => [b.id, { ...b, x: b.x + dx, y: b.y + top }]))
   const lr = s.direction !== 'TB'
+  // geri dönen bağlantılar diyagramın dışından (LR: alttan, TB: sağdan) dolaşır; onlara yer açılır
+  const hasBack = s.edges.some((e) => {
+    const a = lay.nodes.find((n) => n.id === e.from)
+    const b = lay.nodes.find((n) => n.id === e.to)
+    return a && b && (lr ? b.x <= a.x : b.y <= a.y)
+  })
+  const width = Math.max(W, lay.width + (hasBack ? 50 : 0))
+  const height = Math.max(120, lay.height + top + (hasBack && lr ? 40 : 0))
+  const dx = (width - lay.width - (hasBack ? 50 : 0)) / 2
+  const box = new Map(lay.nodes.map((b) => [b.id, { ...b, x: b.x + dx, y: b.y + top }]))
+  const outerBottom = Math.max(0, ...[...box.values()].map((b) => b.y + b.h / 2)) + 26
+  const outerRight = Math.max(0, ...[...box.values()].map((b) => b.x + b.w / 2)) + 30
   const parts: string[] = []
   for (const e of s.edges) {
     const a = box.get(e.from)
     const b = box.get(e.to)
     if (!a || !b) continue
     const forward = lr ? b.x > a.x : b.y > a.y
-    const [x1, y1] = lr ? [a.x + (forward ? a.w / 2 : 0), a.y + (forward ? 0 : a.h / 2)] : [a.x + (forward ? 0 : a.w / 2), a.y + (forward ? a.h / 2 : 0)]
-    const [x2, y2] = lr ? [b.x - (forward ? b.w / 2 : 0), b.y + (forward ? 0 : b.h / 2)] : [b.x + (forward ? 0 : b.w / 2), b.y - (forward ? b.h / 2 : 0)]
-    const bend = forward ? 0.5 : 1.4
-    const d = lr
-      ? `M${r2(x1)} ${r2(y1)} C${r2(x1 + (x2 - x1) * bend + (forward ? 0 : 40))} ${r2(y1 + (forward ? 0 : 50))} ${r2(x2 - (x2 - x1) * (forward ? bend : 0) - (forward ? 0 : 40))} ${r2(y2 + (forward ? 0 : 50))} ${r2(x2)} ${r2(y2)}`
-      : `M${r2(x1)} ${r2(y1)} C${r2(x1 + (forward ? 0 : 60))} ${r2(y1 + (y2 - y1) * bend)} ${r2(x2 + (forward ? 0 : 60))} ${r2(y2 - (y2 - y1) * (forward ? bend : 0))} ${r2(x2)} ${r2(y2)}`
+    let d: string
+    let x1: number
+    let y1: number
+    let x2: number
+    let y2: number
+    // ok ucunun yönü (birim vektör)
+    let ux: number
+    let uy: number
+    if (forward) {
+      ;[x1, y1] = lr ? [a.x + a.w / 2, a.y] : [a.x, a.y + a.h / 2]
+      ;[x2, y2] = lr ? [b.x - b.w / 2, b.y] : [b.x, b.y - b.h / 2]
+      d = lr
+        ? `M${r2(x1)} ${r2(y1)} C${r2((x1 + x2) / 2)} ${r2(y1)} ${r2((x1 + x2) / 2)} ${r2(y2)} ${r2(x2)} ${r2(y2)}`
+        : `M${r2(x1)} ${r2(y1)} C${r2(x1)} ${r2((y1 + y2) / 2)} ${r2(x2)} ${r2((y1 + y2) / 2)} ${r2(x2)} ${r2(y2)}`
+      ;[ux, uy] = lr ? [1, 0] : [0, 1]
+    } else if (lr) {
+      // a'nın sağından çık, diyagramın altından dolaş, b'ye alttan gir (kutuların içinden geçmez)
+      const xr = a.x + a.w / 2 + 22
+      ;[x1, y1] = [a.x + a.w / 2, a.y]
+      ;[x2, y2] = [b.x, b.y + b.h / 2]
+      d = roundedPath([[x1, y1], [xr, y1], [xr, outerBottom], [x2, outerBottom], [x2, y2]])
+      ;[ux, uy] = [0, -1]
+    } else {
+      // a'nın altından çık, diyagramın sağından dolaş, b'ye sağdan gir
+      const yb = a.y + a.h / 2 + 22
+      ;[x1, y1] = [a.x, a.y + a.h / 2]
+      ;[x2, y2] = [b.x + b.w / 2, b.y]
+      d = roundedPath([[x1, y1], [x1, yb], [outerRight, yb], [outerRight, y2], [x2, y2]])
+      ;[ux, uy] = [-1, 0]
+    }
     parts.push(`<path class="kc-edge" d="${d}" fill="none"/>`)
-    // ok ucu: son teğete göre
-    const ang = forward ? (lr ? 0 : Math.PI / 2) : lr ? Math.PI / 2 : 0
-    const ux = Math.cos(ang)
-    const uy = Math.sin(ang)
     const p1 = `${r2(x2 - ux * 9 - uy * 5)},${r2(y2 - uy * 9 + ux * 5)}`
     const p2 = `${r2(x2 - ux * 9 + uy * 5)},${r2(y2 - uy * 9 - ux * 5)}`
     parts.push(`<polygon class="kc-arrow" points="${r2(x2)},${r2(y2)} ${p1} ${p2}"/>`)
     if (e.label) {
-      const mx = (x1 + x2) / 2
-      const my = (y1 + y2) / 2
+      // geri bağlantıda etiket dış koridorun ortasında
+      const mx = forward ? (x1 + x2) / 2 : lr ? (x1 + x2) / 2 : outerRight
+      const my = forward ? (y1 + y2) / 2 : lr ? outerBottom : (y1 + y2) / 2
       const lw = Math.min(e.label.length, 18) * 6.4 + 12
       parts.push(`<rect class="kc-edge-label-bg" x="${r2(mx - lw / 2)}" y="${r2(my - 10)}" width="${r2(lw)}" height="18" rx="5"/>`, text(mx, my + 3, trunc(e.label, 18), 'kc-edge-label'))
     }

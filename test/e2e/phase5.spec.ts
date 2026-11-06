@@ -57,6 +57,28 @@ test('"/" menüsünden soru-cevap kartı ve katlanır kart eklenir; çalışma e
   await app.close()
 })
 
+test('kartlar editörde kart olarak görünür; boş cevapta ipucu ve eklenince bilgi çıkar', async () => {
+  const vault = tmpVault()
+  writeFileSync(join(vault, 'Kart.md'), 'Başkent :: Ankara\n\ndüz satır\n')
+  const { app, win } = await launch(vault)
+  await win.getByTestId('tree-row').filter({ hasText: 'Kart' }).click()
+  await expect(win.locator('.ProseMirror p.card-line')).toHaveCount(1)
+  await expect(win.locator('.ProseMirror .card-q')).toHaveText('Başkent')
+  await expect(win.locator('.ProseMirror .card-a')).toHaveText('Ankara')
+  await newLineAtEnd(win)
+  await win.keyboard.type('/katlan')
+  await win.getByTestId('slash-item').filter({ hasText: 'Katlanır kart' }).click()
+  await expect(win.getByTestId('toast').last()).toContainText('Çalışma')
+  await win.keyboard.type('Soru')
+  await win.keyboard.press('Enter')
+  // özetteki Enter boş cevap satırına geçer, ikinci boş satır açmaz
+  await expect(win.locator('.details[data-card] p.card-empty')).toHaveCount(1)
+  await expect(win.locator('.details[data-card] p.card-empty')).toHaveAttribute('data-placeholder', /cevab/i)
+  await win.keyboard.type('Cevap')
+  await expect(win.locator('.details[data-card] [data-type="detailsContent"] p')).toHaveCount(1)
+  await app.close()
+})
+
 test('içindekiler: sağ kenarda başlık çizgileri, üzerine gelince liste açılır ve tıklayınca kaydırır', async () => {
   const vault = tmpVault()
   const filler = Array.from({ length: 40 }, (_, i) => `Paragraf ${i}`).join('\n\n')

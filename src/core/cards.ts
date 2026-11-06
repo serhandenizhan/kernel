@@ -58,3 +58,15 @@ export function extractCards(pageId: string, markdown: string): Card[] {
   for (const m of prose.join('\n').matchAll(CARD_TOGGLE)) add(m[1]!, m[2]!)
   return out
 }
+
+export interface CardLineParts { qFrom: number; qTo: number; sepFrom: number; sepTo: number; aFrom: number; aTo: number }
+
+/** Editörde vurgulamak için "Soru :: Cevap" satırının parçalarının konumları; kart değilse null */
+export function cardLineSplit(line: string): CardLineParts | null {
+  const m = /^(\s*(?:[-*+]\s+|\d+\.\s+)?)(.+?)(\s+::\s+)(.+?)\s*$/.exec(line)
+  if (!m || !m[2]!.trim() || !m[4]!.trim()) return null
+  const qFrom = m[1]!.length
+  const qTo = qFrom + m[2]!.length
+  const sepTo = qTo + m[3]!.length
+  return { qFrom, qTo, sepFrom: qTo, sepTo, aFrom: sepTo, aTo: sepTo + m[4]!.length }
+}

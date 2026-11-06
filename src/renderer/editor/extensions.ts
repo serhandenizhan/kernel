@@ -12,6 +12,7 @@ import { KernelImage } from './nodes/Image'
 import { SlashCommand } from './nodes/SlashCommand'
 import { WikiPicker } from './nodes/WikiPicker'
 import { TagHighlight } from './nodes/TagHighlight'
+import { CardHighlight } from './nodes/CardHighlight'
 import { SmartPaste } from './paste'
 import { WikiLink } from './nodes/WikiLink'
 import { PdfEmbed } from './nodes/PdfEmbed'
@@ -37,6 +38,7 @@ export interface ExtensionOptions {
 export function buildExtensions(opts: ExtensionOptions = {}): AnyExtension[] {
   const list: AnyExtension[] = [
     TagHighlight,
+    CardHighlight,
     StarterKit.configure({ codeBlock: false, heading: { levels: [1, 2, 3, 4, 5, 6] }, link: { openOnClick: false, autolink: true } }),
     KernelCodeBlock,
     TaskList,
@@ -61,6 +63,22 @@ export function buildExtensions(opts: ExtensionOptions = {}): AnyExtension[] {
           ...this.parent?.(),
           card: { default: false, renderHTML: (a: { card?: boolean }) => (a.card ? { 'data-card': '' } : {}) },
           heading: { default: null, renderHTML: (a: { heading?: number | null }) => (a.heading ? { 'data-heading': String(a.heading) } : {}) }
+        }
+      },
+      addKeyboardShortcuts() {
+        return {
+          ...this.parent?.(),
+          // açık blokta özetteki Enter: içerik boş bir satırla başlıyorsa yeni satır açmadan oraya geçer
+          Enter: ({ editor }) => {
+            const { $head } = editor.state.selection
+            if ($head.parent.type.name !== 'detailsSummary') return false
+            const content = editor.state.doc.nodeAt($head.after())
+            const first = content?.firstChild
+            const dom = editor.view.nodeDOM($head.before(-1)) as HTMLElement | null
+            if (!content || content.type.name !== 'detailsContent' || !first || first.type.name !== 'paragraph' || first.content.size > 0) return false
+            if (!dom?.classList.contains('is-open')) return false
+            return editor.commands.setTextSelection($head.after() + 2)
+          }
         }
       }
     }),

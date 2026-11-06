@@ -1,3 +1,4 @@
+import { useStore } from '../state/store'
 import type { Editor } from '@tiptap/core'
 import { insertImageFiles } from './nodes/Image'
 import { useMathEdit } from './ui/math-state'
@@ -88,6 +89,7 @@ export const SLASH_ITEMS: SlashItem[] = [
       e.chain().focus().setParagraph().insertContent(line).run()
       const end = e.state.selection.from
       e.commands.setTextSelection({ from: end - line.length, to: end - line.length + q.length })
+      useStore.getState().toast(tNow('card.added'))
     }
   },
   {
@@ -108,6 +110,7 @@ export const SLASH_ITEMS: SlashItem[] = [
           const dom = e.view.nodeDOM(pos) as HTMLElement | null
           dom?.querySelector<HTMLButtonElement>(':scope > button')?.click()
           e.chain().focus().setTextSelection(sel.from).run()
+          useStore.getState().toast(tNow('card.added'))
           break
         }
       }

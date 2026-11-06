@@ -42,3 +42,18 @@ describe('cardId', () => {
     expect(cardId('P', 'a')).not.toBe(cardId('P', 'b'))
   })
 })
+
+import { cardLineSplit } from '@core/cards'
+describe('cardLineSplit', () => {
+  it('soru, ayraç ve cevabın konumlarını verir', () => {
+    expect(cardLineSplit('Başkent :: Ankara')).toEqual({ qFrom: 0, qTo: 7, sepFrom: 7, sepTo: 11, aFrom: 11, aTo: 17 })
+  })
+  it('madde işaretli satırda soru işaretten sonra başlar', () => {
+    expect(cardLineSplit('- Soru :: Cevap')?.qFrom).toBe(2)
+  })
+  it('cevap ya da soru yoksa null', () => {
+    expect(cardLineSplit('Soru ::')).toBeNull()
+    expect(cardLineSplit(':: Cevap')).toBeNull()
+    expect(cardLineSplit('düz metin')).toBeNull()
+  })
+})

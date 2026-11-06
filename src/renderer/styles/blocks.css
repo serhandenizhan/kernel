@@ -860,11 +860,38 @@ mark[data-color='gray'] { --hl: #e3e8ec; }
   margin: 0;
 }
 
-/* flashcard olarak işaretlenmiş toggle */
+/* flashcard olarak işaretlenmiş toggle: soldaki vurgu + kart simgesi */
 .kernel-editor .details[data-card] {
+  position: relative;
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
   box-shadow: inset 3px 0 0 var(--accent);
-  border-radius: 6px;
-  padding-left: 6px;
+  border-radius: 8px;
+  padding: 2px 8px 2px 6px;
+}
+.kernel-editor .details[data-card]::before,
+.kernel-editor p.card-line::before {
+  content: '⇄';
+  position: absolute;
+  left: -22px;
+  top: 0.15em;
+  font-size: 13px;
+  color: var(--accent);
+  opacity: 0.85;
+}
+/* "Soru :: Cevap" satırı */
+.kernel-editor p.card-line {
+  position: relative;
+}
+.kernel-editor .card-q {
+  font-weight: 600;
+}
+.kernel-editor .card-sep {
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+.kernel-editor .card-a {
+  color: var(--text-2);
 }
 
 /* --- grafikler (```chart): renkler veriden, yazı/eksen/ızgara temadan --- */
@@ -1216,4 +1243,8 @@ mark[data-color='gray'] { --hl: #e3e8ec; }
 .chart-canvas .kchart {
   max-height: 420px;
   margin: 0 auto;
+}
+/* liste içinde madde işaretiyle çakışmasın */
+.kernel-editor li p.card-line::before {
+  display: none;
 }

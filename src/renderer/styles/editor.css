@@ -73,7 +73,8 @@
 .kernel-editor p {
   margin: 0;
 }
-.kernel-editor p.is-editor-empty:first-child::before {
+.kernel-editor p.is-editor-empty:first-child::before,
+.kernel-editor p.card-empty::before {
   content: attr(data-placeholder);
   float: left;
   height: 0;

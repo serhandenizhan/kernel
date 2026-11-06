@@ -39,6 +39,8 @@ export const editor = {
   'slash.card': ['Soru-cevap kartı', 'Question–answer card', 'Frage-Antwort-Karte'],
   'slash.cardToggle': ['Katlanır kart', 'Collapsible card', 'Aufklappbare Karte'],
   'slash.cardQuestion': ['Soru', 'Question', 'Frage'],
+  'card.answerHint': ['Cevabı buraya yaz', 'Write the answer here', 'Antwort hier eingeben'],
+  'card.added': ['Kart eklendi. Soldaki Çalışma bölümünden tekrar edebilirsin.', 'Card added. Review it from Study in the sidebar.', 'Karte hinzugefügt. Wiederhole sie unter Lernen in der Seitenleiste.'],
   'slash.cardAnswer': ['Cevap', 'Answer', 'Antwort'],
   'slash.callout': ['Callout', 'Callout', 'Hinweis'],
   'slash.quote': ['Alıntı', 'Quote', 'Zitat'],

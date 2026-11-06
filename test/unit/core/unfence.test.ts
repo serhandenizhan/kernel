@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { unfence } from '@core/smart-paste/unfence'
+import { shouldUnfence, unfence } from '@core/smart-paste/unfence'
 
 describe('unfence', () => {
   it('strips a single wrapping fence and returns its language', () => {
@@ -13,5 +13,14 @@ describe('unfence', () => {
     expect(unfence('a\n```js\nx\n```')).toBeNull()
     expect(unfence('```js\nx\n```\n```js\ny\n```')).toBeNull()
     expect(unfence('düz metin')).toBeNull()
+  })
+})
+
+describe('shouldUnfence', () => {
+  it('keeps fences when the block itself is markdown or plain text', () => {
+    expect(shouldUnfence('markdown')).toBe(false)
+    expect(shouldUnfence('md')).toBe(false)
+    expect(shouldUnfence('mermaid')).toBe(true)
+    expect(shouldUnfence(null)).toBe(true)
   })
 })

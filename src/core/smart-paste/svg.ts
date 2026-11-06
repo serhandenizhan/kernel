@@ -2,10 +2,39 @@ import { toHtml } from 'hast-util-to-html'
 import type { Element, ElementContent, Root as HastRoot } from 'hast'
 
 // Yapıştırılan HTML'deki SVG grafikler (ör. Claude artifact) görsel dosyası olarak saklanmak üzere ayıklanır.
-// Kayıttan önce temizlenir: script / foreignObject / on* olayları / dış bağlantılar atılır; tema değişkenleri sabit renge çevrilir.
+// İzin listesiyle temizlenir: yalnızca çizim öğeleri kalır; olaylar, animasyonlar, dış bağlantılar ve dış url() atılır;
+// tema değişkenleri sabit renge çevrilir.
 
 const NEUTRAL = '#4a5560'
-const DROP = new Set(['script', 'foreignObject', 'iframe', 'object', 'embed'])
+const ALLOWED = new Set([
+  'svg',
+  'g',
+  'path',
+  'rect',
+  'circle',
+  'ellipse',
+  'line',
+  'polyline',
+  'polygon',
+  'text',
+  'tspan',
+  'textPath',
+  'defs',
+  'linearGradient',
+  'radialGradient',
+  'stop',
+  'clipPath',
+  'mask',
+  'pattern',
+  'marker',
+  'symbol',
+  'use',
+  'title',
+  'desc',
+  'style'
+])
+/** url(#id) dışındaki url(...) ve @import */
+const EXTERNAL_URL = /url\(\s*(['"]?)(?!#)[^)]*\1\s*\)|@import[^;]*;?/gi
 
 /** var(--x, yedek) → yedek, var(--x) ve currentColor → nötr gri */
 export function freezeColors(v: string): string {
@@ -15,34 +44,52 @@ export function freezeColors(v: string): string {
   return s.replace(/currentColor/gi, NEUTRAL)
 }
 
-function clean(el: Element): void {
+const cleanValue = (v: string) => freezeColors(v).replace(EXTERNAL_URL, 'none')
+
+function clean(el: Element): boolean {
+  let xlink = false
   for (const key of Object.keys(el.properties ?? {})) {
     const v = el.properties[key]
     if (/^on/i.test(key)) delete el.properties[key]
-    else if (/href$/i.test(key) && typeof v === 'string' && !v.startsWith('#')) delete el.properties[key]
-    else if (typeof v === 'string') el.properties[key] = freezeColors(v)
+    else if (/href$/i.test(key)) {
+      // yalnızca belge içi başvuru (#id)
+      if (typeof v !== 'string' || !v.startsWith('#')) delete el.properties[key]
+      else if (key !== 'href') xlink = true
+    } else if (typeof v === 'string') el.properties[key] = cleanValue(v)
   }
   el.children = el.children.flatMap((c): ElementContent[] => {
     if (c.type === 'element') {
-      if (DROP.has(c.tagName)) return []
-      clean(c)
-    } else if (c.type === 'text') {
-      // <style> içindeki tema değişkenleri
-      return [{ ...c, value: freezeColors(c.value) }]
+      // bağlantı açılır, içindeki çizim kalır
+      if (c.tagName === 'a') {
+        const box: Element = { ...c, properties: {} }
+        if (clean(box)) xlink = true
+        return box.children
+      }
+      if (!ALLOWED.has(c.tagName)) return []
+      if (clean(c)) xlink = true
+      return [c]
     }
-    return [c]
+    // <style> ve metin içindeki tema değişkenleri / dış url
+    if (c.type === 'text') return [{ ...c, value: cleanValue(c.value) }]
+    return []
   })
+  return xlink
 }
 
 const dim = (v: unknown) => (typeof v === 'number' ? v : typeof v === 'string' ? Number.parseFloat(v) : NaN)
 
-/** Simge boyutundaki (≤ 24 px) SVG'ler grafik değildir */
-function isIcon(el: Element): boolean {
+/** Grafik sayılmayanlar: simge boyutunda (< 48 px) ya da boyut bilgisi olmayan (süs / logo) SVG'ler */
+function isDecoration(el: Element): boolean {
+  const vb = String(el.properties?.['viewBox'] ?? '')
+    .split(/[\s,]+/)
+    .map(Number)
   const w = dim(el.properties?.['width'])
   const h = dim(el.properties?.['height'])
-  if (w <= 24 && h <= 24) return true
-  const vb = String(el.properties?.['viewBox'] ?? '').split(/[\s,]+/).map(Number)
-  return vb.length === 4 && vb[2]! <= 24 && vb[3]! <= 24
+  const hasVb = vb.length === 4 && vb.every(Number.isFinite)
+  const width = Number.isFinite(w) ? w : hasVb ? vb[2]! : NaN
+  const height = Number.isFinite(h) ? h : hasVb ? vb[3]! : NaN
+  if (!Number.isFinite(width) || !Number.isFinite(height)) return true
+  return width < 48 && height < 48
 }
 
 /** SVG öğelerini çıkarır, yerlerine placeholder(n) metni koyar; temizlenmiş SVG metinlerini döndürür */
@@ -50,11 +97,14 @@ export function extractSvgs(root: HastRoot | Element, placeholder: (n: number) =
   root.children = root.children.map((child): ElementContent => {
     if (child.type !== 'element') return child as ElementContent
     if (child.tagName === 'svg') {
-      if (isIcon(child)) return { type: 'text', value: '' }
-      clean(child)
+      if (isDecoration(child)) return { type: 'text', value: '' }
+      const xlink = clean(child)
       child.properties['xmlns'] = 'http://www.w3.org/2000/svg'
+      if (xlink) child.properties['xmlnsXLink'] = 'http://www.w3.org/1999/xlink'
       // görselin doğal boyutu viewBox'tan
-      const vb = String(child.properties['viewBox'] ?? '').split(/[\s,]+/).map(Number)
+      const vb = String(child.properties['viewBox'] ?? '')
+        .split(/[\s,]+/)
+        .map(Number)
       if (vb.length === 4 && !(dim(child.properties['width']) > 0)) {
         child.properties['width'] = String(vb[2])
         child.properties['height'] = String(vb[3])

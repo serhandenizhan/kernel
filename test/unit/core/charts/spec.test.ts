@@ -48,3 +48,11 @@ describe('chart spec', () => {
     expect(json.v).toBe(1)
   })
 })
+
+describe('type switching keeps data', () => {
+  it('keeps rows when the chart is serialized as a point chart and back', () => {
+    const bar = { ...defaultChart('bar', L), rows: [{ label: 'Kira', values: [50] }] }
+    const asScatter = parseChart(serializeChart({ ...bar, type: 'scatter', points: [{ label: 'P', x: 1, y: 2 }] }))
+    expect('spec' in asScatter && asScatter.spec.rows).toEqual([{ label: 'Kira', values: [50] }])
+  })
+})

@@ -10,24 +10,31 @@ const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 const trunc = (s: string, n: number) => (s.length > n ? `${s.slice(0, Math.max(1, n - 1))}…` : s)
 const r2 = (n: number) => Math.round(n * 100) / 100 || 0
 const fmt = (v: number, unit = '') => {
-  const n = Math.abs(v) >= 1000 ? Math.round(v) : r2(v)
+  // küçük değerler (0,004) sıfıra yuvarlanmasın: üç anlamlı basamak
+  const n = Math.abs(v) >= 1000 ? Math.round(v) : v !== 0 && Math.abs(v) < 1 ? Number(v.toPrecision(3)) : r2(v)
   return `${String(n).replace('.', ',')}${unit}`
 }
 const text = (x: number, y: number, s: string, cls: string, anchor = 'middle', extra = '') =>
   `<text class="${cls}" x="${r2(x)}" y="${r2(y)}" text-anchor="${anchor}"${extra}>${esc(s)}</text>`
 
 /** Okunur adımlı eksen değerleri; sıfırı her zaman içerir */
+const LIMIT = 1e12
+const clamp = (v: number) => (Number.isFinite(v) ? Math.max(-LIMIT, Math.min(LIMIT, v)) : 0)
+
 export function niceTicks(min: number, max: number, count = 5): number[] {
-  let lo = Math.min(0, min)
-  let hi = Math.max(0, max)
+  let lo = Math.min(0, clamp(min))
+  let hi = Math.max(0, clamp(max))
   if (lo === hi) hi = lo + 1
   const raw = (hi - lo) / count
   const mag = 10 ** Math.floor(Math.log10(raw))
   const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= raw)!
   lo = Math.floor(lo / step) * step
   hi = Math.ceil(hi / step) * step
+  // yuvarlama adımın basamağına göre (0,001 adımlı eksen sıfıra çökmesin)
+  const digits = Math.max(0, -Math.floor(Math.log10(step))) + 1
+  const round = (v: number) => Number(v.toFixed(Math.min(digits, 12))) || 0
   const out: number[] = []
-  for (let v = lo; v <= hi + step / 2; v += step) out.push(r2(v))
+  for (let i = 0, v = lo; v <= hi + step / 2 && i < 50; i++, v = lo + i * step) out.push(round(v))
   return out
 }
 
@@ -122,7 +129,8 @@ function cartesian(s: ChartSpec): string {
 
 /** Pasta ve halka */
 function pie(s: ChartSpec): string {
-  const H = 320
+  // çok dilimde açıklama listesi sığsın
+  const H = Math.max(320, s.rows.length * 24 + (s.title ? 70 : 40))
   const top = s.title ? 36 : 8
   const cx = 200
   const cy = top + (H - top) / 2
@@ -431,7 +439,9 @@ export interface RenderOptions {
   pitch?: number
 }
 
-export function renderChart(s: ChartSpec, opts: RenderOptions = {}): string {
+export function renderChart(input: ChartSpec, opts: RenderOptions = {}): string {
+  // aşırı büyük / sonsuz değerler sınırlanır (taşma NaN üretmesin)
+  const s: ChartSpec = { ...input, rows: input.rows.map((r) => ({ ...r, values: r.values.map(clamp) })), points: input.points.map((p) => ({ ...p, x: clamp(p.x), y: clamp(p.y), ...(p.z !== undefined ? { z: clamp(p.z) } : {}) })) }
   if (isPieLike(s.type)) return pie(s)
   if (s.type === 'radar') return radar(s)
   if (s.type === 'flow') return flow(s)

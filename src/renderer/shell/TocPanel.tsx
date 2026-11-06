@@ -24,7 +24,8 @@ export function TocPanel() {
         if (node.type.name === 'heading') list.push({ pos, level: Number(node.attrs['level']), text: node.textContent })
         return node.type.name !== 'heading'
       })
-      setHeadings(list)
+      // her tuşta yeni dizi verme: liste aynıysa durum değişmez (kaydırma dinleyicisi yeniden kurulmaz)
+      setHeadings((prev) => (prev.length === list.length && prev.every((h, i) => h.pos === list[i]!.pos && h.level === list[i]!.level && h.text === list[i]!.text) ? prev : list))
     }
     collect()
     editor.on('update', collect)
@@ -48,9 +49,21 @@ export function TocPanel() {
       }
       setActive(current ?? headings[0]?.pos ?? null)
     }
+    // kaydırmada kare başına bir hesap
+    let frame = 0
+    const onScrollThrottled = () => {
+      if (frame) return
+      frame = requestAnimationFrame(() => {
+        frame = 0
+        onScroll()
+      })
+    }
     onScroll()
-    surface.addEventListener('scroll', onScroll, { passive: true })
-    return () => surface.removeEventListener('scroll', onScroll)
+    surface.addEventListener('scroll', onScrollThrottled, { passive: true })
+    return () => {
+      surface.removeEventListener('scroll', onScrollThrottled)
+      cancelAnimationFrame(frame)
+    }
   }, [editor, visible, rail, headings])
 
   if (!editor || (!visible && !rail)) return null

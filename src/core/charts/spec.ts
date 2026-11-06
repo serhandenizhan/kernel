@@ -105,7 +105,7 @@ export function normalizeChart(raw: Record<string, unknown>): ChartSpec | null {
   const width = Math.max(1, ...s.rows.map((r) => r.values.length))
   s.series = arr(raw['series']).slice(0, 12).map((x, i) => ({ name: str(obj(x)['name']), color: color(obj(x)['color']) ?? PALETTE[i % PALETTE.length]! }))
   // satırlardaki değer sayısı kadar seri olsun
-  while (usesRows(s.type) && s.series.length < width) s.series.push({ name: '', color: PALETTE[s.series.length % PALETTE.length]! })
+  while ((usesRows(s.type) || s.rows.length) && s.series.length < width) s.series.push({ name: '', color: PALETTE[s.series.length % PALETTE.length]! })
   s.points = arr(raw['points']).slice(0, 200).map((p) => {
     const o = obj(p)
     const pt: Point = { label: str(o['label']), x: num(o['x']), y: num(o['y']) }
@@ -156,20 +156,19 @@ export function serializeChart(s: ChartSpec): string {
   const out: Record<string, unknown> = { v: 1, type: s.type }
   if (s.title) out['title'] = s.title
   if (s.unit) out['unit'] = s.unit
-  if (usesRows(s.type)) {
+  // tür değiştirilip geri dönülünce veri kaybolmasın: dolu alanlar (türün kullanmadıkları da) korunur
+  if (usesRows(s.type) || s.rows.length) {
     out['series'] = s.series
     out['rows'] = s.rows
   }
-  if (usesPoints(s.type)) {
-    out['points'] = s.points
-    if (s.connect) out['connect'] = true
-  }
-  if (s.type === 'plane' && s.z) out['z'] = true
-  if (s.type === 'flow') {
+  if (usesPoints(s.type) || s.points.length) out['points'] = s.points
+  if (s.connect) out['connect'] = true
+  if (s.z) out['z'] = true
+  if (s.type === 'flow' || s.nodes.length) {
     out['nodes'] = s.nodes
     out['edges'] = s.edges
-    if (s.direction === 'TB') out['direction'] = 'TB'
   }
+  if (s.direction === 'TB') out['direction'] = 'TB'
   return JSON.stringify(out, null, 2)
 }
 

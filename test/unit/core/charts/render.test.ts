@@ -102,3 +102,15 @@ describe('project3d', () => {
     expect(px).not.toEqual(pz)
   })
 })
+
+describe('review fixes', () => {
+  it('handles tiny and huge values without NaN', () => {
+    const tiny = renderChart(spec('bar', { rows: [{ label: 'a', values: [0.001] }, { label: 'b', values: [0.004] }] }))
+    expect(tiny).not.toMatch(/NaN|Infinity/)
+    expect(tiny).toContain('0,004')
+    const t = niceTicks(0, 0.004)
+    expect(new Set(t).size).toBe(t.length)
+    expect(t.at(-1)!).toBeGreaterThanOrEqual(0.004)
+    expect(renderChart(spec('bar', { rows: [{ label: 'a', values: [-1e308] }, { label: 'b', values: [1e308] }] }))).not.toMatch(/NaN|Infinity/)
+  })
+})

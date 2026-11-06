@@ -28,3 +28,16 @@ describe('yapıştırılan HTML içindeki SVG grafikler', () => {
     expect(r.svgs).toHaveLength(0)
   })
 })
+
+describe('svg sanitizer allowlist', () => {
+  it('drops animation, handler and external url references, binds xlink', () => {
+    const html = '<svg viewBox="0 0 400 200"><a href="#x"><set attributeName="href" to="javascript:alert(1)"/></a><animate attributeName="x"/><style>@import url(https://x.example/a.css); .k{fill:red}</style><rect style="fill:url(https://x.example/p.svg)" width="10" height="10"/><rect fill="url(#g)" width="5" height="5"/><use href="#g"/></svg>'
+    const svg = convertPaste({ text: '', html }, opts).svgs[0]!
+    expect(svg).not.toMatch(/<set|<animate|javascript|x\.example|@import/)
+    expect(svg).toContain('url(#g)')
+    expect(svg).toContain('.k{fill:red}')
+  })
+  it('ignores svgs without any size information (decorative logos)', () => {
+    expect(convertPaste({ text: 'a', html: '<p>a</p><svg><path d="M0 0h100v100"/></svg><ul><li>b</li></ul>' }, opts).svgs).toHaveLength(0)
+  })
+})

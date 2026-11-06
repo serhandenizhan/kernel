@@ -12,3 +12,8 @@ export function unfence(text: string): { code: string; lang: string | null } | n
   if (body.some((l) => l.trim().startsWith(fence))) return null
   return { code: body.join('\n'), lang: open[2] ? open[2] : null }
 }
+
+/** Markdown / düz metin bloğunda çitler içeriğin parçasıdır (Markdown anlatırken), atılmaz */
+export function shouldUnfence(blockLanguage: string | null | undefined): boolean {
+  return !['markdown', 'md', 'text', 'plaintext', 'txt'].includes((blockLanguage ?? '').toLowerCase())
+}

@@ -1,3 +1,4 @@
+import { isHeadlessTest } from './window-options'
 import { app, BrowserWindow } from 'electron'
 import { createMainWindow } from './window'
 import { installCrashLogging, log } from './log'
@@ -19,6 +20,8 @@ registerVaultScheme()
 if (process.platform === 'darwin') app.commandLine.appendSwitch('use-mock-keychain')
 
 app.whenReady().then(async () => {
+  // testlerde Dock simgesi de çıkmaz (odak ve dikkat çalınmaz)
+  if (isHeadlessTest(process.env)) app.dock?.hide()
   log.info('Kernel başlatılıyor', app.getVersion())
   handleVaultProtocol()
   void removeLegacyTokenFile(app.getPath('userData')).catch(() => undefined)

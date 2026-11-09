@@ -15,3 +15,11 @@ export function windowOptions(platform: string, dark: boolean): BrowserWindowCon
   // menü çubuğu Alt ile görünür; zemin arayüzün opak zeminiyle aynı renk (açılışta beyaz/siyah parlama olmasın)
   return { autoHideMenuBar: true, backgroundColor: dark ? '#141a20' : '#dce5ec' }
 }
+
+/**
+ * Otomatik testlerde pencere gösterilmez ve Dock'ta görünmez: testler çalışırken kullanıcı bilgisayarını rahatça kullanabilsin (odak çalınmaz).
+ * KERNEL_TEST_SHOW=1 ile (hata ayıklarken) ya da ekran görüntüsü alırken (KERNEL_SCREENSHOTS=1) pencere görünür.
+ */
+export function isHeadlessTest(env: Record<string, string | undefined>): boolean {
+  return !!env['KERNEL_TEST'] && !env['KERNEL_TEST_SHOW'] && !env['KERNEL_SCREENSHOTS']
+}

@@ -1,5 +1,5 @@
 import { app, BrowserWindow, dialog, ipcMain, nativeTheme, shell } from 'electron'
-import { windowOptions } from './window-options'
+import { isHeadlessTest, windowOptions } from './window-options'
 import { join } from 'node:path'
 import { IPC } from '@shared/ipc'
 import { mainT } from './i18n'
@@ -33,6 +33,7 @@ function requestFlush(win: BrowserWindow): Promise<boolean> {
 
 // Ana pencere: görünüm platforma göre (window-options.ts)
 export function createMainWindow(): BrowserWindow {
+  const headless = isHeadlessTest(process.env)
   const win = new BrowserWindow({
     width: 1280,
     height: 820,
@@ -45,11 +46,13 @@ export function createMainWindow(): BrowserWindow {
       preload: join(__dirname, '../preload/index.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: true
+      sandbox: true,
+      // gizli test penceresi de tam hızda çizilsin
+      backgroundThrottling: !headless
     }
   })
 
-  win.once('ready-to-show', () => win.show())
+  if (!headless) win.once('ready-to-show', () => win.show())
 
   // Kapanmadan önce açık sayfanın kaydını bekle (yazıp hemen Cmd+Q'da veri kaybı olmasın)
   let flushed = false

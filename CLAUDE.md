@@ -69,6 +69,7 @@ Kernel: lokal, açık kaynak, Markdown tabanlı macOS + Windows not uygulaması 
 - Güncelleme: `parseRelease` `install` alanı (macOS `Kernel-<v>-arm64-mac.zip`, Windows exe). `src/main/update-install.ts` indirir → macOS'ta zip açılır, Info.plist kimliği + sürümü denetlenir, `macSwapScript` uygulama kapanınca paketi değiştirip açar; Windows'ta exe `/S --updated --force-run`. Kurulacak dosya yalnızca ana sürecin son denetiminden gelir. Testler: `KERNEL_TEST_UPDATE_ASSET` (yerel dosya), `KERNEL_TEST_UPDATE_DRYRUN` (plan dosyası; hiçbir şey çalışmaz).
 - Sürüm notları: `docs/release-notes/<etiket>.md` (`<!-- tr -->`/`<!-- en -->`/`<!-- de -->` bölümleri) release iş akışında not olur; `src/core/release-notes.ts` arayüz dilini seçer, GitHub otomatik notunun teknik satırlarını atar.
 - Kartlar: `CardHighlight` (`::` satırı `card-line`/`card-q`/`card-sep`/`card-a`; katlanır kartın DOM'una `data-card` süslemeyle verilir — düğüm görünümü özel özellikleri yazmıyor; boş cevapta `card-empty` ipucu).
+- Testler arka planda: `KERNEL_TEST` varken ana pencere gösterilmez, Dock simgesi gizlenir (`isHeadlessTest`, `src/main/window-options.ts`); odak çalınmaz. Hata ayıklarken `KERNEL_TEST_SHOW=1 npx playwright test ...`; README ekran görüntüleri (`KERNEL_SCREENSHOTS=1`) pencereyi görünür açar.
 - Yazı tipi: varsayılan `bodyFont: 'plex'` (IBM Plex Sans, `@fontsource-variable/ibm-plex-sans`, uygulamayla gelir); ayar şeması 3.
 
 ## Mimari

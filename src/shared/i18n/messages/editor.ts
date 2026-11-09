@@ -94,6 +94,8 @@ export const editor = {
   'pdf.enlarge': ['Büyüt', 'Enlarge', 'Vergrößern'],
   'pdf.openFailed': ['PDF açılamadı', 'The PDF could not be opened', 'Das PDF konnte nicht geöffnet werden'],
   'pdf.loading': ['PDF yükleniyor…', 'Loading PDF…', 'PDF wird geladen…'],
+  'table.openMenu': ['Tablo seçenekleri', 'Table options', 'Tabellenoptionen'],
+  'table.closeMenu': ['Kapat', 'Close', 'Schließen'],
   'table.addRow': ['+ Satır', '+ Row', '+ Zeile'],
   'table.addColumn': ['+ Sütun', '+ Column', '+ Spalte'],
   'table.deleteRow': ['− Satır', '− Row', '− Zeile'],

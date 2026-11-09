@@ -388,6 +388,26 @@
 .table-menu button.danger {
   color: var(--danger);
 }
+.table-menu-toggle {
+  width: 26px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--text-2);
+  cursor: default;
+  opacity: 0.75;
+  transition: opacity 0.15s ease;
+}
+.table-menu-toggle:hover {
+  opacity: 1;
+  color: var(--text);
+}
+.table-menu .table-menu-close {
+  color: var(--text-3);
+}
 .table-menu .sep {
   width: 1px;
   height: 16px;

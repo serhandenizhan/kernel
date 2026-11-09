@@ -8,7 +8,10 @@ const body = {
   tag_name: 'v9.0.0',
   html_url: 'https://github.com/serhandenizhan/kernel/releases/tag/v9.0.0',
   body: '',
-  assets: []
+  assets: [
+    { name: 'Kernel-9.0.0-arm64.dmg', browser_download_url: 'https://github.com/serhandenizhan/kernel/releases/download/v9.0.0/Kernel-9.0.0-arm64.dmg' },
+    { name: 'Kernel-9.0.0-arm64-mac.zip', browser_download_url: 'https://github.com/serhandenizhan/kernel/releases/download/v9.0.0/Kernel-9.0.0-arm64-mac.zip' }
+  ]
 }
 
 describe('fetchLatestRelease', () => {

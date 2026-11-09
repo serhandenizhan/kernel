@@ -58,6 +58,8 @@ export function parseRelease(json: unknown, platform: string): UpdateInfo | null
   const find = (re: RegExp | null) => (re ? assets.find((a) => re.test(str(a?.['name'])) && isReleaseUrl(str(a?.['browser_download_url']))) : undefined)
   const asset = find(want)
   const inst = find(platform === 'win32' ? /\.exe$/i : platform === 'darwin' ? /arm64-mac\.zip$/i : null)
+  // sürüm oluşturulmuş ama derleme dosyaları henüz yüklenmemiş (CI sürüyor): hazır olana kadar sunulmaz
+  if (want && (!asset || (platform === 'darwin' && !inst))) return null
   return {
     version,
     url: asset ? str(asset['browser_download_url']) : page,

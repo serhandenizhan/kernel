@@ -9,6 +9,7 @@ const release = {
   prerelease: false,
   assets: [
     { name: 'Kernel-0.5.0-arm64.dmg', browser_download_url: 'https://github.com/serhandenizhan/kernel/releases/download/v0.5.0/Kernel-0.5.0-arm64.dmg' },
+    { name: 'Kernel-0.5.0-arm64-mac.zip', browser_download_url: 'https://github.com/serhandenizhan/kernel/releases/download/v0.5.0/Kernel-0.5.0-arm64-mac.zip' },
     { name: 'Kernel-Setup-0.5.0.exe', browser_download_url: 'https://github.com/serhandenizhan/kernel/releases/download/v0.5.0/Kernel-Setup-0.5.0.exe' },
     { name: 'Kernel-Setup-0.5.0.exe.blockmap', browser_download_url: 'https://github.com/serhandenizhan/kernel/releases/download/v0.5.0/Kernel-Setup-0.5.0.exe.blockmap' }
   ]
@@ -34,13 +35,23 @@ describe('parseRelease', () => {
       url: release.assets[0]!.browser_download_url,
       page: release.html_url,
       notes: 'Yenilikler',
-      install: null
+      install: release.assets[1]!.browser_download_url
     })
-    expect(parseRelease(release, 'win32')?.url).toBe(release.assets[1]!.browser_download_url)
+    expect(parseRelease(release, 'win32')?.url).toBe(release.assets[2]!.browser_download_url)
   })
 
-  it('falls back to the release page when there is no matching asset', () => {
-    expect(parseRelease({ ...release, assets: [] }, 'darwin')?.url).toBe(release.html_url)
+  it('does not offer a release whose files are not uploaded yet (the build is still running)', () => {
+    expect(parseRelease({ ...release, assets: [] }, 'darwin')).toBeNull()
+    expect(parseRelease({ ...release, assets: [] }, 'win32')).toBeNull()
+  })
+
+  it('on macOS waits for the zip as well, so the in-app update is never half-ready', () => {
+    const dmgOnly = { ...release, assets: [release.assets[0]!, release.assets[2]!] }
+    expect(parseRelease(dmgOnly, 'darwin')).toBeNull()
+  })
+
+  it('offers the release page on platforms without an installer file', () => {
+    expect(parseRelease({ ...release, assets: [] }, 'linux')?.url).toBe(release.html_url)
   })
 
   it('rejects drafts, pre-releases, malformed data and foreign urls', () => {
@@ -50,7 +61,8 @@ describe('parseRelease', () => {
     expect(parseRelease(null, 'darwin')).toBeNull()
     expect(parseRelease({ ...release, html_url: 'https://evil.example/x', assets: [] }, 'darwin')).toBeNull()
     const evil = { ...release, assets: [{ name: 'Kernel-0.5.0-arm64.dmg', browser_download_url: 'https://evil.example/k.dmg' }] }
-    expect(parseRelease(evil, 'darwin')?.url).toBe(release.html_url)
+    // dosya başka siteye işaret ediyorsa geçerli sayılmaz; sürüm hazır değilmiş gibi sunulmaz
+    expect(parseRelease(evil, 'darwin')).toBeNull()
   })
 })
 
@@ -96,7 +108,7 @@ describe('uygulama içi güncelleme', () => {
   })
   it('başka siteye işaret eden zip kurulum için kullanılmaz', () => {
     const bad = { ...withZip, assets: [{ name: 'Kernel-0.7.0-arm64-mac.zip', browser_download_url: 'https://evil.example/Kernel.zip' }] }
-    expect(parseRelease(bad, 'darwin')?.install).toBeNull()
+    expect(parseRelease(bad, 'darwin')).toBeNull()
   })
   it('çalışan dosyadan uygulama paketinin yolu bulunur', () => {
     expect(macBundleFromExe('/Applications/Kernel.app/Contents/MacOS/Kernel')).toBe('/Applications/Kernel.app')

@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import { launch, tmpVault } from './helpers/app'
 
 // Sahte "son sürüm" yanıtı: testler GitHub'a hiç çıkmaz
-function feed(version: string, opts: { zip?: boolean; exe?: boolean; body?: string } = {}): string {
+function feed(version: string, opts: { zip?: boolean; exe?: boolean; body?: string; assets?: boolean } = {}): string {
   const dir = mkdtempSync(join(tmpdir(), 'kernel-feed-'))
   const file = join(dir, 'latest.json')
   const base = `https://github.com/serhandenizhan/kernel/releases`
@@ -16,9 +16,9 @@ function feed(version: string, opts: { zip?: boolean; exe?: boolean; body?: stri
       tag_name: `v${version}`,
       html_url: `${base}/tag/v${version}`,
       body: opts.body ?? 'Yeni özellikler',
-      assets: [
+      assets: opts.assets === false ? [] : [
         { name: `Kernel-${version}-arm64.dmg`, browser_download_url: `${base}/download/v${version}/Kernel-${version}-arm64.dmg` },
-        ...(opts.zip ? [{ name: `Kernel-${version}-arm64-mac.zip`, browser_download_url: `${base}/download/v${version}/Kernel-${version}-arm64-mac.zip` }] : []),
+        ...(opts.zip !== false ? [{ name: `Kernel-${version}-arm64-mac.zip`, browser_download_url: `${base}/download/v${version}/Kernel-${version}-arm64-mac.zip` }] : []),
         ...(opts.exe !== false ? [{ name: `Kernel-Setup-${version}.exe`, browser_download_url: `${base}/download/v${version}/Kernel-Setup-${version}.exe` }] : [])
       ]
     })
@@ -26,21 +26,11 @@ function feed(version: string, opts: { zip?: boolean; exe?: boolean; body?: stri
   return file
 }
 
-test('kurulabilir dosya yoksa İndir dosyayı tarayıcıda açar', async () => {
+test('derleme dosyaları henüz yüklenmemiş sürüm sunulmaz (CI sürerken İndir sayfaya düşmesin)', async () => {
   const vault = tmpVault()
-  const { app, win } = await launch(vault, { KERNEL_TEST_UPDATE_FEED: feed('99.0.0', { exe: false }) })
-  const prompt = win.getByTestId('update-prompt')
-  await expect(prompt).toBeVisible()
-  await expect(prompt).toContainText('99.0.0')
-  await app.evaluate(({ shell }) => {
-    ;(shell as unknown as { openExternal: (u: string) => Promise<void> }).openExternal = async (u: string) => {
-      ;(globalThis as unknown as { __opened: string }).__opened = u
-    }
-  })
-  await win.getByTestId('update-download').click()
-  await expect(prompt).toBeHidden()
-  const opened = await app.evaluate(() => (globalThis as unknown as { __opened?: string }).__opened)
-  expect(opened).toMatch(process.platform === 'win32' ? /releases\/tag\/v99\.0\.0$/ : /Kernel-99\.0\.0-arm64\.dmg$/)
+  const { app, win } = await launch(vault, { KERNEL_TEST_UPDATE_FEED: feed('99.0.0', { assets: false }) })
+  await win.waitForTimeout(3500)
+  await expect(win.getByTestId('update-prompt')).toHaveCount(0)
   await app.close()
 })
 

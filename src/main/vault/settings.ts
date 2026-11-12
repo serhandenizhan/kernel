@@ -8,7 +8,7 @@ const file = (root: string) => join(root, '.kernel', 'settings.json')
 // tanınmayan değerler varsayılana döner (elle düzenlenmiş ya da yeni sürümün yazdığı dosya uygulamayı çökertmesin)
 const ALLOWED = {
   theme: ['system', 'light', 'dark'],
-  bodyFont: ['plex', 'serif', 'sans'],
+  bodyFont: ['plex', 'bricolage', 'serif', 'sans'],
   pageWidth: ['narrow', 'normal', 'wide'],
   language: ['system', 'tr', 'en', 'de'],
   startView: ['home', 'last']

@@ -59,12 +59,14 @@ export function SettingsDialog() {
               value={settings.bodyFont}
               options={[
                 { value: 'plex', label: 'IBM Plex', className: 'plex' },
+                { value: 'bricolage', label: 'Bricolage', className: 'bricolage' },
                 { value: 'sans', label: isMac ? 'SF Pro' : 'Segoe UI' },
                 { value: 'serif', label: 'New York', className: 'serif' }
               ]}
               onChange={(bodyFont) => set({ bodyFont })}
             />
           </div>
+          <p className="setting-hint">{t('settings.font.hint')}</p>
           <div className="setting-row">
             <span>{t('settings.start')}</span>
             <Segmented
@@ -126,6 +128,7 @@ export function SettingsDialog() {
             />
             {t('settings.updates.check')}
           </label>
+          <UpdateCheckNow />
           <p className="setting-hint">{t('settings.updates.hint')}</p>
         </section>
 
@@ -257,5 +260,37 @@ function NotionSection() {
         {t('settings.notion.disconnect')}
       </button>
     </section>
+  )
+}
+
+// Elle sürüm denetimi: yeni sürüm varsa köşedeki güncelleme penceresi açılır, yoksa durum yazılır
+function UpdateCheckNow() {
+  const t = useT()
+  const [state, setState] = useState<{ status: 'idle' | 'checking' | 'available' | 'current' | 'error'; current?: string }>({ status: 'idle' })
+  const run = async () => {
+    setState({ status: 'checking' })
+    const r = await kernel.updates.checkNow().catch(() => ({ status: 'error' as const, current: '' }))
+    if (r.status === 'available' && r.offer) useStore.getState().setUpdateOffer(r.offer)
+    setState({ status: r.status, current: r.current })
+  }
+  const label =
+    state.status === 'checking'
+      ? t('settings.updates.checking')
+      : state.status === 'current'
+        ? t('settings.updates.current', { version: state.current ?? '' })
+        : state.status === 'available'
+          ? t('settings.updates.available')
+          : state.status === 'error'
+            ? t('settings.updates.error')
+            : ''
+  return (
+    <div className="setting-row">
+      <button className="btn small" data-testid="setting-update-now" disabled={state.status === 'checking'} onClick={() => void run()}>
+        {t('settings.updates.now')}
+      </button>
+      <span className="setting-hint" data-testid="setting-update-status" aria-live="polite">
+        {label}
+      </span>
+    </div>
   )
 }

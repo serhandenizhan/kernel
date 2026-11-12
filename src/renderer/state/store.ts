@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { DEFAULT_SETTINGS, type Deck, type Settings, type TreeNode } from '@shared/types'
+import { DEFAULT_SETTINGS, type Deck, type Settings, type TreeNode, type UpdateOffer } from '@shared/types'
 import { kernel } from '../lib/kernel'
 
 export interface Toast {
@@ -21,6 +21,9 @@ interface State {
   expanded: Record<string, boolean>
   renamingId: string | null
   toasts: Toast[]
+  /** köşedeki güncelleme penceresinde gösterilen sürüm (açılış denetimi ya da ayarlardan elle denetim) */
+  updateOffer: UpdateOffer | null
+  setUpdateOffer(offer: UpdateOffer | null): void
   overlay: 'search' | 'settings' | 'export' | 'guide' | 'history' | 'notion' | 'palette' | null
   /** odak modu: kenar çubuğu, içindekiler ve araç çubukları gizli */
   focusMode: boolean
@@ -105,6 +108,7 @@ export const useStore = create<State>((set, get) => ({
   expanded: {},
   renamingId: null,
   toasts: [],
+  updateOffer: null,
   overlay: null,
   reloadToken: 0,
   reloadPage: () => set((s) => ({ reloadToken: s.reloadToken + 1 })),
@@ -198,6 +202,10 @@ export const useStore = create<State>((set, get) => ({
   async setPins(ids) {
     set({ pins: ids })
     await kernel.pins.set(ids)
+  },
+
+  setUpdateOffer(offer) {
+    set({ updateOffer: offer })
   },
 
   toast(message, kind = 'info') {

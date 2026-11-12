@@ -122,8 +122,8 @@ export type Lang = 'tr' | 'en' | 'de'
 
 export interface Settings {
   theme: 'system' | 'light' | 'dark'
-  /** plex: IBM Plex Sans (uygulamayla gelir, varsayılan); sans: sistem (SF Pro); serif: New York */
-  bodyFont: 'plex' | 'serif' | 'sans'
+  /** yazı tipi paketi — plex: Fraunces başlık + IBM Plex Sans gövde + IBM Plex Mono kod (varsayılan); bricolage: Bricolage Grotesque + Figtree + DM Mono; sans: sistem (SF Pro); serif: New York */
+  bodyFont: 'plex' | 'bricolage' | 'serif' | 'sans'
   pageWidth: 'narrow' | 'normal' | 'wide'
   paste: PasteSettings
   tips: { enabled: boolean; seen: string[] }
@@ -256,6 +256,8 @@ export interface KernelApi {
     check(): Promise<UpdateOffer | null>
     /** indirme adresini varsayılan tarayıcıda açar (yalnızca bu deponun sürüm adresleri) */
     open(url: string): Promise<void>
+    /** ayarlardan elle denetim (açılış ayarı ve atlanan sürüm yok sayılır) */
+    checkNow(): Promise<{ status: 'available' | 'current' | 'error'; current: string; offer?: UpdateOffer }>
     /** son denetimde bulunan sürümü indirip kurar ve yeniden başlatır; kendini güncelleyemiyorsa 'manual' */
     install(): Promise<'restarting' | 'manual'>
     /** indirme ilerlemesi (0–1) */

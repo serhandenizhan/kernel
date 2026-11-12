@@ -55,6 +55,7 @@ const api: KernelApi = {
     check: inv(IPC.updatesCheck),
     open: inv(IPC.updatesOpen),
     install: inv(IPC.updatesInstall),
+    checkNow: inv(IPC.updatesCheckNow),
     onProgress: (cb: (r: never) => void) => on(IPC.updatesProgress, cb)
   } as KernelApi['updates'],
   app: {

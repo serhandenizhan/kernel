@@ -17,7 +17,9 @@
   --border-strong: rgba(20, 35, 43, 0.18);
   --hover: rgba(20, 35, 43, 0.06);
   --selected: #ffffff;
-  --code-bg: #f0f5f7;
+  /* açık temada sayfanın beyaz-gri degradesinde kaybolmasın: biraz daha koyu zemin + kenar çizgisi */
+  --code-bg: #e6edf1;
+  --code-border: rgba(20, 35, 43, 0.13);
   --danger: #b4372f;
   --glass-bg: rgba(255, 255, 255, 0.62);
   --glass-solid: #f7fafb;
@@ -30,6 +32,12 @@
   --font-serif: ui-serif, 'New York', Cambria, Georgia, serif;
   --font-display: -apple-system, 'SF Pro Display', BlinkMacSystemFont, 'Segoe UI Variable Display', 'Segoe UI', sans-serif;
   --font-rounded: ui-rounded, 'SF Pro Rounded', -apple-system, 'Segoe UI Variable Display', 'Segoe UI', sans-serif;
+  /* not içeriğinin yazı tipi paketi: başlık (sayfa başlığı, h1, h2), alt başlık (h3–h6), küçük etiketler */
+  --font-heading: var(--font-display);
+  --font-subheading: var(--font-display);
+  --font-label: var(--font-ui);
+  --heading-weight: 700;
+  --heading-tracking: -0.02em;
   --font-mono: ui-monospace, 'SF Mono', Menlo, 'Cascadia Mono', Consolas, monospace;
   --page-width: 720px;
   /* Faz 3 (spec §18.1): yazı alanı degradesi (opak uçlar; saydamlık --paper-alpha ile) */
@@ -65,6 +73,7 @@
   --hover: rgba(230, 237, 241, 0.06);
   --selected: rgba(230, 237, 241, 0.1);
   --code-bg: #151b21;
+  --code-border: rgba(230, 237, 241, 0.09);
   --danger: #ef7b72;
   --glass-bg: rgba(36, 44, 52, 0.62);
   --glass-solid: #222a32;
@@ -87,6 +96,20 @@
 
 :root[data-body-font='plex'] {
   --font-body: var(--font-plex);
+  --font-heading: 'Fraunces Variable', 'Fraunces', ui-serif, Georgia, serif;
+  --font-subheading: var(--font-plex);
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --heading-weight: 650;
+  --heading-tracking: -0.01em;
+}
+:root[data-body-font='bricolage'] {
+  --font-body: 'Figtree Variable', 'Figtree', -apple-system, 'Segoe UI', system-ui, sans-serif;
+  --font-heading: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', -apple-system, 'Segoe UI', sans-serif;
+  --font-subheading: var(--font-heading);
+  --font-mono: 'DM Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --font-label: var(--font-mono);
+  --heading-weight: 800;
+  --heading-tracking: -0.025em;
 }
 :root[data-body-font='serif'] {
   --font-body: var(--font-serif);

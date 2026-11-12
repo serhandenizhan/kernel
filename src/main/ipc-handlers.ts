@@ -28,7 +28,7 @@ import { PinStore } from './pins'
 import { ActivityStore } from './activity'
 import { computeHome, localDay } from '@core/home'
 import { isReleaseUrl, shouldOffer } from '@core/update'
-import { fetchLatestRelease } from './updates'
+import { checkLatestRelease, fetchLatestRelease } from './updates'
 import { installUpdate } from './update-install'
 import type { UpdateInfo } from '@core/update'
 import { track } from './pending'
@@ -406,6 +406,15 @@ export function registerIpc(): void {
     if (!info || !shouldOffer(info, app.getVersion(), updates.skipped)) return null
     lastOffer = info
     return { ...info, current: app.getVersion() }
+  })
+  // ayarlardan elle denetim: açılış ayarı ve atlanan sürüm yok sayılır
+  h(IPC.updatesCheckNow, async () => {
+    const current = app.getVersion()
+    const { ok, info } = await checkLatestRelease()
+    if (!ok) return { status: 'error', current }
+    if (!info || !shouldOffer(info, current, null)) return { status: 'current', current }
+    lastOffer = info
+    return { status: 'available', current, offer: { ...info, current } }
   })
   // kurulacak dosya arayüzden alınmaz: yalnızca ana sürecin kendi bulduğu sürüm kurulur
   h(IPC.updatesInstall, async () => {

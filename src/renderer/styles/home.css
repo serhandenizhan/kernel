@@ -18,16 +18,17 @@
 }
 .home-date {
   margin: 0;
+  font-family: var(--font-label);
   color: var(--text-2);
   font-size: 14px;
 }
 .home-header h1,
 .home-empty h1 {
   margin: 0 0 14px;
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
   font-size: 40px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-weight: var(--heading-weight);
+  letter-spacing: var(--heading-tracking);
 }
 .home-actions {
   display: flex;
@@ -95,6 +96,7 @@
 }
 .home-section h2 {
   margin: 0;
+  font-family: var(--font-subheading);
   color: var(--text-2);
   font-size: 15px;
   font-weight: 600;
@@ -106,6 +108,7 @@
   gap: 12px;
 }
 .home-section-head span {
+  font-family: var(--font-label);
   color: var(--text-3);
   font-size: 13px;
 }
@@ -228,6 +231,7 @@
   white-space: nowrap;
 }
 .course-meta {
+  font-family: var(--font-label);
   color: var(--text-3);
   font-size: 12px;
 }
@@ -286,6 +290,7 @@
   font-size: 12px;
 }
 .recent-when {
+  font-family: var(--font-label);
   white-space: nowrap;
 }
 .recent-empty {
@@ -389,6 +394,7 @@
   color: var(--text-2);
 }
 .deck-due {
+  font-family: var(--font-heading);
   min-width: 28px;
   text-align: center;
   font-variant-numeric: tabular-nums;

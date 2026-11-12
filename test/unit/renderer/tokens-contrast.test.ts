@@ -32,3 +32,17 @@ describe('metin kontrastı (WCAG AA, yazı alanı degradesinin iki ucunda)', () 
     })
   }
 })
+
+describe('kod blokları sayfadan ayrışır', () => {
+  const blocks = readFileSync('src/renderer/styles/blocks.css', 'utf8')
+  it('açık temada kod zemini yazı alanının üst ucundan belirgin biçimde koyudur', () => {
+    const b = block(':root')
+    expect(contrast(token(b, 'code-bg'), token(b, 'paper-top'))).toBeGreaterThanOrEqual(1.12)
+  })
+  it('her iki temada kod bloğunun bir kenar çizgisi vardır (degradenin alt ucunda da seçilsin)', () => {
+    expect(block(':root')).toMatch(/--code-border:/)
+    expect(block(":root[data-theme='dark']")).toMatch(/--code-border:/)
+    const rule = blocks.slice(blocks.indexOf('.code-block {'), blocks.indexOf('}', blocks.indexOf('.code-block {')))
+    expect(rule).toMatch(/border:\s*1px solid var\(--code-border\)/)
+  })
+})

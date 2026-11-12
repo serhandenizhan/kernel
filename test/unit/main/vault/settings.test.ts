@@ -45,6 +45,9 @@ describe('ayar doğrulama', () => {
     writeFileSync(join(root, '.kernel', 'settings.json'), JSON.stringify({ schema: 3, language: 'fr', startView: 'x', bodyFont: 'comic', theme: 'pink', pageWidth: 9 }))
     expect(await readSettings(root)).toMatchObject({ language: 'system', startView: 'home', bodyFont: 'plex', theme: 'system', pageWidth: 'normal' })
   })
+  it('Bricolage paketi geçerli bir yazı tipi seçimidir', async () => {
+    expect(await writeSettings(root, { bodyFont: 'bricolage' })).toMatchObject({ bodyFont: 'bricolage' })
+  })
   it('yazarken de tanınmayan değer saklanmaz', async () => {
     expect(await writeSettings(root, { language: 'xx' as never })).toMatchObject({ language: 'system' })
   })

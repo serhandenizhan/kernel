@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import type { UpdateOffer } from '@shared/types'
 import { kernel } from '../lib/kernel'
 import { useStore } from '../state/store'
 import { useLang, useT } from '../lib/i18n'
@@ -11,7 +10,8 @@ const CHECK_DELAY_MS = 1500
 export function UpdatePrompt() {
   const t = useT()
   const lang = useLang()
-  const [offer, setOffer] = useState<UpdateOffer | null>(null)
+  const offer = useStore((s) => s.updateOffer)
+  const setOffer = useStore.getState().setUpdateOffer
   // null: bekliyor; 0–1: indiriliyor; 'restart': yeniden başlatılıyor
   const [progress, setProgress] = useState<number | 'restart' | null>(null)
 
@@ -22,7 +22,7 @@ export function UpdatePrompt() {
     const timer = setTimeout(() => {
       void kernel.updates
         .check()
-        .then((o) => alive && setOffer(o))
+        .then((o) => alive && o && setOffer(o))
         .catch(() => undefined)
     }, CHECK_DELAY_MS)
     return () => {

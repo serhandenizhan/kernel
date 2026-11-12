@@ -4,6 +4,7 @@
 .code-block {
   position: relative;
   margin: 0.8em 0;
+  border: 1px solid var(--code-border);
   border-radius: 10px;
   background: var(--code-bg);
 }
@@ -835,6 +836,7 @@ mark[data-color='gray'] { --hl: #e3e8ec; }
 
 /* Etiketler */
 .kernel-editor .hashtag {
+  font-family: var(--font-label);
   color: var(--accent-text);
   background: var(--accent-soft);
   border-radius: 5px;
@@ -1014,6 +1016,7 @@ mark[data-color='gray'] { --hl: #e3e8ec; }
 
 /* --- grafik bloğu ve düzenleme paneli --- */
 .code-block.chart-wrap {
+  border-color: transparent;
   background: transparent;
 }
 .chart-block {

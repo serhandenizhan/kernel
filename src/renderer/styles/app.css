@@ -958,7 +958,11 @@ button {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
 }
 .segment.plex {
-  font-family: var(--font-plex);
+  font-family: 'Fraunces Variable', serif;
+}
+.segment.bricolage {
+  font-family: 'Bricolage Grotesque Variable', sans-serif;
+  font-weight: 700;
 }
 .segment.serif {
   font-family: ui-serif, 'New York', Georgia, serif;

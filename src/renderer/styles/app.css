@@ -957,18 +957,52 @@ button {
   color: var(--text);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
 }
-.segment.plex {
-  font-family: 'Fraunces Variable', serif;
-}
-.segment.bricolage {
-  font-family: 'Bricolage Grotesque Variable', sans-serif;
-  font-weight: 700;
-}
 .segment.serif {
   font-family: ui-serif, 'New York', Georgia, serif;
 }
 .setting-row {
   gap: 12px;
+}
+.setting-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+/* yazı tipi paketi kartları */
+.font-packs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+.font-pack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: default;
+}
+.font-pack:hover {
+  background: var(--hover);
+}
+.font-pack.on {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  background: var(--accent-soft);
+}
+.font-pack-name {
+  font-size: 19px;
+  line-height: 1.15;
+}
+.font-pack-fonts {
+  color: var(--text-3);
+  font-size: 11px;
+  line-height: 1.3;
 }
 .setting-row > span {
   min-width: 0;

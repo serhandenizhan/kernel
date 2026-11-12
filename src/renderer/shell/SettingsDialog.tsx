@@ -3,6 +3,7 @@ import type { Settings } from '@shared/types'
 import { useStore } from '../state/store'
 import { kernel } from '../lib/kernel'
 import { isMac } from '../lib/platform'
+import { FONT_PACKS } from '../lib/font-packs'
 import { useLang, useT } from '../lib/i18n'
 import { localeOf } from '@shared/i18n'
 
@@ -51,20 +52,9 @@ export function SettingsDialog() {
             />
           </div>
           <p className="setting-hint">{t('settings.language.hint')}</p>
-          <div className="setting-row">
+          <div className="setting-stack">
             <span>{t('settings.font')}</span>
-            <Segmented
-              testid="setting-font"
-              label={t('settings.font')}
-              value={settings.bodyFont}
-              options={[
-                { value: 'plex', label: 'IBM Plex', className: 'plex' },
-                { value: 'bricolage', label: 'Bricolage', className: 'bricolage' },
-                { value: 'sans', label: isMac ? 'SF Pro' : 'Segoe UI' },
-                { value: 'serif', label: 'New York', className: 'serif' }
-              ]}
-              onChange={(bodyFont) => set({ bodyFont })}
-            />
+            <FontPackPicker value={settings.bodyFont} label={t('settings.font')} onChange={(bodyFont) => set({ bodyFont })} />
           </div>
           <p className="setting-hint">{t('settings.font.hint')}</p>
           <div className="setting-row">
@@ -169,6 +159,30 @@ export function SettingsDialog() {
 }
 
 /** Segment kontrolü (radyo grubu); seçenek testid'i `${testid}-${value}` */
+// Yazı tipi paketi seçicisi: her kart paketin adını kendi başlık yazı tipiyle gösterir
+function FontPackPicker({ value, label, onChange }: { value: Settings['bodyFont']; label: string; onChange(v: Settings['bodyFont']): void }) {
+  return (
+    <div className="font-packs" role="radiogroup" aria-label={label} data-testid="setting-font">
+      {FONT_PACKS.map((p) => (
+        <button
+          key={p.id}
+          type="button"
+          role="radio"
+          aria-checked={p.id === value}
+          data-testid={`setting-font-${p.id}`}
+          className={`font-pack${p.id === value ? ' on' : ''}`}
+          onClick={() => onChange(p.id)}
+        >
+          <span className="font-pack-name" style={{ fontFamily: p.preview, fontWeight: p.previewWeight }}>
+            {p.name}
+          </span>
+          <span className="font-pack-fonts">{p.fonts}</span>
+        </button>
+      ))}
+    </div>
+  )
+}
+
 function Segmented<V extends string>({ testid, label, value, options, onChange }: { testid: string; label: string; value: V; options: { value: V; label: string; className?: string }[]; onChange(v: V): void }) {
   return (
     <div className="segmented" role="radiogroup" aria-label={label} data-testid={testid}>

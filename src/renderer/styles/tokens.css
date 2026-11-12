@@ -111,6 +111,40 @@
   --heading-weight: 800;
   --heading-tracking: -0.025em;
 }
+:root[data-body-font='editorial'] {
+  --font-body: 'Inter Variable', 'Inter', -apple-system, 'Segoe UI', system-ui, sans-serif;
+  --font-heading: 'Instrument Serif', ui-serif, Georgia, serif;
+  --font-subheading: var(--font-body);
+  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+  /* Instrument Serif tek ağırlık: büyük ve ince durur */
+  --heading-weight: 400;
+  --heading-tracking: 0;
+}
+:root[data-body-font='space'] {
+  --font-body: 'Inter Variable', 'Inter', -apple-system, 'Segoe UI', system-ui, sans-serif;
+  --font-heading: 'Space Grotesk Variable', 'Space Grotesk', -apple-system, 'Segoe UI', sans-serif;
+  --font-subheading: var(--font-heading);
+  --font-mono: 'Space Mono', ui-monospace, Menlo, Consolas, monospace;
+  --font-label: var(--font-mono);
+  --heading-weight: 700;
+  --heading-tracking: -0.02em;
+}
+:root[data-body-font='book'] {
+  --font-body: 'Literata Variable', 'Literata', ui-serif, Georgia, serif;
+  --font-heading: var(--font-body);
+  --font-subheading: var(--font-body);
+  --font-mono: 'Fira Code Variable', 'Fira Code', ui-monospace, Menlo, Consolas, monospace;
+  --heading-weight: 600;
+  --heading-tracking: -0.01em;
+}
+:root[data-body-font='rounded'] {
+  --font-body: 'Nunito Variable', 'Nunito', ui-rounded, -apple-system, 'Segoe UI', sans-serif;
+  --font-heading: var(--font-body);
+  --font-subheading: var(--font-body);
+  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+  --heading-weight: 800;
+  --heading-tracking: -0.01em;
+}
 :root[data-body-font='serif'] {
   --font-body: var(--font-serif);
 }

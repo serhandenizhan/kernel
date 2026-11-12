@@ -7,7 +7,7 @@ export const settings = {
   'settings.theme.light': ['Açık', 'Light', 'Hell'],
   'settings.theme.dark': ['Koyu', 'Dark', 'Dunkel'],
   'settings.font': ['Yazı tipi paketi', 'Font pack', 'Schriftpaket'],
-  'settings.font.hint': ['IBM Plex: Fraunces başlıklar, Plex Sans metin, Plex Mono kod. Bricolage: kalın Bricolage başlıklar, Figtree metin, DM Mono kod ve küçük etiketler.', 'IBM Plex: Fraunces headings, Plex Sans text, Plex Mono code. Bricolage: bold Bricolage headings, Figtree text, DM Mono code and small labels.', 'IBM Plex: Fraunces-Überschriften, Plex Sans Text, Plex Mono Code. Bricolage: fette Bricolage-Überschriften, Figtree Text, DM Mono Code und kleine Beschriftungen.'],
+  'settings.font.hint': ['Her paket başlık, metin ve kod için birbirine uyan yazı tipleri kullanır. Hepsi uygulamayla gelir, internet gerekmez.', 'Each pack pairs matching fonts for headings, text and code. All ship with the app; no internet needed.', 'Jedes Paket kombiniert passende Schriften für Überschriften, Text und Code. Alle sind in der App enthalten, kein Internet nötig.'],
   'settings.width': ['Sayfa genişliği', 'Page width', 'Seitenbreite'],
   'settings.width.narrow': ['Dar', 'Narrow', 'Schmal'],
   'settings.width.normal': ['Normal', 'Normal', 'Normal'],

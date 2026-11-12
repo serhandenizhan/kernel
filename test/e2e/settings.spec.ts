@@ -92,3 +92,31 @@ test('yazı tipi paketleri başlığı, gövdeyi ve kodu birlikte değiştirir',
   expect(await font('.kernel-editor h1')).not.toContain('Bricolage')
   await app.close()
 })
+
+test('ek yazı tipi paketleri: önizlemeli seçiciden seçilir, başlık / metin / kod yazı tipleri yüklenir', async () => {
+  const vault = tmpVault()
+  writeFileSync(join(vault, 'Paket.md'), '# Başlık\n\nMetin ve `kod`.\n')
+  const { app, win } = await launch(vault)
+  await win.getByTestId('tree-row').filter({ hasText: 'Paket' }).click()
+  const font = (sel: string) => win.locator(sel).first().evaluate((e) => getComputedStyle(e).fontFamily)
+  const loads = (specs: string[]) => win.evaluate(async (list) => (await Promise.all(list.map((f) => document.fonts.load(f, 'ğşİ')))).every((r) => r.length > 0), specs)
+  const packs = [
+    { id: 'editorial', heading: 'Instrument Serif', body: 'Inter', mono: 'JetBrains Mono', files: ['400 28px "Instrument Serif"', '16px "Inter Variable"', '14px "JetBrains Mono Variable"'] },
+    { id: 'space', heading: 'Space Grotesk', body: 'Inter', mono: 'Space Mono', files: ['700 28px "Space Grotesk Variable"', '14px "Space Mono"'] },
+    { id: 'book', heading: 'Literata', body: 'Literata', mono: 'Fira Code', files: ['600 28px "Literata Variable"', '16px "Literata Variable"', '14px "Fira Code Variable"'] },
+    { id: 'rounded', heading: 'Nunito', body: 'Nunito', mono: 'JetBrains Mono', files: ['800 28px "Nunito Variable"', '16px "Nunito Variable"'] }
+  ]
+  for (const p of packs) {
+    await win.keyboard.press('ControlOrMeta+,')
+    const card = win.getByTestId(`setting-font-${p.id}`)
+    await card.click()
+    await expect(card).toHaveAttribute('aria-checked', 'true')
+    await win.keyboard.press('Escape')
+    await expect(win.locator('html')).toHaveAttribute('data-body-font', p.id)
+    expect(await font('.kernel-editor h1'), p.id).toContain(p.heading)
+    expect(await font('.kernel-editor p'), p.id).toContain(p.body)
+    expect(await font('.kernel-editor p code'), p.id).toContain(p.mono)
+    expect(await loads(p.files), p.id).toBe(true)
+  }
+  await app.close()
+})

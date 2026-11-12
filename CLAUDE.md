@@ -70,7 +70,9 @@ Kernel: lokal, açık kaynak, Markdown tabanlı macOS + Windows not uygulaması 
 - Sürüm notları: `docs/release-notes/<etiket>.md` (`<!-- tr -->`/`<!-- en -->`/`<!-- de -->` bölümleri) release iş akışında not olur; `src/core/release-notes.ts` arayüz dilini seçer, GitHub otomatik notunun teknik satırlarını atar.
 - Kartlar: `CardHighlight` (`::` satırı `card-line`/`card-q`/`card-sep`/`card-a`; katlanır kartın DOM'una `data-card` süslemeyle verilir — düğüm görünümü özel özellikleri yazmıyor; boş cevapta `card-empty` ipucu).
 - Testler arka planda: `KERNEL_TEST` varken ana pencere gösterilmez, Dock simgesi gizlenir (`isHeadlessTest`, `src/main/window-options.ts`); odak çalınmaz. Hata ayıklarken `KERNEL_TEST_SHOW=1 npx playwright test ...`; README ekran görüntüleri (`KERNEL_SCREENSHOTS=1`) pencereyi görünür açar.
-- Yazı tipi: varsayılan `bodyFont: 'plex'` (IBM Plex Sans, `@fontsource-variable/ibm-plex-sans`, uygulamayla gelir); ayar şeması 3.
+- Yazı tipi paketleri (`bodyFont`): `plex` (varsayılan; Fraunces başlık/h1/h2, IBM Plex Sans gövde, IBM Plex Mono kod), `bricolage` (Bricolage Grotesque başlık, Figtree gövde, DM Mono kod + küçük etiketler), `sans`, `serif`. Token'lar `--font-heading`, `--font-subheading`, `--font-label`, `--heading-weight` (`tokens.css`); dosyalar `@fontsource*` paketleriyle uygulamaya gömülü; ayar şeması 3.
+- Ayarlar → Güncellemeler → "Şimdi denetle" (`updates.checkNow`; açılış ayarı ve atlanan sürüm yok sayılır, ağ hatası "güncel" sayılmaz). Güncelleme penceresinin teklifi store'da (`updateOffer`).
+- Tablo: köşedeki ⋯ düğmesi + hücrede sağ tık menüsü (`TableMenu.tsx`, `ContextMenu`). Kod blokları `--code-border` kenarlığıyla açık temada da seçilir.
 
 ## Mimari
 - `src/main` — Electron ana süreç (pencere, kasa, arama, PDF)

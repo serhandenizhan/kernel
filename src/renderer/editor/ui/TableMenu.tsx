@@ -2,12 +2,30 @@ import { useEffect, useState } from 'react'
 import type { Editor } from '@tiptap/react'
 import { BubbleMenu } from '@tiptap/react/menus'
 import { tNow } from '../../lib/i18n'
+import { ContextMenu, type MenuItem } from '../../shell/ContextMenu'
 
 type Align = 'left' | 'center' | 'right' | null
 
 // İmleç tablodayken tablonun sağ üstünde küçük bir düğme belirir; araç çubuğu yalnızca ona basınca açılır
 export function TableMenu({ editor }: { editor: Editor }) {
   const [open, setOpen] = useState(false)
+  const [ctx, setCtx] = useState<{ x: number; y: number } | null>(null)
+
+  // hücreye sağ tık: imleç o hücreye gider ve tablo menüsü açılır
+  useEffect(() => {
+    const dom = editor.view.dom
+    const onContext = (e: MouseEvent) => {
+      if (!editor.isEditable) return
+      const cell = (e.target as HTMLElement | null)?.closest('td, th')
+      if (!cell || !dom.contains(cell)) return
+      e.preventDefault()
+      const at = editor.view.posAtCoords({ left: e.clientX, top: e.clientY })
+      if (at) editor.chain().focus().setTextSelection(at.pos).run()
+      setCtx({ x: e.clientX, y: e.clientY })
+    }
+    dom.addEventListener('contextmenu', onContext)
+    return () => dom.removeEventListener('contextmenu', onContext)
+  }, [editor])
 
   // tablodan çıkınca menü kapanır; bir sonraki tabloya girişte yine yalnızca düğme görünür
   useEffect(() => {
@@ -31,7 +49,25 @@ export function TableMenu({ editor }: { editor: Editor }) {
   const setAlign = (align: Align) => {
     editor.chain().focus().setCellAttribute('align', align).run()
   }
+  const run = (fn: (c: ReturnType<Editor['chain']>) => ReturnType<Editor['chain']>) => () => {
+    fn(editor.chain().focus()).run()
+  }
+  const items: MenuItem[] = [
+    { label: tNow('table.rowAbove'), onSelect: run((c) => c.addRowBefore()) },
+    { label: tNow('table.rowBelow'), onSelect: run((c) => c.addRowAfter()) },
+    { label: tNow('table.colLeft'), onSelect: run((c) => c.addColumnBefore()), separatorBefore: true },
+    { label: tNow('table.colRight'), onSelect: run((c) => c.addColumnAfter()) },
+    { label: tNow('table.headerRow'), onSelect: run((c) => c.toggleHeaderRow()), separatorBefore: true },
+    { label: tNow('table.alignLeft'), onSelect: () => setAlign('left'), separatorBefore: true },
+    { label: tNow('table.alignCenter'), onSelect: () => setAlign('center') },
+    { label: tNow('table.alignRight'), onSelect: () => setAlign('right') },
+    { label: tNow('table.removeRow'), onSelect: run((c) => c.deleteRow()), separatorBefore: true, danger: true },
+    { label: tNow('table.removeColumn'), onSelect: run((c) => c.deleteColumn()), danger: true },
+    { label: tNow('table.delete'), onSelect: run((c) => c.deleteTable()), danger: true }
+  ]
   return (
+    <>
+    {ctx && <ContextMenu x={ctx.x} y={ctx.y} items={items} onClose={() => setCtx(null)} />}
     <BubbleMenu
       editor={editor}
       pluginKey="tableMenu"
@@ -78,5 +114,6 @@ export function TableMenu({ editor }: { editor: Editor }) {
         </button>
       )}
     </BubbleMenu>
+    </>
   )
 }

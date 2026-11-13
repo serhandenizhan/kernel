@@ -19,6 +19,13 @@ registerVaultScheme()
 // Chromium'un kendi şifreleme anahtarı için Anahtar Zinciri'ne gitmesin (Kernel gizli bilgi saklamaz; parola penceresi açılmaz)
 if (process.platform === 'darwin') app.commandLine.appendSwitch('use-mock-keychain')
 
+// testlerde görünmez pencere "örtülü" sayılıp çizimi yavaşlatılmasın (macOS / Windows)
+if (isHeadlessTest(process.env)) {
+  app.commandLine.appendSwitch('disable-renderer-backgrounding')
+  app.commandLine.appendSwitch('disable-backgrounding-occluded-windows')
+  app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion')
+}
+
 app.whenReady().then(async () => {
   // testlerde Dock simgesi de çıkmaz (odak ve dikkat çalınmaz)
   if (isHeadlessTest(process.env)) app.dock?.hide()

@@ -49,5 +49,6 @@ describe('Vault.summaries', () => {
     computeHome(s, [], {}, '2026-11-05')
     expect(s).toHaveLength(500)
     expect(performance.now() - t0).toBeLessThan(200)
-  })
+    // ölçülen yalnızca ısınmış çağrı; 500 dosyalık hazırlık yoğun makinede 5 sn varsayılanını aşabiliyor
+  }, 30_000)
 })

@@ -37,6 +37,8 @@ export async function launch(vault = tmpVault(), extraEnv: Record<string, string
   })
   const win = await app.firstWindow()
   await win.waitForLoadState('domcontentloaded')
+  // arayüz kısayolları dinlemeye başlayana ve ilk veriler yüklenene kadar bekle (yavaş CI'da erken basılan tuş kaybolur)
+  await win.waitForSelector('html[data-ready="1"]', { state: 'attached' })
   return { app, win, vault }
 }
 

@@ -140,6 +140,11 @@ export function App() {
     }
   }, [])
 
+  // kısayollar dinleniyor ve ilk veriler yüklendi: otomatik testler bu işareti bekler (erken basılan tuş kaybolmasın)
+  useEffect(() => {
+    if (ready) document.documentElement.dataset['ready'] = '1'
+  }, [ready])
+
   if (!ready) return null
   if (!vaultPath) {
     return (

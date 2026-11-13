@@ -41,11 +41,9 @@ test('"/" menüsünden soru-cevap kartı ve katlanır kart eklenir; çalışma e
   await win.keyboard.press('Enter')
   // soru seçili gelir: yazınca yerine geçer
   await win.keyboard.type('Başkent')
-  await win.keyboard.press('End')
-  await win.keyboard.press('Shift+Home')
   await expect.poll(() => body(vault, 'Kart.md'), { timeout: 5000 }).toContain('Başkent :: Cevap')
-  await win.keyboard.press('End')
-  await win.keyboard.press('Enter')
+  // imleç tuşla değil editör komutuyla satır sonuna gider (End tuşu çizim gerektirir; yavaş CI'da güvenilmez)
+  await newLineAtEnd(win)
   await win.keyboard.type('/katlan')
   await win.getByTestId('slash-item').filter({ hasText: 'Katlanır kart' }).click()
   await win.keyboard.type('En büyük gezegen')

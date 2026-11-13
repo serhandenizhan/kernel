@@ -27,6 +27,7 @@ test('ayarlar: tema ve not fontu değişir, yeniden başlatınca korunur', async
   await expect(win.getByTestId('settings-dialog')).toBeVisible()
   await win.getByTestId('setting-theme-dark').click()
   await expect(win.locator('html')).toHaveAttribute('data-theme', 'dark')
+  await win.getByTestId('setting-font-toggle').click()
   await win.getByTestId('setting-font-sans').click()
   await expect(win.locator('html')).toHaveAttribute('data-body-font', 'sans')
   await win.getByTestId('setting-strip-citations').uncheck()
@@ -52,6 +53,10 @@ test('varsayılan not yazı tipi uygulamayla gelen IBM Plex Sans; ayarlardan de�
   // yazı tipi gerçekten yüklenir (ağ yok; uygulamanın içinden)
   await expect.poll(() => win.evaluate(async () => { await document.fonts.ready; return document.fonts.check('16px "IBM Plex Sans Variable"', 'ğşİ') })).toBe(true)
   await win.keyboard.press('ControlOrMeta+,')
+  // kartlar kapalı gelir; yalnızca seçili paketin adı görünür
+  await expect(win.getByTestId('setting-font-current')).toContainText('IBM Plex')
+  await expect(win.getByTestId('setting-font-plex')).toHaveCount(0)
+  await win.getByTestId('setting-font-toggle').click()
   await expect(win.getByTestId('setting-font-plex')).toHaveAttribute('aria-checked', 'true')
   await win.getByTestId('setting-font-sans').click()
   await expect(win.locator('html')).toHaveAttribute('data-body-font', 'sans')
@@ -77,6 +82,7 @@ test('yazı tipi paketleri başlığı, gövdeyi ve kodu birlikte değiştirir',
   expect(await loads(['700 28px "Fraunces Variable"', '14px "IBM Plex Mono"'])).toBe(true)
   // Bricolage paketi: Bricolage Grotesque başlık, Figtree gövde, DM Mono kod ve küçük etiketler
   await win.keyboard.press('ControlOrMeta+,')
+  await win.getByTestId('setting-font-toggle').click()
   await win.getByTestId('setting-font-bricolage').click()
   await win.keyboard.press('Escape')
   await expect(win.locator('html')).toHaveAttribute('data-body-font', 'bricolage')
@@ -86,6 +92,7 @@ test('yazı tipi paketleri başlığı, gövdeyi ve kodu birlikte değiştirir',
   expect(await loads(['800 28px "Bricolage Grotesque Variable"', '16px "Figtree Variable"', '14px "DM Mono"'])).toBe(true)
   // sistem paketi: başlık da sistem yazısına döner
   await win.keyboard.press('ControlOrMeta+,')
+  await win.getByTestId('setting-font-toggle').click()
   await win.getByTestId('setting-font-sans').click()
   await win.keyboard.press('Escape')
   expect(await font('.kernel-editor h1')).not.toContain('Fraunces')
@@ -108,6 +115,7 @@ test('ek yazı tipi paketleri: önizlemeli seçiciden seçilir, başlık / metin
   ]
   for (const p of packs) {
     await win.keyboard.press('ControlOrMeta+,')
+    await win.getByTestId('setting-font-toggle').click()
     const card = win.getByTestId(`setting-font-${p.id}`)
     await card.click()
     await expect(card).toHaveAttribute('aria-checked', 'true')

@@ -176,8 +176,31 @@ export function SettingsDialog() {
 }
 
 /** Segment kontrolü (radyo grubu); seçenek testid'i `${testid}-${value}` */
-// Yazı tipi paketi seçicisi: her kart paketin adını kendi başlık yazı tipiyle gösterir
+// Yazı tipi paketi seçicisi: kapalıyken yalnızca seçili paket görünür; "Değiştir" ile kartlar açılır.
+// Her kart paketin adını kendi başlık yazı tipiyle gösterir.
 function FontPackPicker({ value, label, onChange }: { value: Settings['bodyFont']; label: string; onChange(v: Settings['bodyFont']): void }) {
+  const t = useT()
+  const [open, setOpen] = useState(false)
+  const current = FONT_PACKS.find((p) => p.id === value) ?? FONT_PACKS[0]!
+  return (
+    <>
+      <div className="font-pack-current">
+        <span className="font-pack-current-text" data-testid="setting-font-current">
+          <span className="font-pack-name" style={{ fontFamily: current.preview, fontWeight: current.previewWeight }}>
+            {current.name}
+          </span>
+          <span className="font-pack-fonts">{current.fonts}</span>
+        </span>
+        <button className="btn small" data-testid="setting-font-toggle" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+          {open ? t('settings.font.close') : t('settings.font.change')}
+        </button>
+      </div>
+      {open && <FontPackGrid value={value} label={label} onChange={onChange} />}
+    </>
+  )
+}
+
+function FontPackGrid({ value, label, onChange }: { value: Settings['bodyFont']; label: string; onChange(v: Settings['bodyFont']): void }) {
   return (
     <div className="font-packs" role="radiogroup" aria-label={label} data-testid="setting-font">
       {FONT_PACKS.map((p) => (

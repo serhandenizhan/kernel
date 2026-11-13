@@ -1290,7 +1290,8 @@ html:not([data-platform='darwin']) .sidebar-drag {
 .toc-rail {
   position: absolute;
   top: calc(var(--page-inset) + 120px);
-  right: calc(var(--page-inset) + 6px);
+  /* kaydırma çubuğundan uzak dursun */
+  right: calc(var(--page-inset) + 22px);
   z-index: 20;
   display: flex;
   justify-content: flex-end;
@@ -1307,7 +1308,7 @@ html:not([data-platform='darwin']) .sidebar-drag {
 .toc-line {
   height: 2px;
   border-radius: 1px;
-  background: color-mix(in srgb, var(--text-3) 55%, transparent);
+  background: color-mix(in srgb, var(--text-3) 38%, transparent);
 }
 .toc-line.active {
   background: var(--accent);
@@ -1372,4 +1373,21 @@ html:not([data-platform='darwin']) .sidebar-show {
 }
 html:not([data-platform='darwin']) .app.sidebar-hidden .tab-bar {
   padding-left: 40px;
+}
+
+/* ayar penceresi başlığı + kapatma düğmesi */
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.modal-head h3 {
+  margin: 0;
+}
+.modal-close {
+  width: 28px;
+  height: 28px;
+  font-size: 20px;
+  line-height: 1;
 }

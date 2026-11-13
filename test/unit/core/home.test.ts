@@ -38,3 +38,19 @@ describe('computeHome', () => {
     expect(h.courses[0]!.descendantCount).toBe(12)
   })
 })
+
+import { activityStats } from '@core/home'
+describe('activityStats', () => {
+  const days = (counts: number[]) => counts.map((count, i) => ({ day: `2026-11-${String(i + 1).padStart(2, '0')}`, count }))
+  it('son 7 günün toplamı, aktif gün sayısı ve bugüne (ya da düne) kadar süren seri', () => {
+    // son gün bugün: son dört gün aktif → seri 4; son 7 gün 0+2+0+1+3+1+2
+    expect(activityStats(days([1, 0, 0, 2, 0, 1, 3, 1, 2]))).toEqual({ week: 9, activeDays: 6, streak: 4 })
+  })
+  it('bugün henüz bir şey yoksa seri dünden sayılır; iki gün boşsa seri 0', () => {
+    expect(activityStats(days([1, 1, 0]))).toEqual({ week: 2, activeDays: 2, streak: 2 })
+    expect(activityStats(days([1, 0, 0]))).toEqual({ week: 1, activeDays: 1, streak: 0 })
+  })
+  it('boş etkinlik', () => {
+    expect(activityStats([])).toEqual({ week: 0, activeDays: 0, streak: 0 })
+  })
+})

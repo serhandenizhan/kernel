@@ -77,3 +77,18 @@ export function computeHome(pages: PageSummary[], pins: string[], activity: Reco
     totalPages: pages.length
   }
 }
+
+/** Isı haritasının yanındaki özet: son 7 gün toplamı, aktif gün sayısı, bugüne (bugün boşsa düne) kadar süren seri */
+export function activityStats(days: { day: string; count: number }[]): { week: number; activeDays: number; streak: number } {
+  const week = days.slice(-7).reduce((a, d) => a + d.count, 0)
+  const activeDays = days.filter((d) => d.count > 0).length
+  let i = days.length - 1
+  // bugün henüz bir şey yazılmadıysa seri bozulmuş sayılmaz
+  if (i >= 0 && days[i]!.count === 0) i--
+  let streak = 0
+  while (i >= 0 && days[i]!.count > 0) {
+    streak++
+    i--
+  }
+  return { week, activeDays, streak }
+}

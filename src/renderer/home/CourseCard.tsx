@@ -6,11 +6,14 @@ import { useLang, useT, useTn } from '../lib/i18n'
 import { useStore } from '../state/store'
 import { PageIcon } from '../shell/PageHeader'
 
-// kapağı olmayan derse başlığından türeyen yumuşak bir degrade (her açılışta aynı)
+// kapağı olmayan derse başlığından türeyen sakin bir degrade (her açılışta aynı).
+// Tonlar uygulamanın yeşil-mavi paletinden seçilir; rastgele mor/pembe çıkmaz.
+const PLACEHOLDER_HUES = [168, 186, 198, 150, 138, 176]
 function placeholder(title: string): string {
-  let h = 0
-  for (const ch of title) h = (h * 31 + ch.codePointAt(0)!) % 360
-  return `linear-gradient(135deg, hsl(${h} 45% 42%), hsl(${(h + 50) % 360} 50% 52%))`
+  let n = 0
+  for (const ch of title) n = (n * 31 + ch.codePointAt(0)!) % 9973
+  const h = PLACEHOLDER_HUES[n % PLACEHOLDER_HUES.length]!
+  return `linear-gradient(135deg, hsl(${h} 30% 40%), hsl(${(h + 18) % 360} 32% 56%))`
 }
 
 export function CourseCard({ course }: { course: HomeCourse }) {

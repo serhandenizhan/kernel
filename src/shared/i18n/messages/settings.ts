@@ -6,6 +6,7 @@ export const settings = {
   'settings.theme.system': ['Sistemi takip et', 'Match system', 'Wie System'],
   'settings.theme.light': ['Açık', 'Light', 'Hell'],
   'settings.theme.dark': ['Koyu', 'Dark', 'Dunkel'],
+  'settings.close': ['Kapat (Esc)', 'Close (Esc)', 'Schließen (Esc)'],
   'settings.font': ['Yazı tipi paketi', 'Font pack', 'Schriftpaket'],
   'settings.font.hint': ['Her paket başlık, metin ve kod için birbirine uyan yazı tipleri kullanır. Hepsi uygulamayla gelir, internet gerekmez.', 'Each pack pairs matching fonts for headings, text and code. All ship with the app; no internet needed.', 'Jedes Paket kombiniert passende Schriften für Überschriften, Text und Code. Alle sind in der App enthalten, kein Internet nötig.'],
   'settings.width': ['Sayfa genişliği', 'Page width', 'Seitenbreite'],

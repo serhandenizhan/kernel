@@ -223,12 +223,28 @@
 /* --- callout --- */
 .callout {
   display: flex;
+  align-items: flex-start;
   gap: 10px;
   margin: 0.8em 0;
-  padding: 12px 16px 12px 12px;
+  padding: 10px 16px 10px 14px;
   border-radius: 10px;
   --callout-bg: #eef2f6;
+  --callout-accent: #6b8193;
   background: var(--callout-bg);
+  /* türünün rengiyle soldaki ince çizgi */
+  box-shadow: inset 3px 0 0 var(--callout-accent);
+}
+.callout-note { --callout-accent: #6b8193; }
+.callout-tip { --callout-accent: #0e7c6b; }
+.callout-warning { --callout-accent: #c98a17; }
+.callout-danger { --callout-accent: #b4372f; }
+.callout-info { --callout-accent: #2f6fbe; }
+.callout-example { --callout-accent: #7457c4; }
+:root[data-theme='dark'] .callout-tip { --callout-accent: #3fbfa8; }
+:root[data-theme='dark'] .callout-note { --callout-accent: #8aa0b2; }
+/* yalnız başlıklı kutuda boş içerik satırı yer kaplamasın (yazarken görünür) */
+.callout:not(:focus-within) .callout-content:has(> div > p:only-child > br.ProseMirror-trailingBreak:only-child) {
+  display: none;
 }
 /* nötr not kutusu kâğıt degradesi üstünde de seçilsin */
 .callout-note { --callout-bg: rgba(60, 84, 104, 0.09); }
@@ -264,7 +280,9 @@
 .callout-title {
   display: block;
   width: 100%;
-  margin-bottom: 2px;
+  margin-bottom: 0;
+  /* simgeyle aynı satır yüksekliği: başlık ikonla hizalı */
+  line-height: 26px;
   border: 0;
   outline: none;
   background: transparent;

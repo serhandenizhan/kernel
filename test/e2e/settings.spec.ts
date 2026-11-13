@@ -25,7 +25,7 @@ test('ayarlar: tema ve not fontu değişir, yeniden başlatınca korunur', async
   let { app, win } = await launch(vault)
   await win.keyboard.press('ControlOrMeta+,')
   await expect(win.getByTestId('settings-dialog')).toBeVisible()
-  await win.getByTestId('setting-theme').selectOption('dark')
+  await win.getByTestId('setting-theme-dark').click()
   await expect(win.locator('html')).toHaveAttribute('data-theme', 'dark')
   await win.getByTestId('setting-font-sans').click()
   await expect(win.locator('html')).toHaveAttribute('data-body-font', 'sans')

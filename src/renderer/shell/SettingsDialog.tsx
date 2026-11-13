@@ -24,18 +24,29 @@ export function SettingsDialog() {
   return (
     <div className="modal-backdrop" onMouseDown={close}>
       <div className="modal settings glass" role="dialog" aria-label={t('settings.title')} data-testid="settings-dialog" onMouseDown={(e) => e.stopPropagation()}>
-        <h3>{t('settings.title')}</h3>
+        <div className="modal-head">
+          <h3>{t('settings.title')}</h3>
+          <button className="icon-btn modal-close" data-testid="settings-close" title={t('settings.close')} aria-label={t('settings.close')} onClick={() => useStore.getState().setOverlay(null)}>
+            ×
+          </button>
+        </div>
 
         <section>
           <h4>{t('settings.appearance')}</h4>
-          <label className="setting-row">
+          <div className="setting-row">
             <span>{t('settings.theme')}</span>
-            <select data-testid="setting-theme" value={settings.theme} onChange={(e) => set({ theme: e.target.value as Settings['theme'] })}>
-              <option value="system">{t('settings.theme.system')}</option>
-              <option value="light">{t('settings.theme.light')}</option>
-              <option value="dark">{t('settings.theme.dark')}</option>
-            </select>
-          </label>
+            <Segmented
+              testid="setting-theme"
+              label={t('settings.theme')}
+              value={settings.theme}
+              options={[
+                { value: 'system', label: t('settings.theme.system') },
+                { value: 'light', label: t('settings.theme.light') },
+                { value: 'dark', label: t('settings.theme.dark') }
+              ]}
+              onChange={(theme) => set({ theme })}
+            />
+          </div>
           <div className="setting-row">
             <span>{t('settings.language')}</span>
             <Segmented
@@ -70,14 +81,20 @@ export function SettingsDialog() {
               onChange={(startView) => set({ startView })}
             />
           </div>
-          <label className="setting-row">
+          <div className="setting-row">
             <span>{t('settings.width')}</span>
-            <select data-testid="setting-width" value={settings.pageWidth} onChange={(e) => set({ pageWidth: e.target.value as Settings['pageWidth'] })}>
-              <option value="narrow">{t('settings.width.narrow')}</option>
-              <option value="normal">{t('settings.width.normal')}</option>
-              <option value="wide">{t('settings.width.wide')}</option>
-            </select>
-          </label>
+            <Segmented
+              testid="setting-width"
+              label={t('settings.width')}
+              value={settings.pageWidth}
+              options={[
+                { value: 'narrow', label: t('settings.width.narrow') },
+                { value: 'normal', label: t('settings.width.normal') },
+                { value: 'wide', label: t('settings.width.wide') }
+              ]}
+              onChange={(pageWidth) => set({ pageWidth })}
+            />
+          </div>
         </section>
 
         <section>

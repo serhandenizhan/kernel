@@ -1,3 +1,4 @@
+import { activityStats } from '@core/home'
 import { useEffect, useState } from 'react'
 import type { HomeData, HomeItem } from '@shared/types'
 import { formatLongDate, formatRelative } from '@shared/i18n'
@@ -58,7 +59,7 @@ function ReviewCard() {
   }, [])
   if (due === 0) return null
   return (
-    <section className="home-review glass" data-testid="home-review">
+    <section className="home-review" data-testid="home-review">
       <Icon name="cards" size={20} />
       <span className="recent-text">
         <span className="recent-title">{t('home.review')}</span>
@@ -68,6 +69,27 @@ function ReviewCard() {
         {t('home.reviewStart')}
       </button>
     </section>
+  )
+}
+
+// Isı haritasının yanındaki üç özet: bu hafta, seri, aktif gün
+function ActivityStats({ days }: { days: { day: string; count: number }[] }) {
+  const t = useT()
+  const { week, streak, activeDays } = activityStats(days)
+  const items: [number, string][] = [
+    [week, t('home.stat.week')],
+    [streak, t('home.stat.streak')],
+    [activeDays, t('home.stat.active')]
+  ]
+  return (
+    <div className="home-stats" data-testid="home-stats">
+      {items.map(([n, label]) => (
+        <div key={label} className="home-stat" data-testid="home-stat">
+          <span className="home-stat-num">{n}</span>
+          <span className="home-stat-label">{label}</span>
+        </div>
+      ))}
+    </div>
   )
 }
 
@@ -156,7 +178,10 @@ export function HomePage() {
             <h2>{t('home.activity')}</h2>
             <span>{t('home.last12')}</span>
           </div>
-          <ActivityHeatmap days={data.activity} />
+          <div className="activity-row">
+            <ActivityHeatmap days={data.activity} />
+            <ActivityStats days={data.activity} />
+          </div>
         </section>
 
         {data.pins.length > 0 && (

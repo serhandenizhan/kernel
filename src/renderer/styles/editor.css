@@ -39,7 +39,7 @@
 .save-status {
   position: absolute;
   top: -48px;
-  right: 0;
+  right: 24px;
   color: var(--text-3);
   font-size: 11px;
 }

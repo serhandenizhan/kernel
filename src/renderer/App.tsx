@@ -20,6 +20,7 @@ import './guide/tips'
 import { flushAll } from './editor/Editor'
 import { SplitDrop, TabBar } from './shell/TabBar'
 import { tNow, useLang } from './lib/i18n'
+import { Icon } from './assets/icons'
 import { HomePage } from './home/HomePage'
 import { TagPage } from './shell/TagPage'
 import { GraphView } from './graph/GraphView'
@@ -159,6 +160,11 @@ export function App() {
       {sidebarVisible && !focusMode && <Sidebar />}
       <main className="main">
         <div className="main-drag" />
+        {!sidebarVisible && !focusMode && (
+          <button className="icon-btn sidebar-show" data-testid="sidebar-show" title={tNow('sidebar.show')} aria-label={tNow('sidebar.show')} onClick={() => useStore.getState().toggleSidebar()}>
+            <Icon name="sidebar" size={16} />
+          </button>
+        )}
         {!focusMode && <TabBar />}
         <div className="surfaces">
           <div className="page-surface">

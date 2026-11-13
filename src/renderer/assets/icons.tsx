@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 // SF Symbols tarzı ikon seti: 16×16, 1.5 px çizgi, currentColor (spec §18.1)
-export const ICON_NAMES = ['home', 'plus', 'doc', 'template', 'grid', 'search', 'settings', 'help', 'pin', 'chevron-down', 'chevron-right', 'download', 'image', 'graph', 'cards'] as const
+export const ICON_NAMES = ['home', 'plus', 'doc', 'template', 'grid', 'search', 'settings', 'help', 'pin', 'chevron-down', 'chevron-right', 'download', 'image', 'graph', 'cards', 'sidebar', 'smile', 'cover'] as const
 export type IconName = (typeof ICON_NAMES)[number]
 
 const PATHS: Record<IconName, ReactNode> = {
@@ -56,6 +56,24 @@ const PATHS: Record<IconName, ReactNode> = {
       <circle cx="12" cy="6" r="1.8" />
       <circle cx="6.5" cy="12" r="1.8" />
       <path d="M5.7 5 10.3 5.6M11 7.5 7.6 10.6M4.5 6.2l1.4 4" strokeLinecap="round" />
+    </>
+  ),
+  sidebar: (
+    <>
+      <rect x="1.8" y="2.8" width="12.4" height="10.4" rx="2" />
+      <path d="M6 3v10" />
+    </>
+  ),
+  smile: (
+    <>
+      <circle cx="8" cy="8" r="6" />
+      <path d="M5.6 9.6a3 3 0 0 0 4.8 0M6 6.4v.1M10 6.4v.1" strokeLinecap="round" />
+    </>
+  ),
+  cover: (
+    <>
+      <rect x="2" y="3" width="12" height="10" rx="2" />
+      <path d="M2.2 7.2h11.6" />
     </>
   ),
   image: (

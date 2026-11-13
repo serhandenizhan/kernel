@@ -110,12 +110,12 @@ export function PageHeader({ initialMeta }: { initialMeta: PageMeta }) {
         <div className="header-actions">
           {!meta.icon && (
             <button ref={addIconRef} className="ghost-btn" data-testid="add-icon" onClick={(e) => setIconPicker(e.currentTarget.getBoundingClientRect())}>
-              ☺ {tNow('header.addIcon')}
+              <Icon name="smile" size={13} /> {tNow('header.addIcon')}
             </button>
           )}
           {!meta.cover && (
             <button className="ghost-btn" data-testid="add-cover" onClick={() => void update({ cover: COVER_PRESETS[Math.floor(Math.random() * COVER_PRESETS.length)]!.id })}>
-              ▭ {tNow('header.addCover')}
+              <Icon name="cover" size={13} /> {tNow('header.addCover')}
             </button>
           )}
           <button

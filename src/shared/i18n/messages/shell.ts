@@ -60,6 +60,8 @@ export const shell = {
   'search.recent': ['Son açılanlar', 'Recently opened', 'Zuletzt geöffnet'],
   'search.noResults': ['Sonuç bulunamadı', 'Nothing found', 'Nichts gefunden'],
   'search.noRecent': ['Henüz açılan sayfa yok', 'No pages opened yet', 'Noch keine Seiten geöffnet'],
+  'sidebar.hide': ['Kenar çubuğunu gizle (⌘\\)', 'Hide sidebar (⌘\\)', 'Seitenleiste ausblenden (⌘\\)'],
+  'sidebar.show': ['Kenar çubuğunu göster (⌘\\)', 'Show sidebar (⌘\\)', 'Seitenleiste einblenden (⌘\\)'],
   'sidebar.search': ['Ara', 'Search', 'Suchen'],
   'sidebar.newPage': ['Yeni sayfa (⌘N)', 'New page (⌘N)', 'Neue Seite (⌘N)'],
   'sidebar.fromTemplate': ['Şablondan yeni sayfa', 'New page from template', 'Neue Seite aus Vorlage'],

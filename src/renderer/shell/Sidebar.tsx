@@ -72,6 +72,9 @@ export function Sidebar() {
       <div className="sidebar-brand" data-testid="sidebar-brand">
         <img src={logo} width={28} height={28} alt="" />
         <span>Kernel</span>
+        <button className="icon-btn sidebar-toggle" data-testid="sidebar-hide" title={t('sidebar.hide')} aria-label={t('sidebar.hide')} onClick={() => s().toggleSidebar()}>
+          <Icon name="sidebar" size={16} />
+        </button>
       </div>
       <div className="sidebar-actions">
         <button className="search-trigger" onClick={() => s().setOverlay('search')}>

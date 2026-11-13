@@ -1344,3 +1344,32 @@ html:not([data-platform='darwin']) .sidebar-drag {
     transition: none;
   }
 }
+
+/* kenar çubuğunu gizle / göster düğmeleri (⌘\ kısayolunun görünür karşılığı) */
+.sidebar-toggle {
+  margin-left: auto;
+  width: 26px;
+  height: 26px;
+  -webkit-app-region: no-drag;
+}
+.sidebar-show {
+  position: absolute;
+  z-index: 5;
+  /* macOS'ta trafik ışıklarının sağında; diğer platformlarda sol üstte */
+  top: 12px;
+  left: 84px;
+  width: 26px;
+  height: 26px;
+  -webkit-app-region: no-drag;
+}
+html:not([data-platform='darwin']) .sidebar-show {
+  top: 8px;
+  left: 12px;
+}
+/* gizliyken sekme çubuğu düğmenin altına girmesin */
+.app.sidebar-hidden .tab-bar {
+  padding-left: 110px;
+}
+html:not([data-platform='darwin']) .app.sidebar-hidden .tab-bar {
+  padding-left: 40px;
+}

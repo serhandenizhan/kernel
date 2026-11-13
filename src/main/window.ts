@@ -53,6 +53,15 @@ export function createMainWindow(): BrowserWindow {
   })
 
   if (!headless) win.once('ready-to-show', () => win.show())
+  else
+    win.once('ready-to-show', () => {
+      // gizli pencere bazı makinelerde (CI) hiç çizilmez; çizilmeyen sayfada End/Home gibi tuşlar çalışmaz.
+      // Bu yüzden pencere görünmez (opaklık 0), tıklamaları geçirir ve odak almadan açılır: kullanıcı hiçbir şey görmez.
+      win.setOpacity(0)
+      win.setIgnoreMouseEvents(true)
+      win.setSkipTaskbar(true)
+      win.showInactive()
+    })
 
   // Kapanmadan önce açık sayfanın kaydını bekle (yazıp hemen Cmd+Q'da veri kaybı olmasın)
   let flushed = false

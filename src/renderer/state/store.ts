@@ -27,6 +27,10 @@ interface State {
   overlay: 'search' | 'settings' | 'export' | 'guide' | 'history' | 'notion' | 'palette' | null
   /** odak modu: kenar çubuğu, içindekiler ve araç çubukları gizli */
   focusMode: boolean
+  /** sayfa içi arama çubuğu (⌘F); nonce: açıkken yeniden basılınca kutuyu seçmek için */
+  findOpen: boolean
+  findNonce: number
+  setFindOpen(open: boolean): void
   /** Sayfanın diskten yeniden okunmasını tetikler (örn. sürüm geri yükleme) */
   reloadToken: number
   reloadPage(): void
@@ -108,6 +112,11 @@ export const useStore = create<State>((set, get) => ({
   expanded: {},
   renamingId: null,
   toasts: [],
+  findOpen: false,
+  findNonce: 0,
+  setFindOpen(open) {
+    set((s) => ({ findOpen: open, findNonce: open ? s.findNonce + 1 : s.findNonce }))
+  },
   updateOffer: null,
   overlay: null,
   reloadToken: 0,

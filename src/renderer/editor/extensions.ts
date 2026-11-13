@@ -13,6 +13,7 @@ import { SlashCommand } from './nodes/SlashCommand'
 import { WikiPicker } from './nodes/WikiPicker'
 import { TagHighlight } from './nodes/TagHighlight'
 import { CardHighlight } from './nodes/CardHighlight'
+import { FindHighlight } from './nodes/FindHighlight'
 import { SmartPaste } from './paste'
 import { WikiLink } from './nodes/WikiLink'
 import { PdfEmbed } from './nodes/PdfEmbed'
@@ -39,6 +40,7 @@ export function buildExtensions(opts: ExtensionOptions = {}): AnyExtension[] {
   const list: AnyExtension[] = [
     TagHighlight,
     CardHighlight,
+    FindHighlight,
     StarterKit.configure({ codeBlock: false, heading: { levels: [1, 2, 3, 4, 5, 6] }, link: { openOnClick: false, autolink: true } }),
     KernelCodeBlock,
     TaskList,

@@ -1,5 +1,9 @@
 // Editör: [Türkçe, English, Deutsch]
 export const editor = {
+  'find.placeholder': ['Bu sayfada ara', 'Find in page', 'Auf der Seite suchen'],
+  'find.next': ['Sonraki (Enter)', 'Next (Enter)', 'Weiter (Enter)'],
+  'find.prev': ['Önceki (Shift+Enter)', 'Previous (Shift+Enter)', 'Zurück (Shift+Enter)'],
+  'find.close': ['Kapat (Esc)', 'Close (Esc)', 'Schließen (Esc)'],
   'editor.status.saved': ['Kaydedildi', 'Saved', 'Gespeichert'],
   'editor.status.dirty': ['Düzenleniyor', 'Editing', 'Wird bearbeitet'],
   'editor.status.saving': ['Kaydediliyor', 'Saving', 'Wird gespeichert'],

@@ -21,6 +21,7 @@ import { flushAll } from './editor/Editor'
 import { SplitDrop, TabBar } from './shell/TabBar'
 import { tNow, useLang } from './lib/i18n'
 import { Icon } from './assets/icons'
+import { FindBar } from './editor/ui/FindBar'
 import { HomePage } from './home/HomePage'
 import { TagPage } from './shell/TagPage'
 import { GraphView } from './graph/GraphView'
@@ -88,6 +89,12 @@ function useShortcuts() {
       } else if (k === 'p' && !e.shiftKey) {
         e.preventDefault()
         s.setOverlay(s.overlay === 'palette' ? null : 'palette')
+      } else if (k === 'f' && !e.shiftKey && !e.altKey) {
+        // sayfa içi arama: yalnızca bir not açıkken
+        if (s.view === 'page' && s.currentId) {
+          e.preventDefault()
+          s.setFindOpen(true)
+        }
       } else if (k === 'f' && e.shiftKey) {
         e.preventDefault()
         s.toggleFocus()
@@ -166,6 +173,7 @@ export function App() {
           </button>
         )}
         {!focusMode && <TabBar />}
+        <FindBar />
         <div className="surfaces">
           <div className="page-surface">
             {/* hata olursa sayfa görünümüne düşer; görünüm değişince yeniden dener */}

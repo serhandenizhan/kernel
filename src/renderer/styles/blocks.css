@@ -1289,3 +1289,39 @@ mark[data-color='gray'] { --hl: #e3e8ec; }
 .kernel-editor li p.card-line::before {
   display: none;
 }
+
+/* --- sayfa içi arama (⌘F) --- */
+.find-bar {
+  position: absolute;
+  top: calc(var(--page-inset) + 12px);
+  right: calc(var(--page-inset) + 48px);
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 6px 5px 10px;
+  font-size: 13px;
+}
+.find-bar input {
+  width: 200px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+}
+.find-count {
+  min-width: 34px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.kernel-editor .find-match {
+  border-radius: 2px;
+  background: color-mix(in srgb, #f5c542 38%, transparent);
+}
+.kernel-editor .find-current {
+  background: #f5c542;
+  color: #1b1b1b;
+  box-shadow: 0 0 0 1px #d9a514;
+}

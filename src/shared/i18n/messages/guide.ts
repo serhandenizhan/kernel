@@ -59,6 +59,7 @@ export const guide = {
   'sc.newPage': ['Yeni sayfa', 'New page', 'Neue Seite'],
   'sc.newChild': ['Mevcut sayfanın altına alt sayfa', 'Subpage under the current page', 'Unterseite unter der aktuellen Seite'],
   'sc.search': ['Ara / sayfaya git', 'Search / go to page', 'Suchen / zur Seite'],
+  'sc.findInPage': ['Bu sayfada ara', 'Find in this page', 'Auf dieser Seite suchen'],
   'sc.exportPdf': ['PDF olarak dışa aktar', 'Export as PDF', 'Als PDF exportieren'],
   'sc.sidebar': ['Kenar çubuğunu aç/kapat', 'Show/hide sidebar', 'Seitenleiste ein/aus'],
   'sc.toc': ['İçindekiler panelini aç/kapat', 'Show/hide contents', 'Inhaltsverzeichnis ein/aus'],

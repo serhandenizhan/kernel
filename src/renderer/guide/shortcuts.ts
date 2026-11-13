@@ -15,6 +15,7 @@ export const SHORTCUTS: Shortcut[] = [
   { group: 'sc.group.pages', keys: '⌘N', action: 'sc.newPage', phase: 1 },
   { group: 'sc.group.pages', keys: '⌘⇧N', action: 'sc.newChild', phase: 1 },
   { group: 'sc.group.pages', keys: '⌘K', action: 'sc.search', phase: 1 },
+  { group: 'sc.group.pages', keys: '⌘F', action: 'sc.findInPage', phase: 1 },
   { group: 'sc.group.pages', keys: '⌘E', action: 'sc.exportPdf', phase: 1 },
   { group: 'sc.group.view', keys: '⌘\\', action: 'sc.sidebar', phase: 1 },
   { group: 'sc.group.view', keys: '⌘⇧T', action: 'sc.toc', phase: 1 },

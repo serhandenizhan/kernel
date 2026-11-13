@@ -5,6 +5,7 @@ import { loadCases } from '../../../fixtures/paste/load'
 import { convertPaste } from '@core/smart-paste'
 import { markdownToDoc } from '@core/markdown/parse'
 import type { PasteSettings } from '@shared/types'
+import { perfBudget } from '../../helpers/perf'
 
 const ALL: PasteSettings = { stripCitations: true, latexLineHeuristic: true, unfencedCodeHeuristic: true }
 
@@ -44,7 +45,7 @@ describe('convertPaste — sentetik örnekler', () => {
     const t = performance.now()
     convertPaste({ text: big }, ALL)
     // CI'nın Windows makinesi geliştirme makinesinden belirgin yavaş
-    expect(performance.now() - t).toBeLessThan(process.platform === 'win32' ? 1500 : 300)
+    expect(performance.now() - t).toBeLessThan(perfBudget(process.platform === 'win32' ? 1500 : 300))
   })
 })
 

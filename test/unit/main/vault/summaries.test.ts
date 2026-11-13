@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Vault } from '../../../../src/main/vault/vault'
 import { computeHome } from '../../../../src/core/home'
+import { perfBudget } from '../../helpers/perf'
 
 describe('Vault.summaries', () => {
   it('ağaç sırasıyla; kapak, oluşturma, düzenleme ve alt sayfa sayısı', async () => {
@@ -48,7 +49,7 @@ describe('Vault.summaries', () => {
     const s = await v.summaries()
     computeHome(s, [], {}, '2026-11-05')
     expect(s).toHaveLength(500)
-    expect(performance.now() - t0).toBeLessThan(200)
+    expect(performance.now() - t0).toBeLessThan(perfBudget(200))
     // ölçülen yalnızca ısınmış çağrı; 500 dosyalık hazırlık yoğun makinede 5 sn varsayılanını aşabiliyor
   }, 30_000)
 })

@@ -2,7 +2,7 @@ import { parse, stringify } from 'yaml'
 import type { PageMeta } from '@shared/types'
 
 const FM = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/
-export const KNOWN_KEYS: (keyof PageMeta)[] = ['id', 'icon', 'cover', 'coverPosition', 'created', 'updated', 'tags']
+export const KNOWN_KEYS: (keyof PageMeta)[] = ['id', 'icon', 'cover', 'coverPosition', 'coverCredit', 'coverCreditUrl', 'created', 'updated', 'tags']
 
 export function splitFrontmatter(text: string): { meta: Record<string, unknown>; body: string; error?: true } {
   const m = FM.exec(text)

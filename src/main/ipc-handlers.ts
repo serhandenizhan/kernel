@@ -30,6 +30,9 @@ import { computeHome, localDay } from '@core/home'
 import { isReleaseUrl, shouldOffer } from '@core/update'
 import { checkLatestRelease, fetchLatestRelease } from './updates'
 import { installUpdate } from './update-install'
+import { fetchPhoto, searchPhotos } from './unsplash'
+import { readUnsplashKey, saveUnsplashKey } from './config'
+import { isUnsplashLink } from '@core/unsplash'
 import type { UpdateInfo } from '@core/update'
 import { track } from './pending'
 
@@ -425,6 +428,18 @@ export function registerIpc(): void {
       log.warn(`update install failed: ${String(e)}`)
       return 'manual'
     }
+  })
+  // Unsplash kapak görselleri (anahtar userData/config.json'da; kasaya ve depoya girmez)
+  h(IPC.unsplashStatus, async () => ({ hasKey: !!(await readUnsplashKey()) }))
+  h(IPC.unsplashSetKey, (key: string) => saveUnsplashKey(typeof key === 'string' ? key : ''))
+  h(IPC.unsplashSearch, async (query: string, page: number) => searchPhotos(await readUnsplashKey(), typeof query === 'string' ? query : '', Number(page) || 1))
+  h(IPC.unsplashPick, async (id: string) => {
+    const photo = await fetchPhoto(await readUnsplashKey(), String(id))
+    const src = await requireVault().saveAttachment(photo.bytes, 'jpg', `unsplash-${photo.author}`)
+    return { src, credit: photo.credit, creditUrl: photo.creditUrl }
+  })
+  h(IPC.unsplashOpen, async (url: string) => {
+    if (typeof url === 'string' && isUnsplashLink(url)) await shell.openExternal(url)
   })
   h(IPC.updatesOpen, async (url: string) => {
     // yalnızca bu deponun sürüm adresleri açılır

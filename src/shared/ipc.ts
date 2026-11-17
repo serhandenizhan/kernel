@@ -60,6 +60,11 @@ export const IPC = {
   updatesCheck: 'updates:check',
   updatesOpen: 'updates:open',
   updatesInstall: 'updates:install',
+  unsplashStatus: 'unsplash:status',
+  unsplashSetKey: 'unsplash:set-key',
+  unsplashSearch: 'unsplash:search',
+  unsplashPick: 'unsplash:pick',
+  unsplashOpen: 'unsplash:open',
   updatesCheckNow: 'updates:check-now',
   updatesProgress: 'updates:progress'
 } as const

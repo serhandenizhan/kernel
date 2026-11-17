@@ -51,6 +51,13 @@ const api: KernelApi = {
   templates: { list: inv(IPC.templatesList), create: inv(IPC.templatesCreate), saveAs: inv(IPC.templatesSaveAs) } as KernelApi['templates'],
   backup: { now: inv(IPC.backupNow), status: inv(IPC.backupStatus), chooseFolder: inv(IPC.backupChooseFolder) } as KernelApi['backup'],
   settings: { get: inv(IPC.settingsGet), set: inv(IPC.settingsSet) } as KernelApi['settings'],
+  unsplash: {
+    status: inv(IPC.unsplashStatus),
+    setKey: inv(IPC.unsplashSetKey),
+    search: inv(IPC.unsplashSearch),
+    pick: inv(IPC.unsplashPick),
+    open: inv(IPC.unsplashOpen)
+  } as KernelApi['unsplash'],
   updates: {
     check: inv(IPC.updatesCheck),
     open: inv(IPC.updatesOpen),

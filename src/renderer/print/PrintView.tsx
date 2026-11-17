@@ -122,6 +122,7 @@ export function PrintView() {
         return (
           <section key={p.id} className={`print-page${i > 0 ? ' new-page' : ''}`}>
             {cover && <div className="print-cover" style={{ background: cover, backgroundPositionY: `${Math.round((p.meta.coverPosition ?? 0.5) * 100)}%` }} />}
+            {cover && p.meta.coverCredit && <div className="print-cover-credit">{p.meta.coverCredit}</div>}
             {p.meta.icon && (
               <div className={`print-icon${cover ? ' over-cover' : ''}`}>
                 <PageIcon icon={p.meta.icon} size={56} />

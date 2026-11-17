@@ -58,6 +58,7 @@ export function BubbleToolbar({ editor }: { editor: Editor }) {
             data-testid="bubble-type"
             data-tip={tNow('bubble.turnInto')}
             aria-label={tNow('bubble.turnInto')}
+            aria-expanded={!!typeMenu}
             onMouseDown={(e) => e.preventDefault()}
             onClick={(e) => {
               const r = e.currentTarget.getBoundingClientRect()
@@ -93,6 +94,7 @@ export function BubbleToolbar({ editor }: { editor: Editor }) {
         data-testid="bubble-highlight"
         data-tip={tNow('bubble.highlight')}
         aria-label={tNow('bubble.highlight')}
+        aria-expanded={!!colorMenu}
         className={`has-tip bubble-color${editor.isActive('highlight') ? ' active' : ''}`}
         onMouseDown={(e) => e.preventDefault()}
         onClick={(e) => {

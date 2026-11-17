@@ -131,3 +131,11 @@ html.printing .page-surface {
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
 }
+
+/* Unsplash kapağında fotoğrafçı adı (PDF'te de görünür) */
+.print-cover-credit {
+  margin: 2px 0 6px;
+  color: #6b7780;
+  font-size: 9px;
+  text-align: right;
+}

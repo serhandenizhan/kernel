@@ -162,6 +162,8 @@ export class Vault {
     if (str('icon')) out.icon = str('icon')
     if (str('cover')) out.cover = str('cover')
     if (typeof meta['coverPosition'] === 'number') out.coverPosition = meta['coverPosition'] as number
+    if (str('coverCredit')) out.coverCredit = str('coverCredit')
+    if (str('coverCreditUrl')) out.coverCreditUrl = str('coverCreditUrl')
     if (Array.isArray(meta['tags'])) out.tags = (meta['tags'] as unknown[]).map(String)
     return out
   }

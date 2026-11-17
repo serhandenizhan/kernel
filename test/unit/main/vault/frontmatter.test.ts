@@ -23,3 +23,10 @@ describe('frontmatter', () => {
     expect(joinFrontmatter({ id: 'X', created: c, updated: u }, '', { aliases: ['a'], date: '2024' })).toBe(`---\nid: X\ncreated: ${c}\nupdated: ${u}\naliases:\n  - a\ndate: "2024"\n---\n`)
   })
 })
+
+describe('kapak kaynağı', () => {
+  it('coverCredit ve coverCreditUrl kayıtta korunur', () => {
+    const text = joinFrontmatter({ id: 'x', created: 'a', updated: 'b', cover: 'attachments/k.jpg', coverCredit: 'Ada · Unsplash', coverCreditUrl: 'https://unsplash.com/@ada' }, 'gövde\n')
+    expect(splitFrontmatter(text).meta).toMatchObject({ coverCredit: 'Ada · Unsplash', coverCreditUrl: 'https://unsplash.com/@ada' })
+  })
+})

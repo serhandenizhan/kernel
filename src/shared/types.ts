@@ -5,6 +5,9 @@ export interface PageMeta {
   icon?: string
   cover?: string
   coverPosition?: number
+  /** Unsplash kapağında fotoğrafçı adı ("Ad · Unsplash") ve profil bağlantısı */
+  coverCredit?: string
+  coverCreditUrl?: string
   created: string
   updated: string
   tags?: string[]
@@ -165,6 +168,14 @@ export interface UpdateOffer {
   current: string
 }
 
+/** Unsplash arama sonucu (önizleme data: adresiyle gelir) */
+export interface UnsplashThumb {
+  id: string
+  alt: string
+  author: string
+  thumb: string
+}
+
 export interface KernelApi {
   vault: {
     info(): Promise<{ path: string } | null>
@@ -262,6 +273,16 @@ export interface KernelApi {
     install(): Promise<'restarting' | 'manual'>
     /** indirme ilerlemesi (0–1) */
     onProgress(cb: (ratio: number) => void): () => void
+  }
+  unsplash: {
+    /** Unsplash anahtarı kayıtlı mı */
+    status(): Promise<{ hasKey: boolean }>
+    setKey(key: string): Promise<void>
+    search(query: string, page: number): Promise<{ ok: true; photos: UnsplashThumb[]; totalPages: number } | { ok: false; error: 'no-key' | 'invalid-key' | 'rate-limit' | 'network' }>
+    /** seçilen fotoğrafı kasaya kapak görseli olarak kaydeder */
+    pick(id: string): Promise<{ src: string; credit: string; creditUrl: string }>
+    /** yalnızca unsplash.com bağlantıları açılır */
+    open(url: string): Promise<void>
   }
   app: {
     onFlushRequest(cb: () => Promise<boolean>): void

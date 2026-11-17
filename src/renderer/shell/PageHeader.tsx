@@ -6,6 +6,7 @@ import { activeEditor } from '../editor/Editor'
 import { useStore } from '../state/store'
 import { tNow } from '../lib/i18n'
 import { IconPicker } from './IconPicker'
+import { kernel } from '../lib/kernel'
 import { CoverPicker } from './CoverPicker'
 import { Icon } from '../assets/icons'
 
@@ -71,6 +72,16 @@ export function PageHeader({ initialMeta }: { initialMeta: PageMeta }) {
           style={{ background: cover, backgroundPositionY: isImageCover ? `${Math.round(pos * 100)}%` : undefined }}
           onMouseDown={startDrag}
         >
+          {meta.coverCredit && (
+            <button
+              className="cover-credit"
+              data-testid="cover-credit"
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={() => meta.coverCreditUrl && void kernel.unsplash.open(meta.coverCreditUrl)}
+            >
+              {meta.coverCredit}
+            </button>
+          )}
           <div className="cover-actions">
             {repositioning ? (
               <button
@@ -93,7 +104,7 @@ export function PageHeader({ initialMeta }: { initialMeta: PageMeta }) {
                     {tNow('header.coverReposition')}
                   </button>
                 )}
-                <button className="glass-btn" data-testid="cover-remove" onClick={() => void update({ cover: undefined, coverPosition: undefined })}>
+                <button className="glass-btn" data-testid="cover-remove" onClick={() => void update({ cover: undefined, coverPosition: undefined, coverCredit: undefined, coverCreditUrl: undefined })}>
                   <Icon name="trash" size={13} /> {tNow('header.coverRemove')}
                 </button>
               </>
@@ -109,22 +120,24 @@ export function PageHeader({ initialMeta }: { initialMeta: PageMeta }) {
         )}
         <div className="header-actions">
           {!meta.icon && (
-            <button ref={addIconRef} className="ghost-btn" data-testid="add-icon" onClick={(e) => setIconPicker(e.currentTarget.getBoundingClientRect())}>
-              <Icon name="smile" size={13} /> {tNow('header.addIcon')}
+            <button ref={addIconRef} className="ghost-btn has-tip" data-testid="add-icon" data-tip={tNow('header.addIcon')} aria-label={tNow('header.addIcon')} onClick={(e) => setIconPicker(e.currentTarget.getBoundingClientRect())}>
+              <Icon name="smile" size={16} />
             </button>
           )}
           {!meta.cover && (
-            <button className="ghost-btn" data-testid="add-cover" onClick={() => void update({ cover: COVER_PRESETS[Math.floor(Math.random() * COVER_PRESETS.length)]!.id })}>
-              <Icon name="cover" size={13} /> {tNow('header.addCover')}
+            <button className="ghost-btn has-tip" data-testid="add-cover" data-tip={tNow('header.addCover')} aria-label={tNow('header.addCover')} onClick={() => void update({ cover: COVER_PRESETS[Math.floor(Math.random() * COVER_PRESETS.length)]!.id })}>
+              <Icon name="cover" size={16} />
             </button>
           )}
           <button
-            className={`ghost-btn pin-btn${pinned ? ' on' : ''}`}
+            className={`ghost-btn has-tip pin-btn${pinned ? ' on' : ''}`}
             data-testid="pin-toggle"
+            data-tip={pinned ? tNow('header.unpin') : tNow('header.pin')}
+            aria-label={pinned ? tNow('header.unpin') : tNow('header.pin')}
             aria-pressed={pinned}
             onClick={() => void useStore.getState().togglePin(initialMeta.id)}
           >
-            <Icon name="pin" size={13} /> {pinned ? tNow('header.unpin') : tNow('header.pin')}
+            <Icon name="pin" size={16} />
           </button>
         </div>
       </div>
@@ -146,10 +159,11 @@ export function PageHeader({ initialMeta }: { initialMeta: PageMeta }) {
         <CoverPicker
           anchor={coverPicker}
           onClose={() => setCoverPicker(null)}
-          onPick={(c) => {
+          onPick={(c, credit) => {
             setCoverPicker(null)
             setPos(0.5)
-            void update({ cover: c, coverPosition: undefined })
+            // Unsplash dışı kapaklarda eski fotoğrafçı satırı kalkar (undefined alanı siler)
+            void update({ cover: c, coverPosition: undefined, coverCredit: credit?.credit, coverCreditUrl: credit?.creditUrl || undefined })
           }}
         />
       )}

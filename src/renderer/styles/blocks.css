@@ -1364,6 +1364,13 @@ mark[data-color='gray'] { --hl: #e3e8ec; }
   box-shadow: 0 0 0 1px #d9a514;
 }
 
+/* menü / seçici açıkken düğmenin ipucu görünmez */
+.has-tip[aria-expanded='true']::after {
+  display: none;
+}
+.has-tip {
+  position: relative;
+}
 /* --- hızlı ipucu: üzerine gelince düğmenin altında koyu etiket (yerel title'dan hızlı ve okunaklı) --- */
 .has-tip[data-tip]::after {
   content: attr(data-tip);

@@ -39,23 +39,64 @@
 .save-status {
   position: absolute;
   /* "İkon ekle" satırıyla aynı hizada, sağda: kapağın alt kenarına binmez */
-  top: -33px;
+  top: -35px;
   right: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--page) 70%, transparent);
   color: var(--text-3);
-  font-size: 11px;
-  transition: opacity 0.4s ease;
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  line-height: 1.4;
+  transition: opacity 0.4s ease, color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
-/* kaydedildiyse birkaç saniye sonra kaybolur; kaydederken ve hata olunca görünür kalır */
+/* kaydedildi: yeşil onay; birkaç saniye sonra kaybolur */
 .save-status.saved {
+  color: var(--accent-text);
+  border-color: color-mix(in srgb, var(--accent) 28%, transparent);
+  background: color-mix(in srgb, var(--accent-soft) 70%, transparent);
   animation: save-fade 0.4s ease 2.5s forwards;
+}
+.save-status.dirty {
+  color: var(--text-2);
+}
+.save-status.dirty .icon {
+  color: #d9a514;
+  animation: save-pulse 1.4s ease-in-out infinite;
+}
+.save-status.saving .icon {
+  animation: save-spin 0.9s linear infinite;
+}
+/* hata: görünür kalır, dikkat çeker */
+.save-status.error {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 40%, transparent);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
 }
 @keyframes save-fade {
   to {
     opacity: 0;
   }
 }
-.save-status.error {
-  color: var(--danger);
+@keyframes save-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+@keyframes save-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .save-status.dirty .icon,
+  .save-status.saving .icon {
+    animation: none;
+  }
 }
 .readonly-banner {
   margin-bottom: 16px;

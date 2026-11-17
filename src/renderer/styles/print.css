@@ -114,12 +114,6 @@ html.printing #root {
   white-space: pre-wrap;
   word-break: break-word;
 }
-.code-chunk pre span {
-  color: var(--shiki-light);
-}
-:root[data-theme='dark'] .code-chunk pre span {
-  color: var(--shiki-dark);
-}
 .code-chunk pre.shiki {
   color: var(--text);
 }

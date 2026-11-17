@@ -89,6 +89,7 @@ export function PrintView() {
       try {
         const settings = await kernel.settings.get()
         document.documentElement.dataset['bodyFont'] = settings.bodyFont
+        document.documentElement.dataset['codeTheme'] = settings.codeTheme
         await getHighlighter()
         setPages(await Promise.all(ids.map((id) => kernel.pages.read(id))))
       } catch (e) {

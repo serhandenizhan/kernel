@@ -10,6 +10,7 @@ const ALLOWED = {
   theme: ['system', 'light', 'dark'],
   bodyFont: ['plex', 'bricolage', 'editorial', 'space', 'book', 'rounded', 'serif', 'sans'],
   pageWidth: ['narrow', 'normal', 'wide'],
+  codeTheme: ['auto', 'classic-light', 'classic-dark', 'claude-light', 'claude-dark', 'dracula', 'solarized-light'],
   language: ['system', 'tr', 'en', 'de'],
   startView: ['home', 'last']
 } as const

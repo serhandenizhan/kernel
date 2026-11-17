@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 export const ICON_NAMES = ['home', 'plus', 'doc', 'template', 'grid', 'search', 'settings', 'help', 'pin', 'chevron-down', 'chevron-right', 'download', 'image', 'graph', 'cards', 'sidebar', 'smile', 'cover',
   'grip', 'bold', 'italic', 'underline', 'strike', 'code', 'sigma', 'link', 'highlight', 'text', 'h1', 'h2', 'h3',
   'list', 'list-ordered', 'todo', 'quote', 'toggle', 'code-block', 'duplicate', 'trash', 'turn-into', 'card',
-  'row-above', 'row-below', 'col-left', 'col-right', 'row-remove', 'col-remove', 'align-left', 'align-center', 'align-right', 'table-header', 'close', 'arrow-up', 'arrow-down'] as const
+  'row-above', 'row-below', 'col-left', 'col-right', 'row-remove', 'col-remove', 'align-left', 'align-center', 'align-right', 'table-header', 'close', 'arrow-up', 'arrow-down', 'check', 'spinner', 'alert', 'edit-dot'] as const
 export type IconName = (typeof ICON_NAMES)[number]
 
 const PATHS: Record<IconName, ReactNode> = {
@@ -211,6 +211,10 @@ const PATHS: Record<IconName, ReactNode> = {
     </>
   ),
   close: <path d="m4 4 8 8M12 4l-8 8" strokeLinecap="round" />,
+  check: <path d="m3.5 8.4 3 3 6-6.6" strokeLinecap="round" strokeLinejoin="round" />,
+  spinner: <path d="M8 2.2a5.8 5.8 0 1 0 5.8 5.8" strokeLinecap="round" />,
+  alert: <path d="M8 2.6 14 13H2zM8 6.6v3M8 11.4v.1" strokeLinecap="round" strokeLinejoin="round" />,
+  'edit-dot': <circle cx="8" cy="8" r="2.6" fill="currentColor" stroke="none" />,
   'arrow-up': <path d="M8 13V3M4 7l4-4 4 4" strokeLinecap="round" strokeLinejoin="round" />,
   'arrow-down': <path d="M8 3v10M4 9l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />,
   image: (

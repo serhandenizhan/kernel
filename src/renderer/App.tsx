@@ -38,11 +38,12 @@ function useTheme() {
     }
     apply()
     root.dataset['bodyFont'] = settings.bodyFont
+    root.dataset['codeTheme'] = settings.codeTheme
     root.dataset['pageWidth'] = settings.pageWidth
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
     mq.addEventListener('change', apply)
     return () => mq.removeEventListener('change', apply)
-  }, [settings.theme, settings.bodyFont, settings.pageWidth])
+  }, [settings.theme, settings.bodyFont, settings.codeTheme, settings.pageWidth])
 }
 
 /** Cmd+W: önce bölme, sonra sekme; tek sekme kaldıysa pencere kapanır */

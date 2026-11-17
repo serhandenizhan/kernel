@@ -156,12 +156,6 @@
   text-align: right;
   user-select: none;
 }
-.shiki {
-  color: var(--shiki-light);
-}
-:root[data-theme='dark'] .shiki {
-  color: var(--shiki-dark);
-}
 
 /* --- formül --- */
 .tiptap-mathematics-render--editable {

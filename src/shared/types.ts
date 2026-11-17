@@ -126,6 +126,8 @@ export type Lang = 'tr' | 'en' | 'de'
 export interface Settings {
   theme: 'system' | 'light' | 'dark'
   /** yazı tipi paketi — plex: Fraunces başlık + IBM Plex Sans gövde + IBM Plex Mono kod (varsayılan); bricolage: Bricolage Grotesque + Figtree + DM Mono; sans: sistem (SF Pro); serif: New York */
+  /** kod bloğu teması: auto uygulama temasını izler (klasik açık / koyu) */
+  codeTheme: 'auto' | 'classic-light' | 'classic-dark' | 'claude-light' | 'claude-dark' | 'dracula' | 'solarized-light'
   bodyFont: 'plex' | 'bricolage' | 'editorial' | 'space' | 'book' | 'rounded' | 'serif' | 'sans'
   pageWidth: 'narrow' | 'normal' | 'wide'
   paste: PasteSettings
@@ -144,6 +146,7 @@ export interface Settings {
 
 export const DEFAULT_SETTINGS: Settings = {
   theme: 'system',
+  codeTheme: 'auto',
   bodyFont: 'plex',
   pageWidth: 'normal',
   paste: { stripCitations: true, latexLineHeuristic: true, unfencedCodeHeuristic: true },

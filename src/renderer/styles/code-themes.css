@@ -1,0 +1,109 @@
+/* Kod bloğu temaları (VS Code gibi). Sözcük renkleri Shiki'nin --shiki-<tema> değişkenlerinden gelir;
+   hangisinin kullanılacağını <html data-code-theme> seçer. "auto": uygulama temasını izler (klasik açık / koyu).
+   Seçilen tema bloğun zeminini ve blok içindeki metin belirteçlerini yerel olarak değiştirir; böylece araç
+   çubuğu, satır numaraları ve düğmeler her zeminde okunur. Grafik ve Mermaid blokları temalanmaz. */
+
+/* otomatik */
+.shiki,
+.code-chunk pre span {
+  color: var(--shiki-github-light);
+}
+:root[data-theme='dark'] .shiki,
+:root[data-theme='dark'] .code-chunk pre span {
+  color: var(--shiki-github-dark);
+}
+
+/* classic-light */
+:root[data-code-theme='classic-light'] .shiki,
+:root[data-code-theme='classic-light'] .code-chunk pre span {
+  color: var(--shiki-github-light);
+}
+:root[data-code-theme='classic-light'] .code-block:not(.chart-wrap):not(.mermaid-block) {
+  --code-bg: #e6edf1;
+  --code-border: rgba(20, 35, 43, 0.13);
+  --text: #14232b;
+  --text-2: #455862;
+  --text-3: #56656e;
+  --hover: rgba(20, 35, 43, 0.07);
+  color: #14232b;
+}
+
+/* classic-dark */
+:root[data-code-theme='classic-dark'] .shiki,
+:root[data-code-theme='classic-dark'] .code-chunk pre span {
+  color: var(--shiki-github-dark);
+}
+:root[data-code-theme='classic-dark'] .code-block:not(.chart-wrap):not(.mermaid-block) {
+  --code-bg: #151b21;
+  --code-border: rgba(230, 237, 241, 0.09);
+  --text: #e6edf1;
+  --text-2: #a7b6be;
+  --text-3: #96a4ad;
+  --hover: rgba(230, 237, 241, 0.07);
+  color: #e6edf1;
+}
+
+/* claude-light */
+:root[data-code-theme='claude-light'] .shiki,
+:root[data-code-theme='claude-light'] .code-chunk pre span {
+  color: var(--shiki-claude-light);
+}
+:root[data-code-theme='claude-light'] .code-block:not(.chart-wrap):not(.mermaid-block) {
+  --code-bg: #faf9f5;
+  --code-border: rgba(61, 57, 41, 0.16);
+  --text: #3d3929;
+  --text-2: #5e594a;
+  --text-3: #6f6a5b;
+  --hover: rgba(61, 57, 41, 0.07);
+  color: #3d3929;
+}
+
+/* claude-dark */
+:root[data-code-theme='claude-dark'] .shiki,
+:root[data-code-theme='claude-dark'] .code-chunk pre span {
+  color: var(--shiki-claude-dark);
+}
+:root[data-code-theme='claude-dark'] .code-block:not(.chart-wrap):not(.mermaid-block) {
+  --code-bg: #262624;
+  --code-border: rgba(232, 230, 220, 0.12);
+  --text: #e8e6dc;
+  --text-2: #bdbaaf;
+  --text-3: #9a978a;
+  --hover: rgba(232, 230, 220, 0.08);
+  color: #e8e6dc;
+}
+
+/* dracula */
+:root[data-code-theme='dracula'] .shiki,
+:root[data-code-theme='dracula'] .code-chunk pre span {
+  color: var(--shiki-dracula);
+}
+:root[data-code-theme='dracula'] .code-block:not(.chart-wrap):not(.mermaid-block) {
+  --code-bg: #282a36;
+  --code-border: rgba(248, 248, 242, 0.12);
+  --text: #f8f8f2;
+  --text-2: #c8c9d6;
+  --text-3: #9fa2bb;
+  --hover: rgba(248, 248, 242, 0.08);
+  color: #f8f8f2;
+}
+
+/* solarized-light */
+:root[data-code-theme='solarized-light'] .shiki,
+:root[data-code-theme='solarized-light'] .code-chunk pre span {
+  color: var(--shiki-solarized-light);
+}
+:root[data-code-theme='solarized-light'] .code-block:not(.chart-wrap):not(.mermaid-block) {
+  --code-bg: #fdf6e3;
+  --code-border: rgba(88, 110, 117, 0.24);
+  --text: #586e75;
+  --text-2: #657b83;
+  --text-3: #5f757c;
+  --hover: rgba(88, 110, 117, 0.09);
+  color: #586e75;
+}
+
+/* baskı: temalı blokta metin rengi de temayı izler */
+.code-chunk pre.shiki {
+  color: var(--text);
+}

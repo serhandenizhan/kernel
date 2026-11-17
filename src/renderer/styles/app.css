@@ -1409,3 +1409,52 @@ html:not([data-platform='darwin']) .app.sidebar-hidden .tab-bar {
   font-size: 20px;
   line-height: 1;
 }
+
+/* kod teması kartları */
+.code-themes {
+  display: grid;
+  /* minmax(0, …): önizlemedeki uzun satır sütunu genişletip pencereyi taşırmasın */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.code-theme {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: default;
+}
+.code-theme:hover {
+  background: var(--hover);
+}
+.code-theme.on {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  background: var(--accent-soft);
+}
+.code-theme-name {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.code-theme-preview {
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+}
+.code-theme-preview pre {
+  margin: 0;
+  padding: 8px 10px;
+  overflow: hidden;
+  background: transparent !important;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  line-height: 1.5;
+  white-space: pre;
+}

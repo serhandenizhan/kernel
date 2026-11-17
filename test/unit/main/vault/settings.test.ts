@@ -50,6 +50,11 @@ describe('ayar doğrulama', () => {
       expect(await writeSettings(root, { bodyFont: f })).toMatchObject({ bodyFont: f })
     }
   })
+  it('kod teması: geçerli seçim saklanır, tanınmayan varsayılana (otomatik) döner', async () => {
+    expect((await readSettings(root)).codeTheme).toBe('auto')
+    expect(await writeSettings(root, { codeTheme: 'claude-dark' })).toMatchObject({ codeTheme: 'claude-dark' })
+    expect(await writeSettings(root, { codeTheme: 'yok-boyle-tema' as never })).toMatchObject({ codeTheme: 'auto' })
+  })
   it('yazarken de tanınmayan değer saklanmaz', async () => {
     expect(await writeSettings(root, { language: 'xx' as never })).toMatchObject({ language: 'system' })
   })

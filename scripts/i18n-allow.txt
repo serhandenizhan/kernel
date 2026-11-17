@@ -7,3 +7,4 @@ src/renderer/print/PrintView.tsx:*
 src/main/templates.ts:const TITLE_VARS = ['{{başlık}}', '{{title}}', '{{Titel}}']
 src/renderer/shell/SettingsDialog.tsx:{ value: 'tr', label: 'Türkçe' },
 src/renderer/shell/Sidebar.tsx:<span>Kernel</span>
+src/renderer/shell/SettingsDialog.tsx:const SAMPLE = 'def selam(ad):\n    # kısa bir örnek\n    return f"Merhaba {ad}" + str(42)'

@@ -4,6 +4,9 @@ import { useStore } from '../state/store'
 import { kernel } from '../lib/kernel'
 import { isMac } from '../lib/platform'
 import { FONT_PACKS } from '../lib/font-packs'
+import type { MessageKey } from '@shared/i18n'
+import { CODE_THEMES, type CodeTheme } from '../lib/code-themes'
+import { getHighlighter, THEMES } from '../lib/shiki'
 import { useLang, useT } from '../lib/i18n'
 import { localeOf } from '@shared/i18n'
 
@@ -68,6 +71,11 @@ export function SettingsDialog() {
             <FontPackPicker value={settings.bodyFont} label={t('settings.font')} onChange={(bodyFont) => set({ bodyFont })} />
           </div>
           <p className="setting-hint">{t('settings.font.hint')}</p>
+          <div className="setting-stack">
+            <span>{t('settings.codeTheme')}</span>
+            <CodeThemePicker value={settings.codeTheme} onChange={(codeTheme) => set({ codeTheme })} />
+          </div>
+          <p className="setting-hint">{t('settings.codeTheme.hint')}</p>
           <div className="setting-row">
             <span>{t('settings.start')}</span>
             <Segmented
@@ -176,6 +184,61 @@ export function SettingsDialog() {
 }
 
 /** Segment kontrolü (radyo grubu); seçenek testid'i `${testid}-${value}` */
+const SAMPLE = 'def selam(ad):\n    # kısa bir örnek\n    return f"Merhaba {ad}" + str(42)'
+
+function themeLabel(th: CodeTheme, t: ReturnType<typeof useT>): string {
+  return th.id === 'auto' || th.id === 'classic-light' || th.id === 'classic-dark' ? t(th.label as MessageKey) : th.label
+}
+
+// Kod teması seçici: kapalıyken seçili tema; "Değiştir" ile her temanın gerçek renklendirilmiş önizlemesi açılır
+function CodeThemePicker({ value, onChange }: { value: Settings['codeTheme']; onChange(v: Settings['codeTheme']): void }) {
+  const t = useT()
+  const [open, setOpen] = useState(false)
+  const [ready, setReady] = useState(false)
+  const appDark = document.documentElement.dataset['theme'] === 'dark'
+  useEffect(() => {
+    void getHighlighter().then(() => setReady(true))
+  }, [])
+  const current = CODE_THEMES.find((c) => c.id === value) ?? CODE_THEMES[0]!
+  return (
+    <>
+      <div className="font-pack-current">
+        <span className="font-pack-current-text" data-testid="setting-code-theme-current">
+          <span className="font-pack-name">{themeLabel(current, t)}</span>
+          <span className="font-pack-fonts">{current.id === 'auto' ? t('codeTheme.autoNote') : current.kind === 'dark' ? t('settings.theme.dark') : t('settings.theme.light')}</span>
+        </span>
+        <button className="btn small" data-testid="setting-code-theme-toggle" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+          {open ? t('settings.font.close') : t('settings.font.change')}
+        </button>
+      </div>
+      {open && (
+        <div className="code-themes" role="radiogroup" aria-label={t('settings.codeTheme')} data-testid="setting-code-theme">
+          {CODE_THEMES.map((th) => {
+            const shiki = th.shiki ?? (appDark ? 'github-dark' : 'github-light')
+            const bg = th.bg ?? (appDark ? '#151b21' : '#e6edf1')
+            return (
+              <button key={th.id} type="button" role="radio" aria-checked={th.id === value} data-testid={`setting-code-theme-${th.id}`} className={`code-theme${th.id === value ? ' on' : ''}`} onClick={() => onChange(th.id)}>
+                <span className="code-theme-name">{themeLabel(th, t)}</span>
+                <span className="code-theme-preview" style={{ background: bg }}>
+                  {ready ? <ThemePreview theme={shiki} /> : <pre>{SAMPLE}</pre>}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </>
+  )
+}
+
+function ThemePreview({ theme }: { theme: string }) {
+  const [html, setHtml] = useState('')
+  useEffect(() => {
+    void getHighlighter().then((hl) => setHtml(hl.codeToHtml(SAMPLE, { lang: 'python', theme: THEMES[theme as keyof typeof THEMES] })))
+  }, [theme])
+  return <span dangerouslySetInnerHTML={{ __html: html }} />
+}
+
 // Yazı tipi paketi seçicisi: kapalıyken yalnızca seçili paket görünür; "Değiştir" ile kartlar açılır.
 // Her kart paketin adını kendi başlık yazı tipiyle gösterir.
 function FontPackPicker({ value, label, onChange }: { value: Settings['bodyFont']; label: string; onChange(v: Settings['bodyFont']): void }) {

@@ -33,6 +33,7 @@ import './styles/glass.css'
 import './styles/app.css'
 import './styles/editor.css'
 import './styles/blocks.css'
+import './styles/code-themes.css'
 import './styles/home.css'
 import './styles/print.css'
 

@@ -16,6 +16,7 @@ import { SlashMenu } from './ui/SlashMenu'
 import { WikiMenu } from './ui/WikiMenu'
 import { BubbleToolbar } from './ui/BubbleToolbar'
 import { BlockHandle } from './ui/BlockHandle'
+import { Icon, type IconName } from '../assets/icons'
 import { tNow } from '../lib/i18n'
 import type { MessageKey } from '@shared/i18n'
 
@@ -44,6 +45,7 @@ export async function flushAll(): Promise<boolean> {
 /** Açık editör (içindekiler paneli gibi bileşenler için tepkisel) */
 export const useActiveEditor = create<{ editor: TiptapEditor | null }>(() => ({ editor: null }))
 
+const STATUS_ICON: Record<SaveState, IconName> = { saved: 'check', dirty: 'edit-dot', saving: 'spinner', error: 'alert' }
 const STATUS_KEY: Record<SaveState, MessageKey> = { saved: 'editor.status.saved', dirty: 'editor.status.dirty', saving: 'editor.status.saving', error: 'editor.status.error' }
 
 export function PageEditor({ page, secondary = false }: { page: PageData; secondary?: boolean }) {
@@ -168,7 +170,8 @@ function LiveEditor({ page, initial, secondary }: { page: PageData; initial: Ret
 
   return (
     <>
-      <span className={`save-status ${status}`} data-testid="save-status">
+      <span className={`save-status ${status}`} data-testid="save-status" role="status" aria-live="polite">
+        <Icon name={STATUS_ICON[status]} size={12} />
         {tNow(STATUS_KEY[status])}
       </span>
       <div className="editor-wrap" ref={setWrap}>

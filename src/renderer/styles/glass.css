@@ -125,3 +125,8 @@
   top: -5px;
   left: calc(100% + 4px);
 }
+/* seçili / üzerine gelinen satırda onay işareti zeminle karışmasın */
+.menu-item:hover .menu-check,
+.menu-item[data-active='true'] .menu-check {
+  color: inherit;
+}

@@ -137,27 +137,38 @@ function UnsplashTab({ onPick }: { onPick(cover: string, credit?: CoverCredit): 
   if (!hasKey || editKey) {
     return (
       <div className="unsplash-key" data-testid="unsplash-key-form">
-        <p>{t('cover.unsplash.intro')}</p>
-        <div className="unsplash-key-row">
-          <input data-testid="unsplash-key-input" className="picker-search" spellCheck={false} placeholder={t('cover.unsplash.keyPlaceholder')} value={keyDraft} onChange={(e) => setKeyDraft(e.target.value)} />
-          <button
-            className="btn small primary"
-            data-testid="unsplash-key-save"
-            disabled={!keyDraft.trim()}
-            onClick={async () => {
-              await kernel.unsplash.setKey(keyDraft)
-              setKeyDraft('')
-              setHasKey(true)
-              setEditKey(false)
-              setError(null)
-            }}
-          >
-            {t('cover.unsplash.saveKey')}
-          </button>
-        </div>
-        <button className="link-btn" onClick={() => void kernel.unsplash.open('https://unsplash.com/oauth/applications/new')}>
-          {t('cover.unsplash.getKey')}
-        </button>
+        <p className="unsplash-lead">{t('cover.unsplash.intro')}</p>
+        <ol className="unsplash-steps">
+          <li data-testid="unsplash-step">
+            <span className="step-text">{t('cover.unsplash.step1')}</span>
+            <button className="btn small" data-testid="unsplash-open-site" onClick={() => void kernel.unsplash.open('https://unsplash.com/oauth/applications/new')}>
+              {t('cover.unsplash.getKey')}
+            </button>
+          </li>
+          <li data-testid="unsplash-step">
+            <span className="step-text">{t('cover.unsplash.step2')}</span>
+          </li>
+          <li data-testid="unsplash-step">
+            <span className="step-text">{t('cover.unsplash.step3')}</span>
+            <div className="unsplash-key-row">
+              <input data-testid="unsplash-key-input" className="picker-search" spellCheck={false} placeholder={t('cover.unsplash.keyPlaceholder')} value={keyDraft} onChange={(e) => setKeyDraft(e.target.value)} />
+              <button
+                className="btn small primary"
+                data-testid="unsplash-key-save"
+                disabled={!keyDraft.trim()}
+                onClick={async () => {
+                  await kernel.unsplash.setKey(keyDraft)
+                  setKeyDraft('')
+                  setHasKey(true)
+                  setEditKey(false)
+                  setError(null)
+                }}
+              >
+                {t('cover.unsplash.saveKey')}
+              </button>
+            </div>
+          </li>
+        </ol>
         <p className="unsplash-hint">{t('cover.unsplash.keyHint')}</p>
       </div>
     )

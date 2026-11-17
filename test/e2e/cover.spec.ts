@@ -48,8 +48,13 @@ test('Unsplash: anahtarsız yönerge, anahtarla arama, seçince kapak olarak kay
   await win.locator('.page-cover').hover()
   await win.getByTestId('cover-change').click()
   await win.getByTestId('cover-tab-unsplash').click()
-  // anahtar yokken yönerge ve anahtar kutusu
+  // anahtar yokken: anahtarın nasıl alınacağını ve nereye konacağını anlatan 3 adım
   await expect(win.getByTestId('unsplash-key-form')).toBeVisible()
+  await expect(win.getByTestId('unsplash-step')).toHaveCount(3)
+  await expect(win.getByTestId('unsplash-step').nth(1)).toContainText('New Application')
+  await expect(win.getByTestId('unsplash-step').nth(2)).toContainText('Access Key')
+  await expect(win.getByTestId('unsplash-step').nth(2)).toContainText('Secret')
+  await expect(win.getByTestId('unsplash-open-site')).toBeVisible()
   await win.getByTestId('unsplash-key-input').fill('test-access-key')
   await win.getByTestId('unsplash-key-save').click()
   await expect(win.getByTestId('unsplash-search')).toBeVisible()

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Editor } from '@tiptap/react'
 import { BubbleMenu } from '@tiptap/react/menus'
 import { tNow } from '../../lib/i18n'
+import { Icon, type IconName } from '../../assets/icons'
 import { ContextMenu, type MenuItem } from '../../shell/ContextMenu'
 
 type Align = 'left' | 'center' | 'right' | null
@@ -52,18 +53,35 @@ export function TableMenu({ editor }: { editor: Editor }) {
   const run = (fn: (c: ReturnType<Editor['chain']>) => ReturnType<Editor['chain']>) => () => {
     fn(editor.chain().focus()).run()
   }
+  // ikonlu tablo düğmesi; data-tip üzerine gelince beliren açıklama
+  const tbtn = (id: string, icon: IconName, tip: string, fn: (c: ReturnType<Editor['chain']>) => ReturnType<Editor['chain']> | null, custom?: () => void, danger = false) => (
+    <button
+      key={id}
+      data-testid={id}
+      className={`has-tip${danger ? ' danger' : ''}`}
+      data-tip={tip}
+      aria-label={tip}
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={() => {
+        if (custom) return custom()
+        fn(editor.chain().focus())?.run()
+      }}
+    >
+      <Icon name={icon} size={15} />
+    </button>
+  )
   const items: MenuItem[] = [
-    { label: tNow('table.rowAbove'), onSelect: run((c) => c.addRowBefore()) },
-    { label: tNow('table.rowBelow'), onSelect: run((c) => c.addRowAfter()) },
-    { label: tNow('table.colLeft'), onSelect: run((c) => c.addColumnBefore()), separatorBefore: true },
-    { label: tNow('table.colRight'), onSelect: run((c) => c.addColumnAfter()) },
-    { label: tNow('table.headerRow'), onSelect: run((c) => c.toggleHeaderRow()), separatorBefore: true },
-    { label: tNow('table.alignLeft'), onSelect: () => setAlign('left'), separatorBefore: true },
-    { label: tNow('table.alignCenter'), onSelect: () => setAlign('center') },
-    { label: tNow('table.alignRight'), onSelect: () => setAlign('right') },
-    { label: tNow('table.removeRow'), onSelect: run((c) => c.deleteRow()), separatorBefore: true, danger: true },
-    { label: tNow('table.removeColumn'), onSelect: run((c) => c.deleteColumn()), danger: true },
-    { label: tNow('table.delete'), onSelect: run((c) => c.deleteTable()), danger: true }
+    { label: tNow('table.rowAbove'), icon: 'row-above', onSelect: run((c) => c.addRowBefore()) },
+    { label: tNow('table.rowBelow'), icon: 'row-below', onSelect: run((c) => c.addRowAfter()) },
+    { label: tNow('table.colLeft'), icon: 'col-left', onSelect: run((c) => c.addColumnBefore()), separatorBefore: true },
+    { label: tNow('table.colRight'), icon: 'col-right', onSelect: run((c) => c.addColumnAfter()) },
+    { label: tNow('table.headerRow'), icon: 'table-header', onSelect: run((c) => c.toggleHeaderRow()), separatorBefore: true },
+    { label: tNow('table.alignLeft'), icon: 'align-left', onSelect: () => setAlign('left'), separatorBefore: true },
+    { label: tNow('table.alignCenter'), icon: 'align-center', onSelect: () => setAlign('center') },
+    { label: tNow('table.alignRight'), icon: 'align-right', onSelect: () => setAlign('right') },
+    { label: tNow('table.removeRow'), icon: 'row-remove', onSelect: run((c) => c.deleteRow()), separatorBefore: true, danger: true },
+    { label: tNow('table.removeColumn'), icon: 'col-remove', onSelect: run((c) => c.deleteColumn()), danger: true },
+    { label: tNow('table.delete'), icon: 'trash', onSelect: run((c) => c.deleteTable()), danger: true }
   ]
   return (
     <>
@@ -84,21 +102,18 @@ export function TableMenu({ editor }: { editor: Editor }) {
     >
       {open ? (
         <>
-          <button data-testid="table-add-row" onClick={() => editor.chain().focus().addRowAfter().run()}>{tNow('table.addRow')}</button>
-          <button onClick={() => editor.chain().focus().addColumnAfter().run()}>{tNow('table.addColumn')}</button>
-          <button onClick={() => editor.chain().focus().deleteRow().run()}>{tNow('table.deleteRow')}</button>
-          <button onClick={() => editor.chain().focus().deleteColumn().run()}>{tNow('table.deleteColumn')}</button>
+          {tbtn('table-add-row', 'row-below', tNow('table.tip.addRow'), (c) => c.addRowAfter())}
+          {tbtn('table-add-col', 'col-right', tNow('table.tip.addColumn'), (c) => c.addColumnAfter())}
+          {tbtn('table-del-row', 'row-remove', tNow('table.tip.deleteRow'), (c) => c.deleteRow())}
+          {tbtn('table-del-col', 'col-remove', tNow('table.tip.deleteColumn'), (c) => c.deleteColumn())}
           <span className="sep" />
-          <button title={tNow('table.alignLeft')} onClick={() => setAlign('left')}>⇤</button>
-          <button title={tNow('table.alignCenter')} onClick={() => setAlign('center')}>↔</button>
-          <button title={tNow('table.alignRight')} onClick={() => setAlign('right')}>⇥</button>
+          {tbtn('table-align-left', 'align-left', tNow('table.alignLeft'), () => null, () => setAlign('left'))}
+          {tbtn('table-align-center', 'align-center', tNow('table.alignCenter'), () => null, () => setAlign('center'))}
+          {tbtn('table-align-right', 'align-right', tNow('table.alignRight'), () => null, () => setAlign('right'))}
+          {tbtn('table-header-row', 'table-header', tNow('table.headerRow'), (c) => c.toggleHeaderRow())}
           <span className="sep" />
-          <button className="danger" onClick={() => editor.chain().focus().deleteTable().run()}>
-            {tNow('table.delete')}
-          </button>
-          <button className="table-menu-close" title={tNow('table.closeMenu')} aria-label={tNow('table.closeMenu')} onClick={() => setOpen(false)}>
-            ×
-          </button>
+          {tbtn('table-delete', 'trash', tNow('table.delete'), (c) => c.deleteTable(), undefined, true)}
+          {tbtn('table-menu-close', 'close', tNow('table.closeMenu'), () => null, () => setOpen(false))}
         </>
       ) : (
         <button
@@ -110,7 +125,8 @@ export function TableMenu({ editor }: { editor: Editor }) {
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => setOpen(true)}
         >
-          ⋯
+          <Icon name="grid" size={14} />
+          <span>⋯</span>
         </button>
       )}
     </BubbleMenu>

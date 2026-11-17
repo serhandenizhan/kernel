@@ -1305,7 +1305,9 @@ html:not([data-platform='darwin']) .sidebar-drag {
 /* --- içindekiler şeridi: sağ kenarda ince çizgiler, üzerine gelince cam liste --- */
 .toc-rail {
   position: absolute;
-  top: calc(var(--page-inset) + 120px);
+  /* pencerenin sağında dikeyde ortalı (kapak düğmelerinin üstüne binmez) */
+  top: 50%;
+  transform: translateY(-50%);
   /* kaydırma çubuğundan uzak dursun */
   right: calc(var(--page-inset) + 22px);
   z-index: 20;

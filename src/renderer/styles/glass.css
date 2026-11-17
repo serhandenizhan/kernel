@@ -76,3 +76,52 @@
     animation: none;
   }
 }
+
+/* menü ayrıntıları: ikon, etiket, sağda kısayol, başlık satırı, alt menü */
+.menu-row {
+  position: relative;
+}
+.menu-item .icon {
+  flex: none;
+  color: var(--text-2);
+}
+.menu-item:hover .icon,
+.menu-item.open .icon {
+  color: inherit;
+}
+.menu-label {
+  flex: 1;
+  text-align: left;
+}
+.menu-hint {
+  color: var(--text-3);
+  font-size: 11.5px;
+}
+.menu-item:hover .menu-hint {
+  color: inherit;
+  opacity: 0.8;
+}
+.menu-check {
+  color: var(--accent-text);
+}
+.menu-item.open {
+  background: var(--hover);
+}
+.menu-swatch {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+.menu-header {
+  padding: 6px 10px 4px;
+  color: var(--text-3);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.submenu {
+  position: absolute;
+  top: -5px;
+  left: calc(100% + 4px);
+}

@@ -4,7 +4,8 @@ import { Icon, ICON_NAMES } from '../../../src/renderer/assets/icons'
 
 describe('Icon', () => {
   it('her ikon dekoratif SVG olarak çizilir', () => {
-    expect(ICON_NAMES.length).toBe(18)
+    expect(ICON_NAMES.length).toBeGreaterThanOrEqual(18)
+    expect(new Set(ICON_NAMES).size).toBe(ICON_NAMES.length)
     for (const name of ICON_NAMES) {
       const html = renderToStaticMarkup(<Icon name={name} />)
       expect(html, name).toContain('<svg')

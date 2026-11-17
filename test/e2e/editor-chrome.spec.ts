@@ -1,0 +1,89 @@
+import { test, expect } from '@playwright/test'
+import { writeFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { launch, tmpVault } from './helpers/app'
+
+test('blok menüsü: bloğun türü üstte, ikonlu öğeler, "Dönüştür" alt menüsüyle tür değişir; tutamak ikonlu', async () => {
+  const vault = tmpVault()
+  writeFileSync(join(vault, 'Not.md'), '## Bölüm\n\nmetin\n')
+  const { app, win } = await launch(vault)
+  await win.getByTestId('tree-row').filter({ hasText: 'Not' }).click()
+  await win.locator('.kernel-editor h2').hover()
+  const handle = win.getByTestId('block-handle')
+  await expect(handle.locator('svg.icon')).toHaveCount(1)
+  await handle.click()
+  const menu = win.getByRole('menu')
+  await expect(menu.getByTestId('menu-header')).toHaveText('Başlık 2')
+  await expect(menu.getByRole('menuitem', { name: 'Çoğalt' }).locator('svg.icon')).toHaveCount(1)
+  await menu.getByRole('menuitem', { name: 'Dönüştür' }).hover()
+  await win.getByRole('menuitem', { name: 'Başlık 1' }).click()
+  await expect(win.locator('.kernel-editor h1')).toHaveText('Bölüm')
+  await app.close()
+})
+
+test('metin araç çubuğu: bloğun türünü gösterir ve değiştirir; ikonlu düğmeler, açıklayıcı ipucu, renk örnekli vurgu menüsü', async () => {
+  const vault = tmpVault()
+  writeFileSync(join(vault, 'Not.md'), '## Bölüm başlığı\n\nmetin\n')
+  const { app, win } = await launch(vault)
+  await win.getByTestId('tree-row').filter({ hasText: 'Not' }).click()
+  await win.locator('.kernel-editor h2').dblclick()
+  const bar = win.getByTestId('bubble-toolbar')
+  await expect(bar).toBeVisible()
+  await expect(win.getByTestId('bubble-type')).toContainText('Başlık 2')
+  await expect(win.getByTestId('bubble-bold').locator('svg.icon')).toHaveCount(1)
+  await expect(win.getByTestId('bubble-bold')).toHaveAttribute('data-tip', /Kalın/)
+  await win.getByTestId('bubble-highlight').click()
+  await expect(win.getByRole('menuitem', { name: 'Sarı' }).locator('.menu-swatch')).toHaveCount(1)
+  await win.keyboard.press('Escape')
+  // seçimi bırakıp başlığı yeniden seç
+  await win.locator('.kernel-editor p').first().click()
+  await expect(bar).toBeHidden()
+  await win.locator('.kernel-editor h2').dblclick()
+  await win.getByTestId('bubble-type').click()
+  await win.getByRole('menuitem', { name: 'Metin' }).click()
+  await expect(win.locator('.kernel-editor h2')).toHaveCount(0)
+  await expect(win.locator('.kernel-editor p').first()).toContainText('Bölüm')
+  await app.close()
+})
+
+test('tablo araç çubuğu ikonlu ve ipuçlu; kapak düğmeleri içindekiler şeridinin altında kalmaz, şerit dikeyde ortalı', async () => {
+  const vault = tmpVault()
+  writeFileSync(join(vault, 'Tablo.md'), '---\ncover: "kernel:teal-waves"\n---\n# Bir\n\n## İki\n\n| A | B |\n| --- | --- |\n| 1 | 2 |\n')
+  const { app, win } = await launch(vault)
+  await win.getByTestId('tree-row').filter({ hasText: 'Tablo' }).click()
+  await win.locator('.kernel-editor td').first().click()
+  await win.getByTestId('table-menu-toggle').click()
+  const add = win.getByTestId('table-add-row')
+  await expect(add.locator('svg.icon')).toHaveCount(1)
+  await expect(add).toHaveAttribute('data-tip', /satır/i)
+  // şerit pencerenin sağında dikeyde ortalı
+  const center = await win.evaluate(() => {
+    const r = document.querySelector('[data-testid="toc-rail"]')!.getBoundingClientRect()
+    return { mid: r.top + r.height / 2, h: window.innerHeight }
+  })
+  expect(Math.abs(center.mid - center.h / 2)).toBeLessThan(40)
+  // kapağı kaldır düğmesine tıklanabilir
+  await win.locator('.page-cover').hover()
+  await win.getByTestId('cover-remove').click()
+  await expect(win.locator('.page-cover')).toHaveCount(0)
+  await app.close()
+})
+
+test('"Dönüştür" listeler arasında ve listeden metne çevirir', async () => {
+  const vault = tmpVault()
+  writeFileSync(join(vault, 'Not.md'), '# Liste\n\n- madde bir\n- madde iki\n')
+  const { app, win } = await launch(vault)
+  await win.getByTestId('tree-row').filter({ hasText: 'Not' }).click()
+  await win.locator('.kernel-editor li').first().dblclick()
+  await expect(win.getByTestId('bubble-type')).toContainText('Madde listesi')
+  await win.getByTestId('bubble-type').click()
+  await win.getByRole('menuitem', { name: 'Numaralı liste' }).click()
+  await expect(win.locator('.kernel-editor ol li')).toHaveCount(2)
+  await expect(win.locator('.kernel-editor ul')).toHaveCount(0)
+  await win.locator('.kernel-editor li').first().dblclick()
+  await win.getByTestId('bubble-type').click()
+  await win.getByRole('menuitem', { name: 'Metin' }).click()
+  // yalnızca imlecin bulunduğu madde metne döner
+  await expect(win.locator('.kernel-editor > p').first()).toContainText('madde bir')
+  await app.close()
+})

@@ -86,15 +86,15 @@ export function PageHeader({ initialMeta }: { initialMeta: PageMeta }) {
             ) : (
               <>
                 <button className="glass-btn" data-testid="cover-change" onClick={(e) => setCoverPicker(e.currentTarget.getBoundingClientRect())}>
-                  {tNow('header.coverChange')}
+                  <Icon name="image" size={13} /> {tNow('header.coverChange')}
                 </button>
                 {isImageCover && (
                   <button className="glass-btn" data-testid="cover-reposition" onClick={() => setRepositioning(true)}>
                     {tNow('header.coverReposition')}
                   </button>
                 )}
-                <button className="glass-btn" onClick={() => void update({ cover: undefined, coverPosition: undefined })}>
-                  {tNow('header.coverRemove')}
+                <button className="glass-btn" data-testid="cover-remove" onClick={() => void update({ cover: undefined, coverPosition: undefined })}>
+                  <Icon name="trash" size={13} /> {tNow('header.coverRemove')}
                 </button>
               </>
             )}

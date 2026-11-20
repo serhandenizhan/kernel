@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags: ['v*']
-  # elle: main'den derleyip var olan bir sürüme yükler (örn. etiketteki iş akışı başarısız olduysa)
+  # elle: hedef etiketi derleyip var olan ya da taslak bir sürüme yükler (örn. etiketteki iş akışı başarısız olduysa)
   workflow_dispatch:
     inputs:
       tag:
@@ -18,8 +18,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # sürüm zaten varsa (elle oluşturulduysa) dokunulmaz; docs/release-notes/<etiket>.md varsa not olarak o kullanılır
-      - run: gh release view "$TAG" || gh release create "$TAG" --title "Kernel ${TAG#v}" $( [ -f "docs/release-notes/$TAG.md" ] && echo --notes-file "docs/release-notes/$TAG.md" || echo --generate-notes )
+        with:
+          ref: ${{ env.TAG }}
+      # etiket biçimi ile package.json sürümü uyuşmuyorsa derlemeye başlamadan dur
+      - run: |
+          if ! echo "$TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Geçersiz sürüm etiketi: $TAG" >&2
+            exit 1
+          fi
+          PKG_VER=$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json','utf8')).version)")
+          if [ "${TAG#v}" != "$PKG_VER" ]; then
+            echo "Etiket ($TAG) ile package.json ($PKG_VER) uyuşmuyor" >&2
+            exit 1
+          fi
+      # sürüm önce taslak (--draft) olarak açılır; tüm platform dosyaları yüklenmeden uygulama görmez
+      - run: |
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            if [ -f "docs/release-notes/$TAG.md" ]; then
+              gh release create "$TAG" --draft --title "Kernel ${TAG#v}" --notes-file "docs/release-notes/$TAG.md"
+            else
+              gh release create "$TAG" --draft --title "Kernel ${TAG#v}" --generate-notes
+            fi
+          fi
         env:
           GH_TOKEN: ${{ github.token }}
   build:
@@ -37,6 +57,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -49,5 +71,12 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
       - run: gh release upload "$TAG" ${{ matrix.files }} --clobber
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - run: gh release edit "$TAG" --draft=false
         env:
           GH_TOKEN: ${{ github.token }}

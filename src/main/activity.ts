@@ -1,9 +1,10 @@
-import { mkdir, readFile } from 'node:fs/promises'
+import { mkdir } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import type { PageSummary } from '@shared/types'
 import { localDay } from '@core/home'
 import { writeAtomic } from './vault/atomic'
+import { readJsonFile, type JsonFileOpts } from './vault/json-file'
 
 const KEEP_DAYS = 400
 
@@ -14,20 +15,18 @@ export class ActivityStore {
 
   constructor(
     root: string,
-    private readonly now: () => Date = () => new Date()
+    private readonly now: () => Date = () => new Date(),
+    private readonly opts?: JsonFileOpts
   ) {
     this.file = join(root, '.kernel', 'activity.json')
   }
 
   async read(): Promise<Record<string, string[]>> {
-    try {
-      const raw = JSON.parse(await readFile(this.file, 'utf8')) as Record<string, unknown>
-      const out: Record<string, string[]> = {}
-      for (const [day, ids] of Object.entries(raw)) if (/^\d{4}-\d{2}-\d{2}$/.test(day) && Array.isArray(ids)) out[day] = ids.filter((x): x is string => typeof x === 'string')
-      return out
-    } catch {
-      return {}
-    }
+    const { value: raw } = await readJsonFile<unknown>(this.file, () => ({}), this.opts)
+    const obj = raw && typeof raw === 'object' && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {}
+    const out: Record<string, string[]> = {}
+    for (const [day, ids] of Object.entries(obj)) if (/^\d{4}-\d{2}-\d{2}$/.test(day) && Array.isArray(ids)) out[day] = ids.filter((x): x is string => typeof x === 'string')
+    return out
   }
 
   /** Bugünün kaydına sayfayı ekler; 400 günden eski günleri siler. Yazımlar sıraya alınır (eşzamanlı kayıp olmaz). */

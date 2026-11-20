@@ -171,5 +171,7 @@ export const shell = {
   'vault.create': ['Kernel kasası oluştur', 'Create a Kernel vault', 'Kernel-Tresor erstellen'],
   'vault.choose': ['Mevcut bir klasörü seç', 'Choose an existing folder', 'Vorhandenen Ordner wählen'],
   'diagram.failed': ['Diyagram çizilemedi', 'The diagram could not be drawn', 'Das Diagramm konnte nicht gezeichnet werden'],
-  'pdf.notFound': ['PDF bulunamadı', 'PDF not found', 'PDF nicht gefunden']
+  'pdf.notFound': ['PDF bulunamadı', 'PDF not found', 'PDF nicht gefunden'],
+  'error.pageCrashTitle': ['Bu sayfa açılamadı', 'This page could not be displayed', 'Diese Seite konnte nicht angezeigt werden'],
+  'error.backHome': ['Ana sayfaya dön', 'Back to Home', 'Zur Startseite']
 } as const

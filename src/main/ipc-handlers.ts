@@ -34,6 +34,7 @@ import { fetchPhoto, searchPhotos } from './unsplash'
 import { readUnsplashKey, saveUnsplashKey } from './config'
 import { isUnsplashLink } from '@core/unsplash'
 import { devEnv, isPackagedApp } from './env'
+import { fetchBytes } from './fetch-bytes'
 import type { UpdateInfo } from '@core/update'
 import { track } from './pending'
 
@@ -290,12 +291,14 @@ export function registerIpc(): void {
   h(IPC.attachmentsFetchRemote, async (url: string) => {
     try {
       if (!/^https?:\/\//.test(url)) return null
-      const res = await fetch(url)
-      if (!res.ok) return null
-      const type = res.headers.get('content-type') ?? ''
-      if (!type.startsWith('image/')) return null
-      const ext = type.split('/')[1]?.split(';')[0]?.replace('jpeg', 'jpg') || extname(new URL(url).pathname).slice(1) || 'png'
-      return await requireVault().saveAttachment(new Uint8Array(await res.arrayBuffer()), ext, 'web')
+      const got = await fetchBytes(url, {
+        maxBytes: 25 * 1024 * 1024,
+        timeoutMs: 20_000,
+        checkType: (ct) => ct.startsWith('image/')
+      })
+      if (!got) return null
+      const ext = got.contentType.split('/')[1]?.replace('jpeg', 'jpg') || extname(new URL(url).pathname).slice(1) || 'png'
+      return await requireVault().saveAttachment(got.bytes, ext, 'web')
     } catch (e) {
       log.warn('Uzak görsel indirilemedi', url, e)
       return null

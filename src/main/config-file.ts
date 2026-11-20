@@ -1,6 +1,7 @@
-import { mkdir, readFile } from 'node:fs/promises'
+import { mkdir } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import { writeAtomic } from './vault/atomic'
+import { readJsonFile, type JsonFileOpts } from './vault/json-file'
 
 // Uygulama düzeyi ayar dosyası (userData/config.json; kasanın dışında): hangi kasa açık, Unsplash anahtarı.
 // Alanlar birbirini ezmesin diye her yazım okuyup birleştirir ve yazımlar sıraya alınır.
@@ -10,21 +11,17 @@ export interface AppConfig {
   unsplashKey?: string
 }
 
-export async function readConfigAt(file: string): Promise<AppConfig> {
-  try {
-    const raw = JSON.parse(await readFile(file, 'utf8')) as unknown
-    return raw && typeof raw === 'object' && !Array.isArray(raw) ? (raw as AppConfig) : {}
-  } catch {
-    return {}
-  }
+export async function readConfigAt(file: string, opts?: JsonFileOpts): Promise<AppConfig> {
+  const { value: raw } = await readJsonFile<unknown>(file, () => ({}), opts)
+  return raw && typeof raw === 'object' && !Array.isArray(raw) ? (raw as AppConfig) : {}
 }
 
 const queues = new Map<string, Promise<unknown>>()
 
 /** Verilen alanları günceller; boş dizgi alanı siler */
-export function updateConfigAt(file: string, patch: Partial<Record<keyof AppConfig, string>>): Promise<void> {
+export function updateConfigAt(file: string, patch: Partial<Record<keyof AppConfig, string>>, opts?: JsonFileOpts): Promise<void> {
   const run = async () => {
-    const next: Record<string, unknown> = { ...(await readConfigAt(file)) }
+    const next: Record<string, unknown> = { ...(await readConfigAt(file, opts)) }
     for (const [k, v] of Object.entries(patch)) {
       if (v) next[k] = v
       else delete next[k]

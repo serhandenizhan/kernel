@@ -21,7 +21,8 @@ function marksOf(rt: NotionRichText): Mark[] {
   if (a.bold) marks.push({ type: 'bold' })
   if (a.italic) marks.push({ type: 'italic' })
   if (a.underline) marks.push({ type: 'underline' })
-  const color = HIGHLIGHT_COLOR_MAP[a.color.replace('_background', '')]
+  const colorKey = a.color.replace('_background', '')
+  const color = Object.hasOwn(HIGHLIGHT_COLOR_MAP, colorKey) ? HIGHLIGHT_COLOR_MAP[colorKey] : undefined
   if (a.color !== 'default' && color) marks.push({ type: 'highlight', attrs: { color } })
   if (a.code) marks.push({ type: 'code' })
   return marks

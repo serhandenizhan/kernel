@@ -53,9 +53,11 @@ describe('convertBlocks', () => {
   })
   it('callout rengi türe, kod dili normalize, formül, ayırıcı, alıntı', () => {
     const { c } = ctx()
-    expect(convertBlocks([B.callout('dikkat', 'red_background', '🚨'), B.callout('not', 'gray_background', null), B.code('print(1)', 'python'), B.code('düz', 'plain text'), B.code('x', 'c++'), B.equation('\\int x'), B.divider(), B.quote('söz')], c)).toEqual([
+    expect(convertBlocks([B.callout('dikkat', 'red_background', '🚨'), B.callout('not', 'gray_background', null), B.callout('proto', 'constructor', null), B.para(B.t('p', { color: 'toString' })), B.code('print(1)', 'python'), B.code('düz', 'plain text'), B.code('x', 'c++'), B.equation('\\int x'), B.divider(), B.quote('söz')], c)).toEqual([
       { type: 'callout', attrs: { type: 'danger', icon: '🚨', title: '' }, content: [p(txt('dikkat'))] },
       { type: 'callout', attrs: { type: 'note', icon: null, title: '' }, content: [p(txt('not'))] },
+      { type: 'callout', attrs: { type: 'note', icon: null, title: '' }, content: [p(txt('proto'))] },
+      p(txt('p')),
       { type: 'codeBlock', attrs: { language: 'python', lineNumbers: false }, content: [txt('print(1)')] },
       { type: 'codeBlock', attrs: { language: null, lineNumbers: false }, content: [txt('düz')] },
       { type: 'codeBlock', attrs: { language: 'cpp', lineNumbers: false }, content: [txt('x')] },

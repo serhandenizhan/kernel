@@ -12,4 +12,7 @@ describe('isHeadlessTest', () => {
   it('normal kullanımda pencere görünür', () => {
     expect(isHeadlessTest({})).toBe(false)
   })
+  it('paketli uygulamada KERNEL_TEST yok sayılır', () => {
+    expect((isHeadlessTest as (e: Record<string, string | undefined>, p?: boolean) => boolean)({ KERNEL_TEST: '1' }, true)).toBe(false)
+  })
 })

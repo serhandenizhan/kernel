@@ -89,7 +89,7 @@ function convertOne(b: NotionBlock, ctx: ConvertContext): JSONContent[] {
     case 'callout': {
       const color = String(d['color'] ?? 'default').replace('_background', '')
       const icon = d['icon'] as { type: string; emoji?: string } | null
-      return [{ type: 'callout', attrs: { type: CALLOUT_COLOR_MAP[color] ?? 'note', icon: icon?.type === 'emoji' ? (icon.emoji ?? null) : null, title: '' }, content: itemContent(b, ctx) }]
+      return [{ type: 'callout', attrs: { type: Object.hasOwn(CALLOUT_COLOR_MAP, color) ? CALLOUT_COLOR_MAP[color]! : 'note', icon: icon?.type === 'emoji' ? (icon.emoji ?? null) : null, title: '' }, content: itemContent(b, ctx) }]
     }
     case 'code': {
       const text = plainText(rt(b))

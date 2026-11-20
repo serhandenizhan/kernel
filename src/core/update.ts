@@ -9,6 +9,8 @@ export interface UpdateInfo {
   notes: string
   /** uygulama içinde indirilip kurulacak dosya (macOS: zip, Windows: kurulum); yoksa null ve elle indirilir */
   install: string | null
+  /** GitHub sürüm varlığından gelen SHA-256 özeti (varsa indirilen dosya doğrulanır) */
+  installSha256?: string
 }
 
 /** Yalnızca bu deponun adreslerine izin verilir (yanıt bozuk ya da sahte olsa bile başka siteye gidilmez) */
@@ -52,7 +54,7 @@ export function parseRelease(json: unknown, platform: string): UpdateInfo | null
   if (r['draft'] === true || r['prerelease'] === true) return null
   const version = str(r['tag_name']).replace(/^v/i, '')
   const page = str(r['html_url'])
-  if (!/^\d+(\.\d+)*/.test(version) || !isReleaseUrl(page)) return null
+  if (!/^\d+(\.\d+){0,3}$/.test(version) || !isReleaseUrl(page)) return null
   const assets = Array.isArray(r['assets']) ? (r['assets'] as Record<string, unknown>[]) : []
   const want = platform === 'win32' ? /\.exe$/i : platform === 'darwin' ? /arm64\.dmg$/i : null
   const find = (re: RegExp | null) => (re ? assets.find((a) => re.test(str(a?.['name'])) && isReleaseUrl(str(a?.['browser_download_url']))) : undefined)
@@ -60,12 +62,14 @@ export function parseRelease(json: unknown, platform: string): UpdateInfo | null
   const inst = find(platform === 'win32' ? /\.exe$/i : platform === 'darwin' ? /arm64-mac\.zip$/i : null)
   // sürüm oluşturulmuş ama derleme dosyaları henüz yüklenmemiş (CI sürüyor): hazır olana kadar sunulmaz
   if (want && (!asset || (platform === 'darwin' && !inst))) return null
+  const digest = /^sha256:([0-9a-f]{64})$/i.exec(str(inst?.['digest']))
   return {
     version,
     url: asset ? str(asset['browser_download_url']) : page,
     page,
     notes: str(r['body']),
-    install: inst ? str(inst['browser_download_url']) : null
+    install: inst ? str(inst['browser_download_url']) : null,
+    ...(digest ? { installSha256: digest[1]!.toLowerCase() } : {})
   }
 }
 
@@ -91,14 +95,16 @@ export function canSelfUpdate(bundle: string): boolean {
  * macOS paket değiştirme betiği: $1 uygulamanın süreç kimliği, $2 kurulu paket, $3 yeni paket.
  * Uygulama kapanınca eskisini yedeğe alır, yenisini yerine koyar; bir adım başarısız olursa eskisini geri koyar; sonra açar.
  */
-export function macSwapScript(): string {
+export function macSwapScript(waitSteps = 300): string {
   return [
     '#!/bin/sh',
     'i=0',
-    'while kill -0 "$1" 2>/dev/null && [ $i -lt 300 ]; do sleep 0.1; i=$((i+1)); done',
+    `while kill -0 "$1" 2>/dev/null && [ $i -lt ${waitSteps} ]; do sleep 0.1; i=$((i+1)); done`,
+    // uygulama süre sonunda hâlâ kapanmadıysa (ör. kullanıcı çıkışı iptal ettiyse) pakete dokunma
+    'if kill -0 "$1" 2>/dev/null; then exit 1; fi',
     'rm -rf "$2.old"',
     'if mv "$2" "$2.old"; then',
-    '  if mv "$3" "$2"; then rm -rf "$2.old"; else mv "$2.old" "$2"; fi',
+    '  if mv "$3" "$2"; then rm -rf "$2.old"; else rm -rf "$2"; mv "$2.old" "$2"; fi',
     'fi',
     'xattr -dr com.apple.quarantine "$2" 2>/dev/null',
     'open "$2"',

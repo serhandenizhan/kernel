@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { readConfigAt, updateConfigAt } from '../../../src/main/config-file'
@@ -34,5 +34,10 @@ describe('uygulama ayar dosyası', () => {
     expect(await readConfigAt(f)).toEqual({})
     await updateConfigAt(f, { vaultPath: '/a' })
     expect(JSON.parse(readFileSync(f, 'utf8'))).toEqual({ vaultPath: '/a' })
+  })
+  it.skipIf(process.platform === 'win32')('config.json 0600 izinle yazılır', async () => {
+    const f = tmp()
+    await updateConfigAt(f, { unsplashKey: 'gizli' })
+    expect(statSync(f).mode & 0o777).toBe(0o600)
   })
 })

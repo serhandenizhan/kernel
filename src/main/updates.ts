@@ -9,6 +9,8 @@ export interface FetchOptions {
   fetchImpl?: (url: string, init: RequestInit) => Promise<Response>
   platform?: string
   env?: Record<string, string | undefined>
+  /** Paketli uygulamada test beslemesi ve test modu kancaları devre dışıdır */
+  packaged?: boolean
 }
 
 /** Son sürüm bilgisi; ağ yoksa, yanıt bozuksa ya da testteysek (besleme dosyası verilmediyse) null */
@@ -21,10 +23,12 @@ export async function checkLatestRelease(opts: FetchOptions = {}): Promise<{ ok:
   const env = opts.env ?? process.env
   const platform = opts.platform ?? process.platform
   try {
-    const feed = env['KERNEL_TEST_UPDATE_FEED']
-    if (feed) return { ok: true, info: parseRelease(JSON.parse(await readFile(feed, 'utf8')), platform) }
-    // testler asla ağa çıkmaz
-    if (env['KERNEL_TEST']) return { ok: false, info: null }
+    if (!opts.packaged) {
+      const feed = env['KERNEL_TEST_UPDATE_FEED']
+      if (feed) return { ok: true, info: parseRelease(JSON.parse(await readFile(feed, 'utf8')), platform) }
+      // testler asla ağa çıkmaz
+      if (env['KERNEL_TEST']) return { ok: false, info: null }
+    }
     const doFetch = opts.fetchImpl ?? ((url: string, init: RequestInit) => fetch(url, init))
     const res = await doFetch(LATEST_URL, {
       headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'Kernel-App' },

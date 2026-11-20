@@ -54,7 +54,7 @@ Kernel: lokal, açık kaynak, Markdown tabanlı macOS + Windows not uygulaması 
 - Cmd+W menüde `close-tab` komutudur (pencere: Cmd+Shift+W).
 
 ## Notlar (güncelleme + Windows)
-- Güncelleme: `src/core/update.ts` (saf: `compareVersions`, `parseRelease`, `shouldOffer`; yalnızca `RELEASES_PREFIX` adresleri), `src/main/updates.ts` (GitHub `releases/latest`; `KERNEL_TEST` varken ağa çıkmaz, `KERNEL_TEST_UPDATE_FEED` sahte yanıt dosyası). Arayüz `UpdatePrompt.tsx`; ayar `updates: { check, skipped }`. Otomatik kurulum yok (imzasız uygulama), İndir tarayıcıda dosyayı açar.
+- Güncelleme: `src/core/update.ts` (saf: `compareVersions`, `parseRelease`, `shouldOffer`; yalnızca `RELEASES_PREFIX` adresleri), `src/main/updates.ts` (GitHub `releases/latest`; `KERNEL_TEST` varken ağa çıkmaz, `KERNEL_TEST_UPDATE_FEED` sahte yanıt dosyası). Arayüz `UpdatePrompt.tsx`; ayar `updates: { check, skipped }`. v0.7.0+'da uygulama içi güncelleme desteklenir (macOS zip / Windows exe); desteklenmeyen durumda tarayıcıda indirme sayfası açılır.
 - Windows: `window-options.ts` (Mac dışı normal çerçeve + opak zemin), `menu-template.ts` (Mac'e özgü roller yalnızca darwin'de, `Cmd` → `Ctrl`), `sanitizeTitle(title, platform)` Windows yasak karakter / ayrılmış adlar. Renderer `lib/platform.ts`: `isMac`, `modKey(e)`, `keys('⌘K')`; `useT`/`tNow` metinlerdeki ⌘ simgelerini Windows'ta `Ctrl+` yapar. e2e kısayolları `ControlOrMeta+`.
 - Yapıştırma: web HTML'inde başlık/liste/tablo/kalın/link varsa HTML kullanılır (`STRUCTURED`); HTML metnindeki ham LaTeX `rewriteRawMath` ile korunur.
 - Ad çakışması: yeniden adlandırma/taşıma bir başlığı belirsiz yaparsa, başka sayfayı gösteren `[[Ad]]` linkleri `[[Yol/Ad|Ad]]` olarak sabitlenir (`rewriteLinksAfterRelocate`).

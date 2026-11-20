@@ -21,6 +21,10 @@ describe('normalizeLanguage', () => {
   it('bilinmeyen etiketi küçük harfle korur', () => {
     expect(normalizeLanguage('Mermaid')).toBe('mermaid')
   })
+  it('Object.prototype anahtarlarında fonksiyon döndürmez', () => {
+    expect(normalizeLanguage('constructor')).toBe('constructor')
+    expect(normalizeLanguage('toString')).toBe('tostring')
+  })
 })
 
 describe('detectLanguage', () => {

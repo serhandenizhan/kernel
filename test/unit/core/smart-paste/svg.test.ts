@@ -40,4 +40,19 @@ describe('svg sanitizer allowlist', () => {
   it('ignores svgs without any size information (decorative logos)', () => {
     expect(convertPaste({ text: 'a', html: '<p>a</p><svg><path d="M0 0h100v100"/></svg><ul><li>b</li></ul>' }, opts).svgs).toHaveLength(0)
   })
+
+  it('blocks <style> rawtext breakout and CSS escape/comment url bypasses', () => {
+    const html =
+      '<svg viewBox="0 0 200 200"><style>&lt;/style&gt;&lt;script&gt;alert(1)&lt;/script&gt;&lt;foreignObject/&gt;&lt;image href="https://evil.example/x"/&gt;&lt;style&gt; .a{background:\\75rl(https://evil.example/a)} .b{background:url/**/(https://evil.example/b)} @\\69mport "https://evil.example/c.css";</style><rect width="10" height="10" style="fill: \\75rl(https://evil.example/d)"/></svg>'
+    const svg = convertPaste({ text: '', html }, opts).svgs[0]!
+    expect(svg).not.toMatch(/<script|<foreignObject|<image|evil\.example/i)
+  })
+
+  it('accepts viewBox with leading or trailing whitespace', () => {
+    const html = '<svg viewBox=" 0 0 800 600 "><rect width="10" height="10"/></svg>'
+    const svgs = convertPaste({ text: '', html }, opts).svgs
+    expect(svgs).toHaveLength(1)
+    expect(svgs[0]).toContain('width="800"')
+    expect(svgs[0]).toContain('height="600"')
+  })
 })

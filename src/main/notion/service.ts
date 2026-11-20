@@ -10,6 +10,7 @@ import { clearToken, loadToken, saveToken } from '../secrets'
 import { requireVault } from '../state'
 import { log } from '../log'
 import { mainLang, mainT } from '../i18n'
+import { devEnv } from '../env'
 
 const DOWNLOAD_TIMEOUT_MS = 30_000
 const MAX_BYTES = 50 * 1024 * 1024
@@ -17,7 +18,7 @@ const EXT: Record<string, string> = { 'image/png': 'png', 'image/jpeg': 'jpg', '
 
 /** Gerçek istemci ya da (test) sentetik veriden yanıt veren istemci */
 function clientFor(token: string): NotionApi {
-  const fixture = process.env['KERNEL_TEST_NOTION_FIXTURES']
+  const fixture = devEnv('KERNEL_TEST_NOTION_FIXTURES')
   if (fixture) {
     if (!token.startsWith('secret_')) {
       return { me: async () => Promise.reject(new NotionError(mainT('notionErr.token'), 401, 'unauthorized')) } as unknown as NotionApi

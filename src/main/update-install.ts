@@ -1,10 +1,12 @@
 import { app, net } from 'electron'
 import { spawn, execFile } from 'node:child_process'
-import { createWriteStream } from 'node:fs'
-import { access, copyFile, mkdtemp, open, readdir, stat, writeFile, constants } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
+import { createReadStream, createWriteStream } from 'node:fs'
+import { access, copyFile, mkdtemp, open, readdir, rm, stat, writeFile, constants } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { promisify } from 'node:util'
 import { canSelfUpdate, isReleaseUrl, macBundleFromExe, macSwapScript, type UpdateInfo } from '@core/update'
+import { devEnv } from './env'
 
 // Uygulama içi güncelleme: yeni sürüm indirilir, doğrulanır, uygulama kapanınca yerine konur ve yeniden açılır.
 // Apple imzası olmadığı için Squirrel kullanılamıyor; macOS'ta paket küçük bir betikle değiştirilir,
@@ -12,6 +14,9 @@ import { canSelfUpdate, isReleaseUrl, macBundleFromExe, macSwapScript, type Upda
 
 const run = promisify(execFile)
 const BUNDLE_ID = 'app.kernel.notes'
+const TEMP_PREFIX = 'kernel-update-'
+
+let installing = false
 
 export type InstallResult = 'restarting' | 'manual'
 export interface InstallPlan {
@@ -19,9 +24,30 @@ export interface InstallPlan {
   args: string[]
 }
 
+/** Önceki kurulumlardan kalan kernel-update-* geçici klasörlerini temizler */
+export async function cleanupUpdateTemp(tempDir = app.getPath('temp')): Promise<void> {
+  const entries = await readdir(tempDir, { withFileTypes: true }).catch(() => [])
+  for (const e of entries) {
+    if (e.isDirectory() && e.name.startsWith(TEMP_PREFIX)) {
+      await rm(join(tempDir, e.name), { recursive: true, force: true }).catch(() => undefined)
+    }
+  }
+}
+
+async function verifySha256(file: string, expected: string): Promise<void> {
+  const hash = createHash('sha256')
+  await new Promise<void>((resolve, reject) => {
+    const s = createReadStream(file)
+    s.on('data', (chunk) => hash.update(chunk))
+    s.on('error', reject)
+    s.on('end', resolve)
+  })
+  if (hash.digest('hex').toLowerCase() !== expected.toLowerCase()) throw new Error('checksum mismatch')
+}
+
 async function download(url: string, file: string, onProgress: (ratio: number) => void): Promise<void> {
   // testlerde ağa çıkılmaz: yerel dosya "indirilir"
-  const local = process.env['KERNEL_TEST_UPDATE_ASSET']
+  const local = devEnv('KERNEL_TEST_UPDATE_ASSET')
   if (local) {
     await copyFile(local, file)
     onProgress(1)
@@ -63,6 +89,8 @@ async function prepareMac(info: UpdateInfo, dir: string, zip: string): Promise<I
   }
   const out = join(dir, 'x')
   await run('/usr/bin/ditto', ['-x', '-k', zip, out])
+  // arşiv açıldıktan sonra zip dosyasına gerek kalmaz
+  await rm(zip, { force: true }).catch(() => undefined)
   const name = (await readdir(out)).find((n) => n.endsWith('.app'))
   if (!name) throw new Error('no app in zip')
   const fresh = join(out, name)
@@ -90,23 +118,39 @@ async function prepareWin(exe: string): Promise<InstallPlan> {
 
 /** İndirir, doğrular ve kurulumu başlatır; bu platformda kendini güncelleyemiyorsa 'manual' döner (arayüz indirme sayfasını açar) */
 export async function installUpdate(info: UpdateInfo, onProgress: (ratio: number) => void): Promise<InstallResult> {
+  if (installing) throw new Error('update already installing')
   const url = info.install
   if (!url || !isReleaseUrl(url)) return 'manual'
   if (process.platform !== 'darwin' && process.platform !== 'win32') return 'manual'
   if (process.platform === 'darwin' && !canSelfUpdate(macBundleFromExe(app.getPath('exe')) ?? '/Volumes/')) return 'manual'
-  const dir = await mkdtemp(join(app.getPath('temp'), 'kernel-update-'))
-  const file = join(dir, process.platform === 'win32' ? `Kernel-Setup-${info.version}.exe` : 'update.zip')
-  await download(url, file, onProgress)
-  const plan = process.platform === 'win32' ? await prepareWin(file) : await prepareMac(info, dir, file)
-  if (!plan) return 'manual'
-  // testlerde kurulum planı dosyaya yazılır; hiçbir şey çalıştırılmaz, uygulama kapanmaz
-  const dry = process.env['KERNEL_TEST_UPDATE_DRYRUN']
-  if (dry) {
-    await writeFile(dry, JSON.stringify(plan))
+  installing = true
+  let dir: string | null = null
+  try {
+    dir = await mkdtemp(join(app.getPath('temp'), TEMP_PREFIX))
+    const file = join(dir, process.platform === 'win32' ? `Kernel-Setup-${info.version}.exe` : 'update.zip')
+    await download(url, file, onProgress)
+    if (info.installSha256) await verifySha256(file, info.installSha256)
+    const plan = process.platform === 'win32' ? await prepareWin(file) : await prepareMac(info, dir, file)
+    if (!plan) {
+      await rm(dir, { recursive: true, force: true }).catch(() => undefined)
+      installing = false
+      return 'manual'
+    }
+    // testlerde kurulum planı dosyaya yazılır; hiçbir şey çalıştırılmaz, uygulama kapanmaz
+    const dry = devEnv('KERNEL_TEST_UPDATE_DRYRUN')
+    if (dry) {
+      await writeFile(dry, JSON.stringify(plan))
+      await rm(dir, { recursive: true, force: true }).catch(() => undefined)
+      installing = false
+      return 'restarting'
+    }
+    spawn(plan.cmd, plan.args, { detached: true, stdio: 'ignore' }).unref()
+    // kaydedilmemiş yazımlar kapanışta beklenir (pending.ts)
+    setTimeout(() => app.quit(), 300)
     return 'restarting'
+  } catch (e) {
+    if (dir) await rm(dir, { recursive: true, force: true }).catch(() => undefined)
+    installing = false
+    throw e
   }
-  spawn(plan.cmd, plan.args, { detached: true, stdio: 'ignore' }).unref()
-  // kaydedilmemiş yazımlar kapanışta beklenir (pending.ts)
-  setTimeout(() => app.quit(), 300)
-  return 'restarting'
 }

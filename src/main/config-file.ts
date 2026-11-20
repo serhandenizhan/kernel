@@ -1,4 +1,5 @@
-import { readFile } from 'node:fs/promises'
+import { mkdir, readFile } from 'node:fs/promises'
+import { dirname } from 'node:path'
 import { writeAtomic } from './vault/atomic'
 
 // Uygulama düzeyi ayar dosyası (userData/config.json; kasanın dışında): hangi kasa açık, Unsplash anahtarı.
@@ -28,7 +29,9 @@ export function updateConfigAt(file: string, patch: Partial<Record<keyof AppConf
       if (v) next[k] = v
       else delete next[k]
     }
-    await writeAtomic(file, JSON.stringify(next, null, 2))
+    await mkdir(dirname(file), { recursive: true })
+    // Unsplash anahtarı içerdiğinden yalnızca sahibinin okuyabileceği izinle yazılır
+    await writeAtomic(file, JSON.stringify(next, null, 2), undefined, 0o600)
   }
   const prev = queues.get(file) ?? Promise.resolve()
   const p = prev.then(run, run)

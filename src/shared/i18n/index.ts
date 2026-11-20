@@ -12,11 +12,13 @@ const LOCALES: Record<Lang, string> = { tr: 'tr-TR', en: 'en-US', de: 'de-DE' }
 /** Dilin Intl yerel ayarı */
 export const localeOf = (lang: Lang): string => LOCALES[lang]
 
-const fill = (s: string, params?: Params) => (params ? s.replace(/(?<!\{)\{(\w+)\}(?!\})/g, (m, k: string) => (k in params ? String(params[k]) : m)) : s)
+const fill = (s: string, params?: Params) => (params ? s.replace(/(?<!\{)\{(\w+)\}(?!\})/g, (m, k: string) => (Object.hasOwn(params, k) ? String(params[k]) : m)) : s)
 
 /** Çeviri; eksik çeviri Türkçeye düşer */
 export function t(lang: Lang, key: MessageKey, params?: Params): string {
-  return fill(DICTS[lang]?.[key] ?? tr[key] ?? key, params)
+  const dict = Object.hasOwn(DICTS, lang) ? DICTS[lang] : undefined
+  const raw = dict && Object.hasOwn(dict, key) ? dict[key] : Object.hasOwn(tr, key) ? tr[key] : String(key)
+  return fill(raw, params)
 }
 
 /** Çoğul çeviri: `key.one` / `key.other` anahtarlarından Intl.PluralRules ile seçer */

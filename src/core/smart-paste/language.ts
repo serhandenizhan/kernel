@@ -43,7 +43,7 @@ export function normalizeLanguage(tag: string | null): string | null {
   if (!tag) return null
   const t = tag.trim().toLowerCase()
   if (!t) return null
-  if (t in ALIASES) return ALIASES[t] ?? null
+  if (Object.hasOwn(ALIASES, t)) return ALIASES[t] ?? null
   return t
 }
 

@@ -79,11 +79,8 @@
 .home-btn.primary {
   border-color: transparent;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-weight: 600;
-}
-:root[data-theme='dark'] .home-btn.primary {
-  color: #08201b;
 }
 .home-btn:hover,
 .home-search:hover {

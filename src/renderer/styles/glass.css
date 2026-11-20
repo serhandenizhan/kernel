@@ -41,14 +41,15 @@
 .menu-item:hover,
 .menu-item[data-active='true'] {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 .menu-item.danger {
   color: var(--danger);
 }
-.menu-item.danger:hover {
+.menu-item.danger:hover,
+.menu-item.danger[data-active='true'] {
   background: var(--danger);
-  color: #fff;
+  color: var(--on-danger);
 }
 .menu-sep {
   height: 1px;
@@ -86,6 +87,7 @@
   color: var(--text-2);
 }
 .menu-item:hover .icon,
+.menu-item[data-active='true'] .icon,
 .menu-item.open .icon {
   color: inherit;
 }
@@ -97,7 +99,8 @@
   color: var(--text-3);
   font-size: 11.5px;
 }
-.menu-item:hover .menu-hint {
+.menu-item:hover .menu-hint,
+.menu-item[data-active='true'] .menu-hint {
   color: inherit;
   opacity: 0.8;
 }

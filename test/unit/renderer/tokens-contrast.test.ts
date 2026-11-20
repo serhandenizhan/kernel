@@ -29,6 +29,8 @@ describe('metin kontrastı (WCAG AA, yazı alanı degradesinin iki ucunda)', () 
           expect(contrast(token(b, text), token(b, paper)), `${text} / ${paper}`).toBeGreaterThanOrEqual(4.5)
         }
       }
+      expect(contrast(token(b, 'on-accent'), token(b, 'accent')), 'on-accent / accent').toBeGreaterThanOrEqual(4.5)
+      expect(contrast(token(b, 'on-danger'), token(b, 'danger')), 'on-danger / danger').toBeGreaterThanOrEqual(4.5)
     })
   }
 })

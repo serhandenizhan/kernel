@@ -59,3 +59,18 @@ test('çalışırken arama paletinde boşluk yazılabilir ve rakamlar kartı de�
   await expect(win.getByTestId('study-progress')).toHaveText('2 / 3')
   await app.close()
 })
+
+test('cevabı kod bloğu olan katlanır kart çalışılır ve kodu koruyarak gösterir', async () => {
+  const vault = tmpVault()
+  writeFileSync(join(vault, 'Kod.md'), '<details data-card>\n<summary>Örnek</summary>\n\n```py\nx = 1\n```\n</details>\n')
+  const { app, win } = await launch(vault)
+  try {
+    await win.getByTestId('nav-study').click()
+    await win.getByTestId('deck-row').first().getByTestId('deck-study').click()
+    await expect(win.getByTestId('card-question')).toHaveText('Örnek')
+    await win.keyboard.press('Space')
+    await expect(win.locator('[data-testid="card-answer"] pre code')).toHaveText('x = 1')
+  } finally {
+    await app.close()
+  }
+})

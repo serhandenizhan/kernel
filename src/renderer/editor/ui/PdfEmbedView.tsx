@@ -107,7 +107,7 @@ export function PdfEmbedView({ node, editor }: NodeViewProps) {
   if (!editor.isEditable) {
     return (
       <NodeViewWrapper className="pdf-card" data-testid="pdf-embed">
-        📄 {name} — gömülü PDF
+        📄 {tNow('pdf.embeddedCard', { name })}
       </NodeViewWrapper>
     )
   }

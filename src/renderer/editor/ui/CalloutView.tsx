@@ -3,6 +3,7 @@ import { NodeViewContent, NodeViewWrapper, type NodeViewProps } from '@tiptap/re
 import type { CalloutType } from '@core/markdown/schema'
 import { CALLOUT_DEFAULT_ICON, calloutLabel, CALLOUT_TYPES } from '../nodes/Callout'
 import { ContextMenu } from '../../shell/ContextMenu'
+import { InputPopover } from '../../shell/InputPopover'
 import { tNow } from '../../lib/i18n'
 
 // Callout: ikona tıklayınca tür / ikon / başlık menüsü
@@ -11,6 +12,7 @@ export function CalloutView({ node, updateAttributes }: NodeViewProps) {
   const icon = (node.attrs['icon'] as string | null) ?? CALLOUT_DEFAULT_ICON[type]
   const title = String(node.attrs['title'] ?? '')
   const [menu, setMenu] = useState<{ x: number; y: number } | null>(null)
+  const [iconPrompt, setIconPrompt] = useState<{ x: number; y: number } | null>(null)
 
   return (
     <NodeViewWrapper className={`callout callout-${type}`} data-callout={type}>
@@ -42,12 +44,26 @@ export function CalloutView({ node, updateAttributes }: NodeViewProps) {
               label: tNow('callout.customIcon'),
               separatorBefore: true,
               onSelect: () => {
-                const v = window.prompt(tNow('callout.iconPrompt'), icon)
-                if (v) updateAttributes({ icon: [...v.trim()][0] ?? null })
+                if (menu) setIconPrompt(menu)
               }
             },
             { label: title === '' ? tNow('callout.addTitle') : tNow('callout.removeTitle'), onSelect: () => updateAttributes({ title: title === '' ? calloutLabel(type) : '' }) }
           ]}
+        />
+      )}
+      {iconPrompt && (
+        <InputPopover
+          x={iconPrompt.x}
+          y={iconPrompt.y}
+          initial={icon}
+          placeholder={tNow('callout.iconPrompt')}
+          ariaLabel={tNow('callout.iconPrompt')}
+          testId="callout-icon-input"
+          onSubmit={(v) => {
+            setIconPrompt(null)
+            updateAttributes({ icon: [...v.trim()][0] ?? null })
+          }}
+          onCancel={() => setIconPrompt(null)}
         />
       )}
     </NodeViewWrapper>

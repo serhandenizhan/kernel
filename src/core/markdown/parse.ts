@@ -4,7 +4,8 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import type { Nodes, Parents, PhrasingContent, RootContent, List, Table } from 'mdast'
 import { CALLOUT_TYPES, ESCAPED_BS, ESCAPED_EQ, ESCAPED_LB, ESCAPED_PIPE, ESCAPED_RB, MARK_ORDER, type CalloutType, type JSONContent } from './schema'
-import { DETAILS_CLOSE, parseDetailsOpen, parseInlineHtml } from './html-blocks'
+import { DETAILS_CLOSE, parseDetailsOpen, parseInlineHtml, scanDetailsBalance } from './html-blocks'
+import { normalizeLanguage } from '../smart-paste/language'
 
 type Mark = NonNullable<JSONContent['marks']>[number]
 
@@ -69,19 +70,33 @@ function convertBlocks(nodes: RootContent[]): JSONContent[] {
     if (node.type === 'html') {
       const open = parseDetailsOpen(node.value)
       if (open) {
-        // eşleşen </details>'e kadar olan kardeşleri grupla (iç içe için derinlik sayacı)
-        let depth = 1
-        let j = i + 1
-        for (; j < nodes.length; j++) {
-          const n = nodes[j]!
-          if (n.type === 'html') {
-            if (parseDetailsOpen(n.value)) depth++
-            else if (DETAILS_CLOSE.test(n.value.trim())) depth--
-            if (depth === 0) break
+        let inner: JSONContent[]
+        let trailing = open.trailing
+        if (open.closed) {
+          // açılış ve kapanış aynı HTML bloğunda: sonraki kardeş blokları yutma
+          inner = open.rest ? convertBlocks(processor.parse(open.rest).children) : []
+        } else {
+          // eşleşen </details>'e kadar olan kardeşleri grupla (iç içe için derinlik sayacı)
+          let depth = open.depth
+          let j = i + 1
+          let closeBefore = ''
+          for (; j < nodes.length; j++) {
+            const n = nodes[j]!
+            if (n.type === 'html') {
+              const bal = scanDetailsBalance(n.value, depth)
+              depth = bal.depth
+              if (depth === 0) {
+                closeBefore = n.value.slice(0, bal.closeAt).trim()
+                trailing = n.value.slice(bal.closeAt + bal.closeLen).trim()
+                break
+              }
+            }
           }
+          inner = convertBlocks(nodes.slice(i + 1, j))
+          if (open.rest) inner.unshift(...convertBlocks(processor.parse(open.rest).children))
+          if (closeBefore) inner.push(...convertBlocks(processor.parse(closeBefore).children))
+          i = j
         }
-        const inner = convertBlocks(nodes.slice(i + 1, j))
-        if (open.rest) inner.unshift(...convertBlocks(processor.parse(open.rest).children))
         const summary = parseInlineMarkdown(open.summary)
         out.push({
           type: 'details',
@@ -91,7 +106,7 @@ function convertBlocks(nodes: RootContent[]): JSONContent[] {
             { type: 'detailsContent', content: inner.length ? inner : [{ type: 'paragraph' }] }
           ]
         })
-        i = j
+        if (trailing) out.push(...convertBlocks(processor.parse(trailing).children))
         continue
       }
       if (DETAILS_CLOSE.test(node.value.trim())) continue
@@ -119,7 +134,7 @@ function convertBlock(node: RootContent): JSONContent[] {
     case 'code': {
       const lineNumbers = /\{lineNumbers\}/.test(node.meta ?? '')
       const value = restoreRaw(node.value)
-      return [withContent({ type: 'codeBlock', attrs: { language: node.lang ?? null, lineNumbers } }, value ? [{ type: 'text', text: value }] : [])]
+      return [withContent({ type: 'codeBlock', attrs: { language: normalizeLanguage(node.lang ?? null), lineNumbers } }, value ? [{ type: 'text', text: value }] : [])]
     }
     case 'math':
       return [{ type: 'blockMath', attrs: { latex: restoreRaw(node.value) } }]

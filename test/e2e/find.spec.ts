@@ -36,3 +36,29 @@ test('⌘F / Ctrl+F sayfa içinde arar: eşleşmeler vurgulanır, sayaç ilerler
   // dosya değişmez
   await app.close()
 })
+
+test('2+ sekmede ⌘F açılınca sayfa yüzeyi pencerenin altına taşmaz ve son paragraf görünür', async () => {
+  const vault = tmpVault()
+  const filler = Array.from({ length: 40 }, (_, i) => `Dolgu satırı ${i}`).join('\n\n')
+  writeFileSync(join(vault, 'Alfa.md'), 'alfa\n')
+  writeFileSync(join(vault, 'Uzun.md'), `# Uzun\n\n${filler}\n\nBİTİŞ PARAGRAFI\n`)
+  const { app, win } = await launch(vault)
+  try {
+    await win.getByTestId('tree-row').filter({ hasText: 'Alfa' }).click()
+    await win.getByTestId('tree-row').filter({ hasText: 'Uzun' }).click({ modifiers: ['ControlOrMeta'] })
+    await expect(win.getByTestId('tab')).toHaveCount(2)
+    await win.keyboard.press('ControlOrMeta+f')
+    await expect(win.getByTestId('find-bar')).toBeVisible()
+
+    const geom = await win.evaluate(() => {
+      const s = document.querySelector('.surfaces')!.getBoundingClientRect()
+      return { bottom: Math.round(s.bottom), winH: window.innerHeight }
+    })
+    expect(geom.bottom).toBeLessThanOrEqual(geom.winH)
+
+    await win.locator('.page-surface').evaluate((el) => (el.scrollTop = el.scrollHeight))
+    await expect(win.locator('.kernel-editor').getByText('BİTİŞ PARAGRAFI')).toBeInViewport()
+  } finally {
+    await app.close()
+  }
+})

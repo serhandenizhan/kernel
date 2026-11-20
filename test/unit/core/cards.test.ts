@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cardId, extractCards } from '@core/cards'
+import { cardId, extractCards, legacyCardId } from '@core/cards'
 
 describe('extractCards', () => {
   it('reads "Question :: Answer" lines and card-marked toggles, skipping code', () => {
@@ -33,6 +33,16 @@ describe('extractCards', () => {
   it('ignores lines with an empty side and urls with ::', () => {
     expect(extractCards('P', ' :: cevap\nsoru :: \nstd::vector')).toEqual([])
   })
+
+  it('extracts card-marked toggles whose answer is a code block', () => {
+    const md = '<details data-card>\n<summary>Soru</summary>\n\n```py\nx\n```\n</details>\n'
+    expect(extractCards('P1', md).map((c) => [c.question, c.answer])).toEqual([['Soru', '```py\nx\n```']])
+  })
+
+  it('ignores :: inside table rows and <details data-card> inside fenced code', () => {
+    const md = '| A :: B | C |\n| --- | --- |\n```\n<details data-card>\n<summary>Kod</summary>\nx\n</details>\n```\n'
+    expect(extractCards('P1', md)).toEqual([])
+  })
 })
 
 describe('cardId', () => {
@@ -40,6 +50,13 @@ describe('cardId', () => {
     expect(cardId('P', 'Özdeğer  nedir?')).toBe(cardId('P', 'özdeğer nedir'))
     expect(cardId('P', 'a')).not.toBe(cardId('Q', 'a'))
     expect(cardId('P', 'a')).not.toBe(cardId('P', 'b'))
+  })
+
+  it('distinguishes math operators while keeping existing prose card IDs identical', () => {
+    expect(cardId('P', '$a + b$')).not.toBe(cardId('P', '$a - b$'))
+    expect(cardId('P', '$x^2$')).not.toBe(cardId('P', '$x_2$'))
+    expect(cardId('P', 'Özdeğer nedir?')).toBe(legacyCardId('P', 'Özdeğer nedir?'))
+    expect(cardId('P', 'Soru-cevap nedir?')).toBe(legacyCardId('P', 'Soru-cevap nedir?'))
   })
 })
 

@@ -7,8 +7,8 @@ const TR = /[çğıöşüÇĞİÖŞÜ]/
 const LETTER = /[A-Za-zçğıöşüÇĞİÖŞÜ]/
 // kısayol gösterimleri (⌘K, ⇧⌘T) ve tek harfler metin sayılmaz
 const isText = (s) => LETTER.test(s) && !/[⌘⇧⌥⌃]/.test(s) && s.trim().length > 1
-const SKIP_ATTRS = /\b(className|class|data-[\w-]+|key|id|href|src|type|role|name|value|lang|rel|for|htmlFor|style)=(["'])[^"']*\2/g
-const TEXT_ATTRS = /\b(title|placeholder|aria-label|label|alt)=(["'])([^"']*)\2/g
+const SKIP_ATTRS = /\b(className|class|data-(?!tip\b)[\w-]+|key|id|href|src|type|role|name|value|lang|rel|for|htmlFor|style)=(["'])[^"']*\2/g
+const TEXT_ATTRS = /\b(title|placeholder|aria-label|label|alt|data-tip)=(["'])([^"']*)\2/g
 
 /** Yorumları satır numaralarını koruyarak siler */
 function stripComments(src) {
@@ -35,10 +35,14 @@ export function findHardcoded(source, jsx = true) {
     // aynı satırda >metin<
     // aynı satırda >metin< (yalnızca TSX; ok fonksiyonu ve TS jenerikleri hariç)
     if (jsx) for (const m of rest.matchAll(/(?<![=-])>([^<>{}()=;:]+)</g)) if (isText(m[1])) hit = true
-    // tek başına satırda JSX metni (önceki satır etiketle biter, sonraki etiket/ifadeyle başlar)
+    // tek başına satırda JSX metni (önceki satır etiketle biter, sonraki etiket/ifadeyle başlar; {ifade} dışındaki metin de taranır)
     const prev = (lines[i - 1] ?? '').trim()
     const next = (lines[i + 1] ?? '').trim()
-    if (jsx && />$/.test(prev) && /^[<{]/.test(next) && !/[<>{}=;()]/.test(line) && isText(line)) hit = true
+    let plain = line
+    while (/\{[^{}]*\}/.test(plain)) plain = plain.replace(/\{[^{}]*\}/g, ' ')
+    const pt = plain.trim()
+    if (jsx && />$/.test(prev) && /^[<{]/.test(next) && !/[<>{}=;?]/.test(plain) && !/^(?:return|case|default)\b/.test(pt) && !/\($/.test(pt) && isText(plain))
+      hit = true
     if (hit) out.push({ line: i + 1, text: line })
   })
   return out

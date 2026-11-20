@@ -1168,7 +1168,7 @@ button {
   gap: var(--page-inset);
   height: 100%;
 }
-.tab-bar + .surfaces {
+.tab-bar ~ .surfaces {
   height: calc(100% - 36px);
 }
 .surfaces > .page-surface {

@@ -73,7 +73,9 @@ export function extractTags(body: string, frontmatterTags?: unknown): string[] {
   if (Array.isArray(frontmatterTags)) frontmatterTags.forEach((x) => typeof x === 'string' && add(x))
   else if (typeof frontmatterTags === 'string') add(frontmatterTags)
   mapProse(body, (text) => {
-    for (const m of text.matchAll(TAG)) add(m[2]!)
+    // Markdown link/görsel hedeflerindeki #parça etiket sayılmaz
+    const clean = text.replace(/\]\((?:<[^>\n]*>|[^()\n]*(?:\([^()\n]*\)[^()\n]*)*)\)/g, ']')
+    for (const m of clean.matchAll(TAG)) add(m[2]!)
     return text
   })
   return [...seen.values()]

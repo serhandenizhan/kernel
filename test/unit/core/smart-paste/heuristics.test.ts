@@ -40,6 +40,10 @@ describe('stripCitations', () => {
   it('bitişik sayısal kaynak numaralarını siler, diğer köşeli parantezleri korur', () => {
     expect(stripCitations('Model iyidir.[1] Ayrıca[2, 3] ve [CLS] ile [0, 1] ve x[4-6].')).toBe('Model iyidir. Ayrıca ve [CLS] ile [0, 1] ve x.')
   })
+  it('dizi indekslerini, referans linklerini ve satır içi kodu korur; 1 tabanlı kaynakları temizler', () => {
+    expect(stripCitations('Bkz [örnek][1], arr[0], matris[1][2], x[i][j] ve `a[0]` ile `a[1]`.')).toBe('Bkz [örnek][1], arr[0], matris[1][2], x[i][j] ve `a[0]` ile `a[1]`.')
+    expect(stripCitations('Bu bir iddia.[1] Bu bir iddia[2, 3].')).toBe('Bu bir iddia. Bu bir iddia.')
+  })
 })
 
 describe('latexLineScore', () => {

@@ -463,6 +463,19 @@
   max-width: 100%;
   border-radius: 8px;
 }
+.card-answer pre,
+.card-question pre {
+  margin: 8px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--code-border);
+  border-radius: 8px;
+  background: var(--code-bg);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: left;
+  overflow-x: auto;
+}
 .card-divider {
   height: 1px;
   background: var(--border);

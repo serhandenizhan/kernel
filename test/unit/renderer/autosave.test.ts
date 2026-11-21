@@ -88,4 +88,28 @@ describe('createAutosave', () => {
     expect(save).not.toHaveBeenCalled()
     expect(a.state).toBe('saved')
   })
+
+  it('5.2: kayıt sürerken schedule() ardından flush() çift kayıt ve sahte false döndürmez', async () => {
+    let r1!: () => void
+    let r2!: () => void
+    const save = vi
+      .fn()
+      .mockImplementationOnce(() => new Promise<void>((r) => (r1 = r)))
+      .mockImplementationOnce(() => new Promise<void>((r) => (r2 = r)))
+      .mockResolvedValue(undefined)
+    const a = createAutosave(save)
+    a.schedule()
+    await vi.advanceTimersByTimeAsync(500)
+    expect(save).toHaveBeenCalledTimes(1)
+    a.schedule()
+    const flushed = a.flush()
+    r1()
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    r2()
+    expect(await flushed).toBe(true)
+    expect(save).toHaveBeenCalledTimes(2)
+    expect(a.state).toBe('saved')
+  })
 })

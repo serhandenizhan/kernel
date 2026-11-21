@@ -75,9 +75,18 @@ export function createAutosave(save: () => Promise<void>, delayMs = 500, onState
     },
     async flush() {
       if (paused) return state === 'saved'
-      if (running) await running
-      if (state !== 'saved' || timer) await run()
-      return state === 'saved'
+      let attempted = false
+      for (;;) {
+        if (running) {
+          await running
+          if (state === 'error' && !pendingAgain) return false
+          continue
+        }
+        if (state === 'saved' && !timer) return true
+        if (state === 'error' && attempted) return false
+        attempted = true
+        await run()
+      }
     },
     pause() {
       paused = true

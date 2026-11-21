@@ -69,7 +69,10 @@ function Session({ deck, exam, title, onExit }: { deck: Deck; exam: boolean; tit
       // üstte palet / ayarlar açıksa ya da odak bir alandaysa tuşlar oraya aittir
       const el = e.target
       if (useStore.getState().overlay || (el instanceof Element && el.closest('input, textarea, button, [contenteditable="true"]') !== null)) return
-      if (e.key === ' ' || e.key === 'Enter') {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        onExit()
+      } else if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault()
         if (!shown) setShown(true)
         else void rate('good')
@@ -79,7 +82,7 @@ function Session({ deck, exam, title, onExit }: { deck: Deck; exam: boolean; tit
           e.preventDefault()
           void rate(r.id)
         }
-      } else if (e.key === 'Escape') onExit()
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)

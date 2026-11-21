@@ -74,3 +74,21 @@ test('cevabı kod bloğu olan katlanır kart çalışılır ve kodu koruyarak g�
     await app.close()
   }
 })
+
+test('5.9a: çalışma ekranında cevap açıkken Esc deste listesine döner', async () => {
+  const vault = tmpVault()
+  writeFileSync(join(vault, 'Kart.md'), 'S1 :: C1\n')
+  const { app, win } = await launch(vault)
+  try {
+    await win.getByTestId('nav-study').click()
+    await win.getByTestId('deck-row').first().getByTestId('deck-study').click()
+    await expect(win.getByTestId('card-question')).toHaveText('S1')
+    await win.keyboard.press('Space')
+    await expect(win.getByTestId('card-answer')).toBeVisible()
+    await win.keyboard.press('Escape')
+    await expect(win.getByTestId('deck-row').first()).toBeVisible()
+    await expect(win.getByTestId('card-question')).toHaveCount(0)
+  } finally {
+    await app.close()
+  }
+})

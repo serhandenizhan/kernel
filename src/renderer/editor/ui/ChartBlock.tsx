@@ -355,6 +355,8 @@ function ChartCanvas({ spec, onReorder }: { spec: ChartSpec; onReorder(from: num
   const [view, setView] = useState({ yaw: 0.7, pitch: 0.45 })
   const svg = useMemo(() => renderChart(spec, view), [spec, view])
   const drag = useRef<{ row: number | null; x: number; y: number; view: typeof view } | null>(null)
+  const stopDragRef = useRef<(() => void) | null>(null)
+  useEffect(() => () => stopDragRef.current?.(), [])
   const reorderable = spec.type === 'bar' || spec.type === 'hbar' || isPieLike(spec.type)
   const rotatable = spec.type === 'plane' && spec.z
   const rowAt = (x: number, y: number) => {
@@ -369,6 +371,7 @@ function ChartCanvas({ spec, onReorder }: { spec: ChartSpec; onReorder(from: num
         const row = reorderable ? rowAt(e.clientX, e.clientY) : null
         if (row === null && !rotatable) return
         e.preventDefault()
+        stopDragRef.current?.()
         drag.current = { row, x: e.clientX, y: e.clientY, view }
         const onMove = (ev: MouseEvent) => {
           if (!drag.current) return
@@ -377,15 +380,20 @@ function ChartCanvas({ spec, onReorder }: { spec: ChartSpec; onReorder(from: num
             setView({ yaw: d.view.yaw + (ev.clientX - d.x) / 120, pitch: Math.max(0.05, Math.min(1.45, d.view.pitch + (ev.clientY - d.y) / 160)) })
           }
         }
-        const onUp = (ev: MouseEvent) => {
+        const stop = () => {
           window.removeEventListener('mousemove', onMove)
           window.removeEventListener('mouseup', onUp)
+          if (stopDragRef.current === stop) stopDragRef.current = null
+        }
+        const onUp = (ev: MouseEvent) => {
+          stop()
           const d = drag.current
           drag.current = null
           if (d?.row == null) return
           const to = rowAt(ev.clientX, ev.clientY)
           if (to !== null && to !== d.row) onReorder(d.row, to)
         }
+        stopDragRef.current = stop
         window.addEventListener('mousemove', onMove)
         window.addEventListener('mouseup', onUp)
       }}

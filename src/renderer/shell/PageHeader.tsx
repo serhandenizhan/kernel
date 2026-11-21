@@ -26,6 +26,8 @@ export function PageHeader({ initialMeta }: { initialMeta: PageMeta }) {
   const [pos, setPos] = useState(initialMeta.coverPosition ?? 0.5)
   const iconRef = useRef<HTMLButtonElement>(null)
   const addIconRef = useRef<HTMLButtonElement>(null)
+  const stopDragRef = useRef<(() => void) | null>(null)
+  useEffect(() => () => stopDragRef.current?.(), [])
 
   const update = async (patch: Partial<PageMeta>) => {
     const next: PageMeta = { ...(activeEditor.meta ?? meta), ...patch }
@@ -52,15 +54,18 @@ export function PageHeader({ initialMeta }: { initialMeta: PageMeta }) {
   const startDrag = (e: React.MouseEvent) => {
     if (!repositioning) return
     e.preventDefault()
+    stopDragRef.current?.()
     const startY = e.clientY
     const start = pos
     const onMove = (ev: MouseEvent) => setPos(Math.min(1, Math.max(0, start - (ev.clientY - startY) / 200)))
-    const onUp = () => {
+    const stop = () => {
       window.removeEventListener('mousemove', onMove)
-      window.removeEventListener('mouseup', onUp)
+      window.removeEventListener('mouseup', stop)
+      if (stopDragRef.current === stop) stopDragRef.current = null
     }
+    stopDragRef.current = stop
     window.addEventListener('mousemove', onMove)
-    window.addEventListener('mouseup', onUp)
+    window.addEventListener('mouseup', stop)
   }
 
   return (

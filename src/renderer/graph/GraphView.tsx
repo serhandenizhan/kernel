@@ -146,7 +146,8 @@ export function GraphView() {
       }
     }
     const onUp = (e: MouseEvent) => {
-      const wasDrag = drag?.moved
+      if (!drag) return
+      const wasDrag = drag.moved
       drag = null
       if (wasDrag) return
       const h = hit(e)

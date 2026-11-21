@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, basename } from 'node:path'
 import { unzipSync } from 'fflate'
@@ -84,5 +84,21 @@ describe('BackupScheduler', () => {
     clock += 25 * 3_600_000
     expect(await s.tick()).toBe('failed')
     expect(errors[0]).toContain('Yedek alınamadı')
+  })
+
+  it('5.1: eşzamanlı tick() çağrıları aynı yedeği bozmaz ve geçici .part dosyası bırakmaz', async () => {
+    for (let i = 0; i < 4; i++) writeFileSync(join(root, `Buyuk-${i}.md`), 'x'.repeat(120_000))
+    const settings = settingsWith({ enabled: true, folder: out })
+    const fixed = new Date(Date.UTC(2026, 10, 4, 15, 30))
+    const s = new BackupScheduler(() => ({ root, settings }), () => undefined, () => fixed)
+    const results = await Promise.all([s.tick(true), s.tick(true)])
+    expect(results).not.toContain('failed')
+    const allFiles = readdirSync(out)
+    expect(allFiles.some((f) => f.endsWith('.part'))).toBe(false)
+    const zips = allFiles.filter((f) => f.endsWith('.zip'))
+    expect(zips).toHaveLength(1)
+    const unzipped = unzipSync(readFileSync(join(out, zips[0]!)))
+    expect(Buffer.from(unzipped['Buyuk-0.md']!).toString()).toBe('x'.repeat(120_000))
+    expect(existsSync(join(root, '.kernel', 'backup.json'))).toBe(true)
   })
 })

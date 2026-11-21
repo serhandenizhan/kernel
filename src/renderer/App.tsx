@@ -165,7 +165,7 @@ export function App() {
     )
   }
   return (
-    <div className={`app${sidebarVisible && !focusMode ? '' : ' sidebar-hidden'}${focusMode ? ' focus-mode' : ''}`} lang={lang}>
+    <div key={vaultPath} className={`app${sidebarVisible && !focusMode ? '' : ' sidebar-hidden'}${focusMode ? ' focus-mode' : ''}`} lang={lang}>
       {sidebarVisible && !focusMode && <Sidebar />}
       <main className="main">
         <div className="main-drag" />

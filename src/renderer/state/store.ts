@@ -134,7 +134,26 @@ export const useStore = create<State>((set, get) => ({
     const last = recent.find((r) => findNode(tree, r.id))?.id
     const saved = loadTabs(info.path, tree)
     const currentId = saved ? saved.tabs[saved.activeTab]! : (last ?? tree[0]?.id ?? null)
-    set({ ready: true, vaultPath: info.path, settings, tree, pins, currentId, ...(saved ?? {}), view: settings.startView === 'home' ? 'home' : 'page' })
+    // kasa değişince önceki kasadan kalan geçici sekmeler, bölme, etiket ve aramalar sıfırlanır
+    set({
+      ready: true,
+      vaultPath: info.path,
+      settings,
+      tree,
+      pins,
+      currentId,
+      tabs: saved?.tabs ?? [],
+      activeTab: saved?.activeTab ?? 0,
+      split: null,
+      currentTag: null,
+      graphFocus: null,
+      studyDeck: null,
+      findOpen: false,
+      expanded: {},
+      renamingId: null,
+      overlay: null,
+      view: settings.startView === 'home' ? 'home' : 'page'
+    })
   },
 
   async refreshTree() {

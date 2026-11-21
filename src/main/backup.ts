@@ -1,4 +1,5 @@
 import { createReadStream, createWriteStream, existsSync, realpathSync, statSync } from 'node:fs'
+import { randomBytes } from 'node:crypto'
 import { readdir, readFile, rename, rm } from 'node:fs/promises'
 import { extname, join, relative, resolve, sep } from 'node:path'
 import { Zip, ZipDeflate, ZipPassThrough } from 'fflate'
@@ -43,7 +44,7 @@ export async function makeBackup(root: string, folder: string, keep: number, now
   await listFiles(root, root, skip, files)
   const name = `Kernel-yedek-${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}.zip`
   const target = join(folder, name)
-  const part = `${target}.part`
+  const part = `${target}.${randomBytes(4).toString('hex')}.part`
   const ws = createWriteStream(part)
   try {
     await new Promise<void>((resolveZip, reject) => {
@@ -95,6 +96,7 @@ export async function readLastBackup(root: string): Promise<string | null> {
 // Günlük otomatik yedek: açılışta bir kez, sonra saatte bir kontrol
 export class BackupScheduler {
   private timer: ReturnType<typeof setInterval> | null = null
+  private inFlight: Promise<'done' | 'skipped' | 'failed'> | null = null
 
   constructor(
     private readonly getState: () => { root: string; settings: Settings } | null,
@@ -103,7 +105,15 @@ export class BackupScheduler {
   ) {}
 
   /** Yedek alır; zorla değilse son yedekten 24 saat geçmediyse atlar */
-  async tick(force = false): Promise<'done' | 'skipped' | 'failed'> {
+  tick(force = false): Promise<'done' | 'skipped' | 'failed'> {
+    if (this.inFlight) return this.inFlight
+    this.inFlight = this.runTick(force).finally(() => {
+      this.inFlight = null
+    })
+    return this.inFlight
+  }
+
+  private async runTick(force: boolean): Promise<'done' | 'skipped' | 'failed'> {
     const st = this.getState()
     if (!st) return 'skipped'
     const { enabled, folder, keep } = st.settings.backup

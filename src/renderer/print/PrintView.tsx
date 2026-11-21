@@ -9,6 +9,7 @@ import { coverCss } from '../assets/covers'
 import { toVaultUrl } from '../editor/nodes/Image'
 import { PageIcon } from '../shell/PageHeader'
 import { currentLang } from '../lib/i18n'
+import { useStore } from '../state/store'
 
 declare global {
   interface Window {
@@ -87,7 +88,8 @@ export function PrintView() {
     document.documentElement.classList.add('printing')
     void (async () => {
       try {
-        const settings = await kernel.settings.get()
+        const [settings, systemLocale] = await Promise.all([kernel.settings.get(), kernel.app.locale().catch(() => 'tr-TR')])
+        useStore.setState({ settings, systemLocale })
         document.documentElement.dataset['bodyFont'] = settings.bodyFont
         document.documentElement.dataset['codeTheme'] = settings.codeTheme
         await getHighlighter()

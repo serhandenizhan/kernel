@@ -9,6 +9,7 @@ import { CODE_THEMES, type CodeTheme } from '../lib/code-themes'
 import { getHighlighter, THEMES } from '../lib/shiki'
 import { useLang, useT } from '../lib/i18n'
 import { localeOf } from '@shared/i18n'
+import { flushAll } from '../editor/Editor'
 
 // Ayarlar (Cmd+,): görünüm, yapıştırma, ipuçları, kasa
 export function SettingsDialog() {
@@ -161,6 +162,8 @@ export function SettingsDialog() {
             <button
               className="btn small"
               onClick={async () => {
+                // kasa değişmeden açık sayfanın bekleyen düzenlemelerini eski kasaya kaydet
+                await flushAll()
                 const res = await kernel.vault.choose(false)
                 if (res) {
                   close()

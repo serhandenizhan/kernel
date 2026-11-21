@@ -387,7 +387,7 @@ button {
 .btn.primary {
   border-color: var(--accent);
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 /* --- kasa seçici --- */
@@ -816,7 +816,7 @@ button {
 }
 .history-entry.active {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 .history-main {
   display: flex;
@@ -1168,7 +1168,7 @@ button {
   gap: var(--page-inset);
   height: 100%;
 }
-.tab-bar + .surfaces {
+.tab-bar ~ .surfaces {
   height: calc(100% - 36px);
 }
 .surfaces > .page-surface {

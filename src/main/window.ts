@@ -1,5 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, nativeTheme, shell } from 'electron'
 import { isHeadlessTest, windowOptions } from './window-options'
+import { devEnv, isPackagedApp } from './env'
 import { join } from 'node:path'
 import { IPC } from '@shared/ipc'
 import { mainT } from './i18n'
@@ -33,7 +34,7 @@ function requestFlush(win: BrowserWindow): Promise<boolean> {
 
 // Ana pencere: görünüm platforma göre (window-options.ts)
 export function createMainWindow(): BrowserWindow {
-  const headless = isHeadlessTest(process.env)
+  const headless = isHeadlessTest(process.env, isPackagedApp())
   const win = new BrowserWindow({
     width: 1280,
     height: 820,
@@ -102,8 +103,9 @@ export function createMainWindow(): BrowserWindow {
     }
   })
 
-  if (process.env['ELECTRON_RENDERER_URL']) {
-    void win.loadURL(process.env['ELECTRON_RENDERER_URL'])
+  const rendererUrl = devEnv('ELECTRON_RENDERER_URL')
+  if (rendererUrl) {
+    void win.loadURL(rendererUrl)
   } else {
     void win.loadFile(join(__dirname, '../renderer/index.html'))
   }

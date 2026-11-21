@@ -38,5 +38,6 @@ export function coverCss(cover: string | undefined, toUrl: (src: string) => stri
   if (!cover) return null
   const preset = COVER_PRESETS.find((p) => p.id === cover)
   if (preset) return preset.css
-  return `url("${toUrl(cover)}") center / cover no-repeat`
+  const safe = toUrl(cover).replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+  return `url("${safe}") center / cover no-repeat`
 }

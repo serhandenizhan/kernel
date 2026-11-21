@@ -33,6 +33,8 @@ import { installUpdate } from './update-install'
 import { fetchPhoto, searchPhotos } from './unsplash'
 import { readUnsplashKey, saveUnsplashKey } from './config'
 import { isUnsplashLink } from '@core/unsplash'
+import { devEnv, isPackagedApp } from './env'
+import { fetchBytes } from './fetch-bytes'
 import type { UpdateInfo } from '@core/update'
 import { track } from './pending'
 
@@ -73,7 +75,7 @@ export async function openVault(path: string): Promise<void> {
   links = new LinkIndex()
   srs = new SrsStore(path)
   void links.build(vault).then(notifyLinks)
-  const interval = process.env['KERNEL_TEST_HISTORY_INTERVAL_MS']
+  const interval = devEnv('KERNEL_TEST_HISTORY_INTERVAL_MS')
   history = new HistoryStore(path, undefined, interval !== undefined ? Number(interval) : undefined)
   void history.prune()
   activity = new ActivityStore(path)
@@ -149,7 +151,7 @@ async function touchRecent(id: string): Promise<void> {
 async function pickTarget(id: string, ext: 'pdf' | 'html' | 'zip', label: string): Promise<string | null> {
   const { title } = await requireVault().read(id)
   const name = `${title.replace(/[/:]/g, '-')}.${ext}`
-  const testDir = process.env['KERNEL_TEST_PDF_DIR']
+  const testDir = devEnv('KERNEL_TEST_PDF_DIR')
   if (testDir) return join(testDir, name)
   const res = await dialog.showSaveDialog({ defaultPath: join(app.getPath('documents'), name), filters: [{ name: label, extensions: [ext] }] })
   return res.canceled || !res.filePath ? null : res.filePath
@@ -289,12 +291,14 @@ export function registerIpc(): void {
   h(IPC.attachmentsFetchRemote, async (url: string) => {
     try {
       if (!/^https?:\/\//.test(url)) return null
-      const res = await fetch(url)
-      if (!res.ok) return null
-      const type = res.headers.get('content-type') ?? ''
-      if (!type.startsWith('image/')) return null
-      const ext = type.split('/')[1]?.split(';')[0]?.replace('jpeg', 'jpg') || extname(new URL(url).pathname).slice(1) || 'png'
-      return await requireVault().saveAttachment(new Uint8Array(await res.arrayBuffer()), ext, 'web')
+      const got = await fetchBytes(url, {
+        maxBytes: 25 * 1024 * 1024,
+        timeoutMs: 20_000,
+        checkType: (ct) => ct.startsWith('image/')
+      })
+      if (!got) return null
+      const ext = got.contentType.split('/')[1]?.replace('jpeg', 'jpg') || extname(new URL(url).pathname).slice(1) || 'png'
+      return await requireVault().saveAttachment(got.bytes, ext, 'web')
     } catch (e) {
       log.warn('Uzak görsel indirilemedi', url, e)
       return null
@@ -383,7 +387,7 @@ export function registerIpc(): void {
   })
   h(IPC.backupChooseFolder, async () => {
     // testlerde diyalog yerine verilen klasör
-    const testDir = process.env['KERNEL_TEST_BACKUP_DIR']
+    const testDir = devEnv('KERNEL_TEST_BACKUP_DIR')
     let folder: string | null = testDir ?? null
     if (!testDir) {
       const res = await dialog.showOpenDialog({ properties: ['openDirectory', 'createDirectory'], title: mainT('backup.chooseFolder') })
@@ -405,7 +409,7 @@ export function registerIpc(): void {
   h(IPC.updatesCheck, async () => {
     const { updates } = await readSettings(requireVault().root)
     if (!updates.check) return null
-    const info = await fetchLatestRelease()
+    const info = await fetchLatestRelease({ packaged: isPackagedApp() })
     if (!info || !shouldOffer(info, app.getVersion(), updates.skipped)) return null
     lastOffer = info
     return { ...info, current: app.getVersion() }
@@ -413,7 +417,7 @@ export function registerIpc(): void {
   // ayarlardan elle denetim: açılış ayarı ve atlanan sürüm yok sayılır
   h(IPC.updatesCheckNow, async () => {
     const current = app.getVersion()
-    const { ok, info } = await checkLatestRelease()
+    const { ok, info } = await checkLatestRelease({ packaged: isPackagedApp() })
     if (!ok) return { status: 'error', current }
     if (!info || !shouldOffer(info, current, null)) return { status: 'current', current }
     lastOffer = info

@@ -14,4 +14,14 @@ describe('findHardcoded', () => {
     const src = "import { x } from './değer'\n<div className=\"ağaç\" data-testid=\"ağaç\" />"
     expect(findHardcoded(src)).toEqual([])
   })
+  it('data-tip niteliğini ve {ifade} içeren karışık JSX metnini de bulur, salt ifadeleri atlar', () => {
+    const src = [
+      '<button data-tip="Sabit ipucu" />',
+      '<div>\n  Bu dosya ({err}).\n</div>',
+      '<div>\n  📄 {name} — gömülü PDF\n</div>',
+      "<button>\n  ‹ {t('study.decks')}\n</button>",
+      '<span>\n  {a} / {b}\n</span>'
+    ].join('\n')
+    expect(findHardcoded(src).map((f) => f.line)).toEqual([1, 3, 6])
+  })
 })

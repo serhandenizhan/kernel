@@ -173,4 +173,30 @@ describe('NotionImporter', () => {
     expect(report).toContain('- Pages: 3')
     expect(report).not.toContain('Özet')
   })
+
+  it('5.5: döngüsel synced_from blokları sonsuz özyinelemeye girmez', async () => {
+    const syncA = B.block('synced_block', { synced_from: { block_id: 'blk-sync-b' } })
+    syncA.id = 'blk-sync-a'
+    const syncB = B.block('synced_block', { synced_from: { block_id: 'blk-sync-a' } })
+    syncB.id = 'blk-sync-b'
+    const data: FixtureData = {
+      workspace: 'Döngü testi',
+      pages: [B.page('pg-loop', 'Döngü')],
+      blocks: {
+        'pg-loop': [syncA],
+        'blk-sync-b': [syncB],
+        'blk-sync-a': [syncA]
+      }
+    }
+    const client = new FixtureNotionClient(data)
+    let calls = 0
+    const origChildren = client.children.bind(client)
+    client.children = async (id: string) => {
+      if (++calls > 50) throw new Error('infinite synced_from recursion')
+      return origChildren(id)
+    }
+    const report = await new NotionImporter({ client, vault, download: download(vault), today: TODAY, onProgress: () => {} }).run(['pg-loop'])
+    expect(report.pages).toBe(1)
+    expect(calls).toBeLessThan(20)
+  })
 })

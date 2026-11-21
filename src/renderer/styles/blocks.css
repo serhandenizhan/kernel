@@ -481,7 +481,7 @@ mark[data-color='gray'] { --hl: #e3e8ec; }
 }
 .slash-item.active {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 .slash-icon {
   display: inline-flex;

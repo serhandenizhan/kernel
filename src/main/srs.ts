@@ -1,7 +1,7 @@
 import { mkdir, readFile, rename } from 'node:fs/promises'
 import { join } from 'node:path'
 import { createEmptyCard, fsrs, Rating, type Card as FsrsCard, type Grade } from 'ts-fsrs'
-import type { Card } from '@core/cards'
+import { legacyCardId, type Card } from '@core/cards'
 import type { ReviewRating } from '@shared/types'
 import { writeAtomic } from './vault/atomic'
 import { log } from './log'
@@ -48,6 +48,21 @@ function validState(v: unknown): CardState | null {
 }
 
 const toFsrs = (s: CardState): FsrsCard => ({ ...s, due: new Date(s.due), last_review: s.last_review ? new Date(s.last_review) : undefined }) as FsrsCard
+
+/** Eski kart kimliğiyle kaydedilmiş (ve yalnızca tek karta karşılık gelen) ilerlemeleri yeni kimliğe eşler */
+function unambiguousLegacyIds(cards: Card[]): Map<string, string> {
+  const counts = new Map<string, number>()
+  const pairs: [string, string][] = []
+  for (const c of cards) {
+    const leg = legacyCardId(c.pageId, c.question)
+    if (leg === c.id) continue
+    counts.set(leg, (counts.get(leg) ?? 0) + 1)
+    pairs.push([c.id, leg])
+  }
+  const out = new Map<string, string>()
+  for (const [id, leg] of pairs) if (counts.get(leg) === 1) out.set(id, leg)
+  return out
+}
 
 // Aralıklı tekrar verisi: .kernel/srs.json → { version: 1, cards: { [kartId]: CardState } } (spec §12, FSRS)
 export class SrsStore {
@@ -106,9 +121,11 @@ export class SrsStore {
   /** Vadesi gelenler: hiç çalışılmamış kartlar ve vadesi şimdi ya da önce olanlar */
   async due(cards: Card[]): Promise<Card[]> {
     const states = await this.load()
+    const legacy = unambiguousLegacyIds(cards)
     const t = this.now().getTime()
     return cards.filter((c) => {
-      const s = states[c.id]
+      const leg = !states[c.id] ? legacy.get(c.id) : undefined
+      const s = states[c.id] ?? (leg ? states[leg] : undefined)
       return !s || Date.parse(s.due) <= t
     })
   }
@@ -137,9 +154,20 @@ export class SrsStore {
   /** Kasadaki güncel kart listesine göre yetimleri işaretler, 30 günü geçenleri siler */
   async sync(cards: Card[]): Promise<void> {
     const states = await this.load()
-    const live = new Set(cards.map((c) => c.id))
     const now = this.now()
     let changed = false
+    // Matematik/işlem ayrımı sonrası değişen kimlikler için eski ilerlemeyi kayıpsız taşı
+    for (const [newId, legId] of unambiguousLegacyIds(cards)) {
+      const prev = states[legId]
+      if (!states[newId] && prev) {
+        const next = { ...prev }
+        delete next.orphanSince
+        states[newId] = next
+        delete states[legId]
+        changed = true
+      }
+    }
+    const live = new Set(cards.map((c) => c.id))
     for (const [id, s] of Object.entries(states)) {
       if (live.has(id)) {
         if (s.orphanSince) {

@@ -10,6 +10,8 @@ import { clearToken, loadToken, saveToken } from '../secrets'
 import { requireVault } from '../state'
 import { log } from '../log'
 import { mainLang, mainT } from '../i18n'
+import { devEnv } from '../env'
+import { fetchBytes } from '../fetch-bytes'
 
 const DOWNLOAD_TIMEOUT_MS = 30_000
 const MAX_BYTES = 50 * 1024 * 1024
@@ -17,7 +19,7 @@ const EXT: Record<string, string> = { 'image/png': 'png', 'image/jpeg': 'jpg', '
 
 /** Gerçek istemci ya da (test) sentetik veriden yanıt veren istemci */
 function clientFor(token: string): NotionApi {
-  const fixture = process.env['KERNEL_TEST_NOTION_FIXTURES']
+  const fixture = devEnv('KERNEL_TEST_NOTION_FIXTURES')
   if (fixture) {
     if (!token.startsWith('secret_')) {
       return { me: async () => Promise.reject(new NotionError(mainT('notionErr.token'), 401, 'unauthorized')) } as unknown as NotionApi
@@ -30,14 +32,10 @@ function clientFor(token: string): NotionApi {
 /** Dosyayı (Notion'ın süreli linkinden) indirip kasaya kaydeder; başarısızsa null */
 async function download(url: string, nameHint: string): Promise<string | null> {
   try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(DOWNLOAD_TIMEOUT_MS) })
-    if (!res.ok) return null
-    if (Number(res.headers.get('content-length') ?? 0) > MAX_BYTES) return null
-    const bytes = new Uint8Array(await res.arrayBuffer())
-    if (bytes.length > MAX_BYTES) return null
-    const type = (res.headers.get('content-type') ?? '').split(';')[0]!.trim()
-    const ext = EXT[type] ?? (url.startsWith('data:') ? 'bin' : extname(new URL(url).pathname).slice(1).toLowerCase()) ?? 'bin'
-    return await requireVault().saveAttachment(bytes, ext || 'bin', nameHint)
+    const got = await fetchBytes(url, { maxBytes: MAX_BYTES, timeoutMs: DOWNLOAD_TIMEOUT_MS })
+    if (!got) return null
+    const ext = EXT[got.contentType] ?? (url.startsWith('data:') ? 'bin' : extname(new URL(url).pathname).slice(1).toLowerCase()) ?? 'bin'
+    return await requireVault().saveAttachment(got.bytes, ext || 'bin', nameHint)
   } catch (e) {
     log.warn('Notion dosyası indirilemedi', e instanceof Error ? e.message : 'bilinmeyen')
     return null

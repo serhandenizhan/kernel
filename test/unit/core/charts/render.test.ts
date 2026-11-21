@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { CHART_TYPES, defaultChart, type ChartSpec } from '@core/charts/spec'
+import { CHART_TYPES, defaultChart, normalizeChart, type ChartSpec } from '@core/charts/spec'
 import { layoutFlow, niceTicks, project3d, renderChart } from '@core/charts/render'
 
 const L = { item: 'Öğe', series: 'Seri', node: 'Adım', point: 'Nokta' }
@@ -112,5 +112,19 @@ describe('review fixes', () => {
     expect(new Set(t).size).toBe(t.length)
     expect(t.at(-1)!).toBeGreaterThanOrEqual(0.004)
     expect(renderChart(spec('bar', { rows: [{ label: 'a', values: [-1e308] }, { label: 'b', values: [1e308] }] }))).not.toMatch(/NaN|Infinity/)
+  })
+
+  it('5.4: çok küçük değerlerde -Infinity ve yoğun sütunlarda negatif genişlik üretmez', () => {
+    const tiny = normalizeChart({ type: 'bar', rows: [{ label: 'A', values: [1e-13] }] })!
+    const tinySvg = renderChart(tiny)
+    expect(tinySvg).not.toMatch(/Infinity|NaN/)
+
+    const dense = normalizeChart({
+      type: 'bar',
+      series: Array.from({ length: 6 }, (_, i) => ({ name: `S${i}` })),
+      rows: Array.from({ length: 40 }, (_, i) => ({ label: `R${i}`, values: [1, 2, 3, 4, 5, 6] }))
+    })!
+    const denseSvg = renderChart(dense)
+    expect(denseSvg).not.toMatch(/\b(?:width|height)="-/)
   })
 })

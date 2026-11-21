@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { existsSync, mkdtempSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { launch, tmpVault } from './helpers/app'
@@ -33,4 +33,31 @@ test('tek dosyalık HTML ve Markdown zip olarak dışa aktarılır', async () =>
   await expect.poll(() => existsSync(join(out, 'Rapor.zip'))).toBe(true)
   expect(statSync(join(out, 'Rapor.zip')).size).toBeGreaterThan(0)
   await app.close()
+})
+
+test('5.8: İngilizce kasada HTML dışa aktarımı Türkçe yerine İngilizce kullanır ve print-title başlık fontu taşır', async () => {
+  const vault = tmpVault()
+  const out = mkdtempSync(join(tmpdir(), 'kernel-exp-en-'))
+  mkdirSync(join(vault, '.kernel'), { recursive: true })
+  writeFileSync(
+    join(vault, '.kernel', 'settings.json'),
+    JSON.stringify({ schema: 3, language: 'en', startView: 'last', tourDone: true, tips: { enabled: false, seen: [] } })
+  )
+  writeFileSync(join(vault, 'Report.md'), '```\nhello\n```\n')
+  const { app, win } = await launch(vault, { KERNEL_TEST_PDF_DIR: out })
+  try {
+    await win.getByTestId('tree-row').filter({ hasText: 'Report' }).click()
+    await expect(win.getByTestId('editor')).toBeVisible()
+    await win.keyboard.press('ControlOrMeta+e')
+    await win.getByTestId('export-format').selectOption('html')
+    await win.getByTestId('pdf-export').click()
+    await expect.poll(() => existsSync(join(out, 'Report.html')), { timeout: 30_000 }).toBe(true)
+    const html = readFileSync(join(out, 'Report.html'), 'utf8')
+    expect(html).toContain('<html lang="en"')
+    expect(html).toContain('Plain text')
+    expect(html).not.toContain('Düz metin')
+    expect(html).toMatch(/\.print-title\s*\{[^}]*font-family:\s*var\(--font-heading\)/)
+  } finally {
+    await app.close()
+  }
 })

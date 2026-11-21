@@ -33,8 +33,9 @@ const ALLOWED = new Set([
   'desc',
   'style'
 ])
-/** url(#id) dışındaki url(...) ve @import */
-const EXTERNAL_URL = /url\(\s*(['"]?)(?!#)[^)]*\1\s*\)|@import[^;]*;?/gi
+/** url(#id) dışındaki url(...), image-set(...) ve @import */
+const EXTERNAL_URL = /url\(\s*(['"]?)(?!#)[^)]*\1\s*\)|image-set\([^)]*\)/gi
+const IMPORT_RULE = /@import[^;]*(?:;|$)/gi
 
 /** var(--x, yedek) → yedek, var(--x) ve currentColor → nötr gri */
 export function freezeColors(v: string): string {
@@ -44,7 +45,25 @@ export function freezeColors(v: string): string {
   return s.replace(/currentColor/gi, NEUTRAL)
 }
 
-const cleanValue = (v: string) => freezeColors(v).replace(EXTERNAL_URL, 'none')
+function decodeCssEscapes(v: string): string {
+  return v
+    .replace(/\\([0-9a-fA-F]{1,6})\s?/g, (_, hex: string) => {
+      const cp = Number.parseInt(hex, 16)
+      return cp > 0 && cp <= 0x10ffff ? String.fromCodePoint(cp) : ''
+    })
+    .replace(/\\([^\n\r\f0-9a-fA-F])/g, '$1')
+}
+
+function cleanCss(v: string, isStyleTag = false): string {
+  // CSS yorumları ve kaçışlarıyla (\75rl(...), url/**/(...)) dış adres filtresinin aşılmasını engelle
+  const stripped = decodeCssEscapes(v.replace(/\/\*[\s\S]*?\*\//g, ''))
+  const safe = freezeColors(stripped).replace(IMPORT_RULE, '').replace(EXTERNAL_URL, 'none')
+  // <style> içeriğinde < varsa olası etiket enjeksiyonudur; XML/rawtext güvenliği için tamamen temizlenir
+  if (isStyleTag) return safe.includes('<') ? '' : safe.replace(/]]>/g, '')
+  return safe
+}
+
+const cleanValue = (v: string) => cleanCss(v, false)
 
 function clean(el: Element): boolean {
   let xlink = false
@@ -70,7 +89,7 @@ function clean(el: Element): boolean {
       return [c]
     }
     // <style> ve metin içindeki tema değişkenleri / dış url
-    if (c.type === 'text') return [{ ...c, value: cleanValue(c.value) }]
+    if (c.type === 'text') return [{ ...c, value: cleanCss(c.value, el.tagName === 'style') }]
     return []
   })
   return xlink
@@ -81,6 +100,7 @@ const dim = (v: unknown) => (typeof v === 'number' ? v : typeof v === 'string' ?
 /** Grafik sayılmayanlar: simge boyutunda (< 48 px) ya da boyut bilgisi olmayan (süs / logo) SVG'ler */
 function isDecoration(el: Element): boolean {
   const vb = String(el.properties?.['viewBox'] ?? '')
+    .trim()
     .split(/[\s,]+/)
     .map(Number)
   const w = dim(el.properties?.['width'])
@@ -103,6 +123,7 @@ export function extractSvgs(root: HastRoot | Element, placeholder: (n: number) =
       if (xlink) child.properties['xmlnsXLink'] = 'http://www.w3.org/1999/xlink'
       // görselin doğal boyutu viewBox'tan
       const vb = String(child.properties['viewBox'] ?? '')
+        .trim()
         .split(/[\s,]+/)
         .map(Number)
       if (vb.length === 4 && !(dim(child.properties['width']) > 0)) {

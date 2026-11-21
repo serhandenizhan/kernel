@@ -26,7 +26,7 @@ import { HomePage } from './home/HomePage'
 import { TagPage } from './shell/TagPage'
 import { GraphView } from './graph/GraphView'
 import { StudyPage } from './study/StudyPage'
-import { ErrorBoundary } from './shell/ErrorBoundary'
+import { ErrorBoundary, PageCrashFallback } from './shell/ErrorBoundary'
 
 function useTheme() {
   const settings = useStore((s) => s.settings)
@@ -116,6 +116,7 @@ export function App() {
   const split = useStore((s) => s.split)
   const overlay = useStore((s) => s.overlay)
   const view = useStore((s) => s.view)
+  const currentId = useStore((s) => s.currentId)
   const tourDone = useStore((s) => s.settings.tourDone)
   const [pendingImport, setPendingImport] = useState(false)
   const [resumeImport, setResumeImport] = useState(false)
@@ -164,7 +165,7 @@ export function App() {
     )
   }
   return (
-    <div className={`app${sidebarVisible && !focusMode ? '' : ' sidebar-hidden'}${focusMode ? ' focus-mode' : ''}`} lang={lang}>
+    <div key={vaultPath} className={`app${sidebarVisible && !focusMode ? '' : ' sidebar-hidden'}${focusMode ? ' focus-mode' : ''}`} lang={lang}>
       {sidebarVisible && !focusMode && <Sidebar />}
       <main className="main">
         <div className="main-drag" />
@@ -177,8 +178,20 @@ export function App() {
         <FindBar />
         <div className="surfaces">
           <div className="page-surface">
-            {/* hata olursa sayfa görünümüne düşer; görünüm değişince yeniden dener */}
-            <ErrorBoundary resetKey={`${view}:${overlay}`} fallback={<PageView />}>
+            {/* hata olursa çökmeyen yedek ekrana düşer; sayfa veya görünüm değişince yeniden dener */}
+            <ErrorBoundary
+              resetKey={`${view}:${overlay}:${currentId ?? ''}`}
+              fallback={
+                <PageCrashFallback
+                  title={tNow('error.pageCrashTitle')}
+                  actionLabel={tNow('error.backHome')}
+                  onHome={() => {
+                    useStore.getState().setOverlay(null)
+                    useStore.getState().openHome()
+                  }}
+                />
+              }
+            >
               {overlay === 'guide' ? <GuidePage /> : view === 'home' ? <HomePage /> : view === 'tag' ? <TagPage /> : view === 'graph' ? <GraphView /> : view === 'study' ? <StudyPage /> : <PageView />}
             </ErrorBoundary>
           </div>

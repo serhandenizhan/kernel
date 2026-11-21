@@ -178,7 +178,11 @@ export class NotionImporter {
   }
 
   /** Blokları özyinelemeli çeker; dosyaları okundukları anda indirir (Notion linkleri 1 saatte geçersizleşir) */
-  private async fetchBlocks(id: string, withFiles: boolean): Promise<NotionBlock[]> {
+  private async fetchBlocks(id: string, withFiles: boolean, visited: Set<string> = new Set()): Promise<NotionBlock[]> {
+    // döngüsel synced_from başvurularında sonsuz özyinelemeyi önle
+    if (visited.has(id)) return []
+    const nextVisited = new Set(visited)
+    nextVisited.add(id)
     const out: NotionBlock[] = []
     let cursor: string | undefined
     do {
@@ -190,11 +194,11 @@ export class NotionImporter {
       const data = (b[b.type] ?? {}) as Record<string, unknown>
       try {
         if (b.type === 'synced_block' && (data['synced_from'] as { block_id?: string } | null)?.block_id) {
-          b.children = await this.fetchBlocks((data['synced_from'] as { block_id: string }).block_id, withFiles)
+          b.children = await this.fetchBlocks((data['synced_from'] as { block_id: string }).block_id, withFiles, nextVisited)
         } else if (b.type === 'child_database') {
           b['database'] = await this.fetchDatabase(b.id, String(data['title'] ?? ''))
         } else if (b.has_children && b.type !== 'child_page') {
-          b.children = await this.fetchBlocks(b.id, withFiles)
+          b.children = await this.fetchBlocks(b.id, withFiles, nextVisited)
         }
       } catch (e) {
         if (isFatal(e)) throw e

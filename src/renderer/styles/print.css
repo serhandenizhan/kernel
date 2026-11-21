@@ -28,7 +28,7 @@ html.printing #root {
 }
 .print-title {
   margin: 0 0 14px;
-  font-family: var(--font-ui);
+  font-family: var(--font-heading);
   font-size: 30px;
   font-weight: 700;
   line-height: 1.2;

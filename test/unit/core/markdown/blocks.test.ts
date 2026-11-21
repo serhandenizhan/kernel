@@ -59,11 +59,44 @@ describe('markdownToDoc — bloklar', () => {
       })
     )
   })
+  it('boş satırsız (tek HTML bloğu) details sonraki blokları yutmaz', () => {
+    const parsed = markdownToDoc('<details>\n<summary>T</summary>\nBody\n</details>\n\n# Sonraki\n\nparagraf\n')
+    expect(parsed.content?.map((n) => n.type)).toEqual(['details', 'heading', 'paragraph'])
+    expect(parsed).toEqual(
+      doc(
+        {
+          type: 'details',
+          attrs: { card: false, heading: null },
+          content: [
+            { type: 'detailsSummary', content: [t('T')] },
+            { type: 'detailsContent', content: [p(t('Body'))] }
+          ]
+        },
+        { type: 'heading', attrs: { level: 1 }, content: [t('Sonraki')] },
+        p(t('paragraf'))
+      )
+    )
+  })
   it('kod bloğu dil ve satır numarası', () => {
     expect(markdownToDoc('```python {lineNumbers}\nprint(1)\n```')).toEqual(
       doc({ type: 'codeBlock', attrs: { language: 'python', lineNumbers: true }, content: [t('print(1)')] })
     )
     expect(markdownToDoc('```\n```')).toEqual(doc({ type: 'codeBlock', attrs: { language: null, lineNumbers: false } }))
+  })
+  it('kod bloğu dil kısaltmalarını normalize eder', () => {
+    const cases: [string, string | null][] = [
+      ['js', 'javascript'],
+      ['ts', 'typescript'],
+      ['py', 'python'],
+      ['sh', 'bash'],
+      ['yml', 'yaml'],
+      ['md', 'markdown'],
+      ['c++', 'cpp'],
+      ['text', null]
+    ]
+    for (const [tag, expected] of cases) {
+      expect(markdownToDoc(`\`\`\`${tag}\nx\n\`\`\``).content?.[0]?.attrs?.['language'], tag).toBe(expected)
+    }
   })
   it('blok ve satır içi formül', () => {
     expect(markdownToDoc('$$\n\\frac{a}{b}\n$$\n\nmetin $x^2$ son')).toEqual(

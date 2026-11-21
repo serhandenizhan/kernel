@@ -52,4 +52,15 @@ describe('ActivityStore', () => {
     await s.seedIfMissing([{ ...pages[2]!, updated: new Date(2026, 10, 4).toISOString() }])
     expect(await s.read()).toEqual({ '2026-11-03': ['a', 'b'] })
   })
+  it('okuma EBUSY verirse record mevcut dosyayı sıfırlamaz', async () => {
+    const okStore = new ActivityStore(root, at(new Date(2026, 10, 5, 12, 0)))
+    await okStore.record('a')
+    const locked = new (ActivityStore as unknown as new (r: string, n?: () => Date, o?: object) => ActivityStore)(root, at(new Date(2026, 10, 6, 12, 0)), {
+      fs: { readFile: async () => { throw Object.assign(new Error('EBUSY'), { code: 'EBUSY' }) }, rename: async () => undefined },
+      retries: 1,
+      delayMs: 1
+    })
+    await expect(locked.record('b')).rejects.toThrow('EBUSY')
+    expect(await okStore.read()).toEqual({ '2026-11-05': ['a'] })
+  })
 })

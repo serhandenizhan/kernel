@@ -3,6 +3,7 @@ import type { Editor } from '@tiptap/react'
 import { BubbleMenu } from '@tiptap/react/menus'
 import { NodeSelection } from '@tiptap/pm/state'
 import { ContextMenu } from '../../shell/ContextMenu'
+import { InputPopover } from '../../shell/InputPopover'
 import { tNow } from '../../lib/i18n'
 import type { MessageKey } from '@shared/i18n'
 import { Icon, type IconName } from '../../assets/icons'
@@ -23,6 +24,7 @@ export const HIGHLIGHT_COLORS: { id: string | null; label: MessageKey; swatch?: 
 export function BubbleToolbar({ editor }: { editor: Editor }) {
   const [colorMenu, setColorMenu] = useState<{ x: number; y: number } | null>(null)
   const [typeMenu, setTypeMenu] = useState<{ x: number; y: number } | null>(null)
+  const [linkPrompt, setLinkPrompt] = useState<{ x: number; y: number; from: number; to: number; initial: string } | null>(null)
   // seçim / biçim değişince yeniden çiz: tür adı ve etkin düğmeler güncel kalsın
   const [, rerender] = useReducer((n: number) => n + 1, 0)
   useEffect(() => {
@@ -82,13 +84,22 @@ export function BubbleToolbar({ editor }: { editor: Editor }) {
         const latex = editor.state.doc.textBetween(from, to)
         editor.chain().focus().deleteSelection().insertContent({ type: 'inlineMath', attrs: { latex } }).run()
       })}
-      {btn('link', 'link', tNow('bubble.link'), editor.isActive('link'), () => {
-        const prev = editor.getAttributes('link')['href'] as string | undefined
-        const url = window.prompt('Link adresi', prev ?? 'https://')
-        if (url === null) return
-        if (!url.trim()) editor.chain().focus().unsetLink().run()
-        else editor.chain().focus().extendMarkRange('link').setLink({ href: url.trim() }).run()
-      })}
+      <button
+        data-testid="bubble-link"
+        data-tip={tNow('bubble.link')}
+        aria-label={tNow('bubble.link')}
+        aria-expanded={!!linkPrompt}
+        className={`has-tip${editor.isActive('link') ? ' active' : ''}`}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={(e) => {
+          const r = e.currentTarget.getBoundingClientRect()
+          const { from, to } = editor.state.selection
+          const prev = (editor.getAttributes('link')['href'] as string | undefined) ?? ''
+          setLinkPrompt({ x: r.left, y: r.bottom + 6, from, to, initial: prev })
+        }}
+      >
+        <Icon name="link" size={15} />
+      </button>
       <span className="bubble-sep" />
       <button
         data-testid="bubble-highlight"
@@ -124,6 +135,28 @@ export function BubbleToolbar({ editor }: { editor: Editor }) {
             ...HIGHLIGHT_COLORS.filter((c) => c.id).map((c) => ({ label: tNow(c.label), swatch: c.swatch, checked: activeColor?.id === c.id, onSelect: () => editor.chain().focus().setHighlight({ color: c.id! }).run() })),
             { label: tNow('bubble.removeHighlight'), icon: 'close' as const, separatorBefore: true, onSelect: () => editor.chain().focus().unsetHighlight().run() }
           ]}
+        />
+      )}
+      {linkPrompt && (
+        <InputPopover
+          x={linkPrompt.x}
+          y={linkPrompt.y}
+          initial={linkPrompt.initial}
+          placeholder={tNow('bubble.linkPlaceholder')}
+          ariaLabel={tNow('bubble.link')}
+          testId="bubble-link-input"
+          onSubmit={(url) => {
+            const { from, to } = linkPrompt
+            setLinkPrompt(null)
+            const href = url.trim()
+            if (!href) editor.chain().focus().setTextSelection({ from, to }).extendMarkRange('link').unsetLink().run()
+            else editor.chain().focus().setTextSelection({ from, to }).extendMarkRange('link').setLink({ href }).run()
+          }}
+          onCancel={() => {
+            const { from, to } = linkPrompt
+            setLinkPrompt(null)
+            editor.chain().focus().setTextSelection({ from, to }).run()
+          }}
         />
       )}
     </BubbleMenu>

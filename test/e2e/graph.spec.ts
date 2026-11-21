@@ -28,3 +28,34 @@ test('graf tüm sayfaları ve linkleri gösterir; yerel graf komşularla sınır
   await expect(win.getByTestId('page-title')).toHaveValue('B')
   await app.close()
 })
+
+test('5.9b: ayarlar modalına tıklayınca arka plandaki graf düğümü açılmaz', async () => {
+  const vault = tmpVault()
+  writeFileSync(join(vault, 'Tek.md'), 'tek sayfa\n')
+  const { app, win } = await launch(vault)
+  try {
+    await win.getByTestId('nav-graph').click()
+    await expect(win.locator('.graph-canvas')).toBeVisible()
+    // tek düğüm simülasyonun merkezine otursun
+    await win.waitForTimeout(450)
+    const canvasBox = (await win.locator('.graph-canvas').boundingBox())!
+    const cx = canvasBox.x + canvasBox.width / 2
+    const cy = canvasBox.y + canvasBox.height / 2
+
+    await win.keyboard.press('ControlOrMeta+,')
+    await expect(win.getByTestId('settings-dialog')).toBeVisible()
+    const modalBox = (await win.getByTestId('settings-dialog').boundingBox())!
+    // tuval merkezi ayarlar penceresinin içinde olsun (backdrop değil)
+    expect(cx).toBeGreaterThan(modalBox.x)
+    expect(cx).toBeLessThan(modalBox.x + modalBox.width)
+    expect(cy).toBeGreaterThan(modalBox.y)
+    expect(cy).toBeLessThan(modalBox.y + modalBox.height)
+
+    await win.mouse.click(cx, cy)
+    await win.keyboard.press('Escape')
+    await expect(win.getByTestId('settings-dialog')).toHaveCount(0)
+    await expect(win.locator('.graph-canvas')).toBeVisible()
+  } finally {
+    await app.close()
+  }
+})

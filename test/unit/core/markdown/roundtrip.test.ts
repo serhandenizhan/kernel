@@ -10,7 +10,9 @@ const cases = [
   '> [!note]\n> a\n>\n> b',
   '> düz alıntı',
   '<details>\n<summary>Başlık</summary>\n\niçerik **kalın**\n\n- liste\n\n</details>',
+  '<details>\n<summary>T</summary>\nBody\n</details>\n\n# Sonraki\n\nparagraf\n',
   '<details>\n<summary>Dış</summary>\n\n<details>\n<summary>İç</summary>\n\nx\n\n</details>\n\n</details>',
+  '<details data-card>\n<summary>Kod sorusu</summary>\n\n```python\nx = 1\n```\n\n</details>',
   '```python\nprint(1)\n```',
   '```js {lineNumbers}\nlet a = 1\n```',
   '$$\n\\frac{a}{b}\n$$',
@@ -67,5 +69,13 @@ describe('round-trip', () => {
   })
   it('dosya sonu tek satır sonu', () => {
     expect(docToMarkdown(markdownToDoc('a'))).toBe('a\n')
+  })
+  it('kod bloğu dil kısaltması yazarken tam ada döner ve sonraki dönüşte değişmez', () => {
+    // Bilinçli davranış: dosyadaki ```js etiketi okurken javascript'e çevrilir ve yazarken ```javascript olur
+    const doc = markdownToDoc('```js\nlet a = 1\n```\n')
+    const written = docToMarkdown(doc)
+    expect(written).toBe('```javascript\nlet a = 1\n```\n')
+    expect(docToMarkdown(markdownToDoc(written))).toBe(written)
+    expect(markdownToDoc(written)).toEqual(doc)
   })
 })

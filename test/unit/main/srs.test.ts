@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFil
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { SrsStore } from '../../../src/main/srs'
-import type { Card } from '@core/cards'
+import { extractCards, legacyCardId, type Card } from '@core/cards'
 
 const DAY = 86_400_000
 let root: string
@@ -77,6 +77,30 @@ describe('SrsStore', () => {
     mkdirSync(dir, { recursive: true }) // okuma EISDIR ile başarısız olur
     await expect(store.due([card('a')])).rejects.toThrow()
     expect(existsSync(dir)).toBe(true)
+  })
+
+  it('migrates legacy card IDs for math questions without losing review progress', async () => {
+    const legacyId = legacyCardId('P', '$a + b$')
+    const cards = extractCards('P', '$a + b$ :: 1\n')
+    const newId = cards[0]!.id
+    expect(newId).not.toBe(legacyId)
+    mkdirSync(join(root, '.kernel'), { recursive: true })
+    writeFileSync(
+      join(root, '.kernel', 'srs.json'),
+      JSON.stringify({
+        version: 1,
+        cards: {
+          [legacyId]: { due: '2026-11-20T10:00:00Z', stability: 4, difficulty: 5, elapsed_days: 1, scheduled_days: 15, reps: 2, lapses: 0, state: 2 }
+        }
+      })
+    )
+    // due() çağrısı bile senkron öncesinde eski ilerlemeyi tanır
+    expect(await store.due(cards)).toEqual([])
+    await store.sync(cards)
+    const states = await store.states()
+    expect(states[newId]?.reps).toBe(2)
+    expect(states[newId]?.orphanSince).toBeUndefined()
+    expect(states[legacyId]).toBeUndefined()
   })
 })
 

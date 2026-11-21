@@ -2,16 +2,40 @@
 
 export const DETAILS_OPEN = /^<details((?:\s+data-[a-z]+(?:="[^"]*")?)*)\s*>/i
 export const DETAILS_CLOSE = /^<\/details>\s*$/i
+const DETAILS_TAG = /<\/?details\b[^>]*>/gi
 const SUMMARY = /<summary>([\s\S]*?)<\/summary>/i
 
-export function parseDetailsOpen(html: string): { card: boolean; heading: number | null; summary: string; rest: string } | null {
-  const m = DETAILS_OPEN.exec(html.trim())
+/** HTML içindeki <details> açılış/kapanış etiket dengesini takip eder; ilk kapanış konumunu döndürür */
+export function scanDetailsBalance(html: string, initialDepth: number): { depth: number; closeAt: number; closeLen: number } {
+  let depth = initialDepth
+  DETAILS_TAG.lastIndex = 0
+  for (let m = DETAILS_TAG.exec(html); m; m = DETAILS_TAG.exec(html)) {
+    depth += m[0].startsWith('</') ? -1 : 1
+    if (depth === 0) return { depth: 0, closeAt: m.index, closeLen: m[0].length }
+  }
+  return { depth, closeAt: -1, closeLen: 0 }
+}
+
+export function parseDetailsOpen(html: string): { card: boolean; heading: number | null; summary: string; rest: string; closed: boolean; depth: number; trailing: string } | null {
+  const trimmed = html.trim()
+  const m = DETAILS_OPEN.exec(trimmed)
   if (!m) return null
-  const after = html.trim().slice(m[0].length)
+  const after = trimmed.slice(m[0].length)
   const s = SUMMARY.exec(after)
   const attrs = m[1] ?? ''
   const h = /data-heading="([1-6])"/.exec(attrs)
-  return { card: /data-card/.test(attrs), heading: h ? Number(h[1]) : null, summary: s ? (s[1] ?? '').trim() : '', rest: s ? after.replace(SUMMARY, '').trim() : after.trim() }
+  const body = s ? after.replace(SUMMARY, '') : after
+  const bal = scanDetailsBalance(body, 1)
+  const closed = bal.depth === 0
+  return {
+    card: /data-card/.test(attrs),
+    heading: h ? Number(h[1]) : null,
+    summary: s ? (s[1] ?? '').trim() : '',
+    rest: (closed ? body.slice(0, bal.closeAt) : body).trim(),
+    closed,
+    depth: bal.depth,
+    trailing: closed ? body.slice(bal.closeAt + bal.closeLen).trim() : ''
+  }
 }
 
 export type InlineHtml =

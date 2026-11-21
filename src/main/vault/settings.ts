@@ -1,7 +1,8 @@
-import { mkdir, readFile } from 'node:fs/promises'
+import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { DEFAULT_SETTINGS, type Settings } from '@shared/types'
 import { writeAtomic } from './atomic'
+import { readJsonFile, type JsonFileOpts } from './json-file'
 
 const file = (root: string) => join(root, '.kernel', 'settings.json')
 
@@ -39,11 +40,9 @@ function merge(base: Settings, patch: Partial<Settings>): Settings {
 
 export const SETTINGS_SCHEMA = 3
 
-export async function readSettings(root: string): Promise<Settings> {
-  let raw: Partial<Settings>
-  try {
-    raw = JSON.parse(await readFile(file(root), 'utf8')) as Partial<Settings>
-  } catch {
+export async function readSettings(root: string, opts?: JsonFileOpts): Promise<Settings> {
+  const { value: raw, missing, corrupt } = await readJsonFile<Partial<Settings> | null>(file(root), () => null, opts)
+  if (missing || corrupt || !raw || typeof raw !== 'object' || Array.isArray(raw)) {
     return structuredClone(DEFAULT_SETTINGS)
   }
   const settings = merge(DEFAULT_SETTINGS, raw)
@@ -63,9 +62,9 @@ export async function readSettings(root: string): Promise<Settings> {
 // kasa başına yazım kuyruğu: art arda gelen değişiklikler (oku-birleştir-yaz) birbirini ezmesin
 const queues = new Map<string, Promise<unknown>>()
 
-export function writeSettings(root: string, patch: Partial<Settings>): Promise<Settings> {
+export function writeSettings(root: string, patch: Partial<Settings>, opts?: JsonFileOpts): Promise<Settings> {
   const run = async () => {
-    const next = merge(await readSettings(root), patch)
+    const next = merge(await readSettings(root, opts), patch)
     await mkdir(join(root, '.kernel'), { recursive: true })
     await writeAtomic(file(root), JSON.stringify(next, null, 2))
     return next

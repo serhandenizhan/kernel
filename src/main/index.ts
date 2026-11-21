@@ -1,4 +1,6 @@
+import { devEnv, isPackagedApp } from './env'
 import { isHeadlessTest } from './window-options'
+import { cleanupUpdateTemp } from './update-install'
 import { app, BrowserWindow } from 'electron'
 import { createMainWindow } from './window'
 import { installCrashLogging, log } from './log'
@@ -12,7 +14,8 @@ import { mainLang, onMainLanguageChange } from './i18n'
 import { pendingCount, waitPending } from './pending'
 
 // Testlerde uygulama ayarları geçici klasörde tutulur
-if (process.env['KERNEL_USER_DATA']) app.setPath('userData', process.env['KERNEL_USER_DATA'])
+const userData = devEnv('KERNEL_USER_DATA')
+if (userData) app.setPath('userData', userData)
 
 installCrashLogging()
 registerVaultScheme()
@@ -20,7 +23,7 @@ registerVaultScheme()
 if (process.platform === 'darwin') app.commandLine.appendSwitch('use-mock-keychain')
 
 // testlerde görünmez pencere "örtülü" sayılıp çizimi yavaşlatılmasın (macOS / Windows)
-if (isHeadlessTest(process.env)) {
+if (isHeadlessTest(process.env, isPackagedApp())) {
   app.commandLine.appendSwitch('disable-renderer-backgrounding')
   app.commandLine.appendSwitch('disable-backgrounding-occluded-windows')
   app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion')
@@ -28,10 +31,11 @@ if (isHeadlessTest(process.env)) {
 
 app.whenReady().then(async () => {
   // testlerde Dock simgesi de çıkmaz (odak ve dikkat çalınmaz)
-  if (isHeadlessTest(process.env)) app.dock?.hide()
+  if (isHeadlessTest(process.env, isPackagedApp())) app.dock?.hide()
   log.info('Kernel başlatılıyor', app.getVersion())
   handleVaultProtocol()
   void removeLegacyTokenFile(app.getPath('userData')).catch(() => undefined)
+  void cleanupUpdateTemp().catch(() => undefined)
   registerIpc()
   const vaultPath = await resolveVaultPath()
   if (vaultPath) {

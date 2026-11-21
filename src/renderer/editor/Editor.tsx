@@ -62,7 +62,7 @@ export function PageEditor({ page, secondary = false }: { page: PageData; second
     return (
       <div className="page-body">
         <div className="readonly-banner" data-testid="readonly-banner">
-          Bu dosya düzenlenemiyor ({parsed.error}). Dosyayı korumak için salt okunur açıldı.
+          {tNow('editor.readOnlyBanner', { error: parsed.error ?? tNow('editor.readFailed') })}
         </div>
         <pre className="raw-view">{page.markdown.replace(/\u0000/g, '�')}</pre>
       </div>

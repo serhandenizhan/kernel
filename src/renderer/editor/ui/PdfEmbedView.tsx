@@ -81,11 +81,20 @@ export function PdfEmbedView({ node, editor }: NodeViewProps) {
   useEffect(() => {
     if (!editor.isEditable) return
     let alive = true
+    let loaded: PDFDocumentProxy | null = null
     loadPdf(toVaultUrl(src))
-      .then((d) => alive && setDoc(d))
+      .then((d) => {
+        if (!alive) {
+          void d.loadingTask.destroy()
+          return
+        }
+        loaded = d
+        setDoc(d)
+      })
       .catch((e) => alive && setError(e instanceof Error ? e.message : tNow('pdf.openFailed')))
     return () => {
       alive = false
+      void loaded?.loadingTask.destroy()
     }
   }, [src, editor.isEditable])
 
@@ -107,7 +116,7 @@ export function PdfEmbedView({ node, editor }: NodeViewProps) {
   if (!editor.isEditable) {
     return (
       <NodeViewWrapper className="pdf-card" data-testid="pdf-embed">
-        📄 {name} — gömülü PDF
+        📄 {tNow('pdf.embeddedCard', { name })}
       </NodeViewWrapper>
     )
   }

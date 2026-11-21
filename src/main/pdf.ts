@@ -5,6 +5,7 @@ import type { PdfOptions, TreeNode } from '@shared/types'
 import type { Vault } from './vault/vault'
 import { log } from './log'
 import { mainT } from './i18n'
+import { devEnv } from './env'
 
 const MARGINS: Record<PdfOptions['margin'], number> = { narrow: 0.4, normal: 0.75, wide: 1.0 } // inç
 const READY_TIMEOUT_MS = 20_000
@@ -45,7 +46,8 @@ export async function openPrintWindow(vault: Vault, id: string, options: PdfOpti
   })
   const hash = `/print?ids=${encodeURIComponent(ids.join(','))}&opts=${encodeURIComponent(JSON.stringify(options))}`
   try {
-    if (process.env['ELECTRON_RENDERER_URL']) await win.loadURL(`${process.env['ELECTRON_RENDERER_URL']}#${hash}`)
+    const rendererUrl = devEnv('ELECTRON_RENDERER_URL')
+    if (rendererUrl) await win.loadURL(`${rendererUrl}#${hash}`)
     else await win.loadFile(join(__dirname, '../renderer/index.html'), { hash })
     await waitReady(win)
     return win

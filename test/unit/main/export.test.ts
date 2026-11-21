@@ -1,10 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { unzipSync, strFromU8 } from 'fflate'
 import { Vault } from '../../../src/main/vault/vault'
-import { exportMarkdownZip, referencedAttachments } from '../../../src/main/export'
+import { exportMarkdownZip, inlineAssetUrls, referencedAttachments } from '../../../src/main/export'
 
 let root: string
 let out: string
@@ -42,5 +43,38 @@ describe('exportMarkdownZip', () => {
   it('alt sayfasız', async () => {
     const zip = await exportMarkdownZip(vault, fizikId, false, join(out, 'Fizik.zip'))
     expect(Object.keys(unzipSync(readFileSync(zip))).sort()).toEqual(['Fizik.md', 'attachments/a b.png', 'attachments/kapak.jpg'])
+  })
+
+  it('kasa dışına çıkan yolları (../, %2e%2e, symlink) zip içine almaz', async () => {
+    const outside = mkdtempSync(join(tmpdir(), 'kernel-exp-secret-'))
+    const secret = join(outside, 'gizli.txt')
+    writeFileSync(secret, 'COK_GIZLI')
+    // kasa kökünün bir üstüne değil, doğrudan root/.. dışına çıkan göreli yol üret
+    if (process.platform !== 'win32') symlinkSync(secret, join(root, 'attachments', 'kacis.txt'))
+    const p = await vault.create(null, 'Saldiri')
+    await vault.write(p.id, {
+      markdown: `![](attachments/../../gizli.txt)\n![](attachments/%2e%2e/%2e%2e/${basename(outside)}/gizli.txt)\n![](attachments/kacis.txt)\n`,
+      meta: (await vault.read(p.id)).meta
+    })
+    const zip = await exportMarkdownZip(vault, p.id, false, join(out, 'Saldiri.zip'))
+    const entries = Object.keys(unzipSync(readFileSync(zip)))
+    expect(entries).toEqual(['Saldiri.md'])
+    expect(entries.some((k) => k.includes('..'))).toBe(false)
+  })
+})
+
+describe('inlineAssetUrls', () => {
+  it('yalnızca stil içindeki renderer varlıklarını gömer, not içeriğindeki url(...) ifadelerine dokunmaz', async () => {
+    const rendererDir = mkdtempSync(join(tmpdir(), 'kernel-ren-'))
+    mkdirSync(join(rendererDir, 'assets'))
+    writeFileSync(join(rendererDir, 'assets', 'font.woff2'), 'FONT_DATA')
+    const secretDir = mkdtempSync(join(tmpdir(), 'kernel-sec-'))
+    const secretFile = join(secretDir, 'gizli.txt')
+    writeFileSync(secretFile, 'GIZLI_BILGI')
+    const html = `<style>.a{src:url("assets/font.woff2")}.b{src:url("../../${basename(secretDir)}/gizli.txt")}</style><body><pre>url("${pathToFileURL(secretFile).toString()}")</pre></body>`
+    const outHtml = await inlineAssetUrls(html, rendererDir)
+    expect(outHtml).toContain(`data:font/woff2;base64,${Buffer.from('FONT_DATA').toString('base64')}`)
+    expect(outHtml).not.toContain(Buffer.from('GIZLI_BILGI').toString('base64'))
+    expect(outHtml).toContain(pathToFileURL(secretFile).toString())
   })
 })

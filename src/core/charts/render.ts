@@ -30,9 +30,9 @@ export function niceTicks(min: number, max: number, count = 5): number[] {
   const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= raw)!
   lo = Math.floor(lo / step) * step
   hi = Math.ceil(hi / step) * step
-  // yuvarlama adımın basamağına göre (0,001 adımlı eksen sıfıra çökmesin)
+  // yuvarlama adımın basamağına göre (0,001 ya da 1e-13 adımlı eksen sıfıra çökmesin)
   const digits = Math.max(0, -Math.floor(Math.log10(step))) + 1
-  const round = (v: number) => Number(v.toFixed(Math.min(digits, 12))) || 0
+  const round = (v: number) => (digits <= 20 ? Number(v.toFixed(digits)) : Number(v.toPrecision(12))) || 0
   const out: number[] = []
   for (let i = 0, v = lo; v <= hi + step / 2 && i < 50; i++, v = lo + i * step) out.push(round(v))
   return out
@@ -73,9 +73,10 @@ function cartesian(s: ChartSpec): string {
   const ticks = niceTicks(Math.min(...vals, 0), Math.max(...vals, 0))
   const lo = ticks[0]!
   const hi = ticks[ticks.length - 1]!
+  const span = hi - lo || 1
   // değer ekseni: dikeyde y, yatay çubukta x
-  const vy = (v: number) => bottom - ((v - lo) / (hi - lo)) * (bottom - top)
-  const vx = (v: number) => left + ((v - lo) / (hi - lo)) * (right - left)
+  const vy = (v: number) => bottom - ((v - lo) / span) * (bottom - top)
+  const vx = (v: number) => left + ((v - lo) / span) * (right - left)
   const parts: string[] = []
   for (const t of ticks) {
     if (horizontal) {
@@ -96,12 +97,12 @@ function cartesian(s: ChartSpec): string {
         if (horizontal) {
           const x0 = vx(Math.min(0, v))
           const w = Math.abs(vx(v) - vx(0))
-          parts.push(`<rect class="kc-bar" data-row="${i}" x="${r2(x0)}" y="${r2(offset + 1)}" width="${r2(w)}" height="${r2(bw - 2)}" rx="4" fill="${fill}"/>`)
+          parts.push(`<rect class="kc-bar" data-row="${i}" x="${r2(x0)}" y="${r2(offset + 1)}" width="${r2(w)}" height="${r2(Math.max(1, bw - 2))}" rx="4" fill="${fill}"/>`)
           if (showValues) parts.push(text(v >= 0 ? vx(v) + 6 : vx(v) - 6, offset + bw / 2 + 4, fmt(v, s.unit), 'kc-value', v >= 0 ? 'start' : 'end'))
         } else {
           const y0 = vy(Math.max(0, v))
           const h = Math.abs(vy(v) - vy(0))
-          parts.push(`<rect class="kc-bar" data-row="${i}" x="${r2(offset + 1)}" y="${r2(y0)}" width="${r2(bw - 2)}" height="${r2(h)}" rx="4" fill="${fill}"/>`)
+          parts.push(`<rect class="kc-bar" data-row="${i}" x="${r2(offset + 1)}" y="${r2(y0)}" width="${r2(Math.max(1, bw - 2))}" height="${r2(h)}" rx="4" fill="${fill}"/>`)
           if (showValues) parts.push(text(offset + bw / 2, v >= 0 ? vy(v) - 6 : vy(v) + 14, fmt(v, s.unit), 'kc-value'))
         }
       })
@@ -185,7 +186,7 @@ function radar(s: ChartSpec): string {
   const cy = top + (H - top) / 2
   const R = (H - top) / 2 - 34
   const n = Math.max(3, s.rows.length)
-  const max = niceTicks(0, Math.max(...s.rows.flatMap((r) => r.values), 0)).at(-1)!
+  const max = niceTicks(0, Math.max(...s.rows.flatMap((r) => r.values), 0)).at(-1)! || 1
   const ang = (i: number) => -Math.PI / 2 + (i / n) * Math.PI * 2
   const at = (i: number, r: number) => `${r2(cx + r * Math.cos(ang(i)))},${r2(cy + r * Math.sin(ang(i)))}`
   const parts: string[] = []
@@ -229,8 +230,10 @@ function scatterOrPlane(s: ChartSpec): string {
   const left = plane ? (W - size) / 2 : 52
   const right = plane ? left + size : W - 20
   const bottom = top + size
-  const x = (v: number) => left + ((v - xt[0]!) / (xt.at(-1)! - xt[0]!)) * (right - left)
-  const y = (v: number) => bottom - ((v - yt[0]!) / (yt.at(-1)! - yt[0]!)) * (bottom - top)
+  const xSpan = xt.at(-1)! - xt[0]! || 1
+  const ySpan = yt.at(-1)! - yt[0]! || 1
+  const x = (v: number) => left + ((v - xt[0]!) / xSpan) * (right - left)
+  const y = (v: number) => bottom - ((v - yt[0]!) / ySpan) * (bottom - top)
   const parts: string[] = []
   for (const t of xt) parts.push(`<line class="kc-grid" x1="${r2(x(t))}" x2="${r2(x(t))}" y1="${top}" y2="${bottom}"/>`)
   for (const t of yt) parts.push(`<line class="kc-grid" x1="${left}" x2="${right}" y1="${r2(y(t))}" y2="${r2(y(t))}"/>`)

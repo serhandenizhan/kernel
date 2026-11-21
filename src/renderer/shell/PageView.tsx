@@ -88,17 +88,22 @@ function TitleField({ page }: { page: PageData }) {
     }
   }, [title])
 
+  useEffect(() => () => {
+    if (timer.current) clearTimeout(timer.current)
+  }, [])
+
   // Enter, blur ve zamanlayıcı aynı anda tetikleyebilir: yeniden adlandırmalar sırayla ve bir kez yapılır
   const commit = (value: string): Promise<void> => {
     if (timer.current) clearTimeout(timer.current)
     const next = value.trim() || tNow('page.untitled')
-    chain.current = chain.current.then(async () => {
+    const job = chain.current.then(async () => {
       if (next === committed.current) return
       const node = await kernel.pages.rename(page.id, next)
       committed.current = node.title
       await useStore.getState().refreshTree()
     })
-    return chain.current.catch(() => useStore.getState().toast(tNow('page.renameFailed'), 'error'))
+    chain.current = job.catch(() => useStore.getState().toast(tNow('page.renameFailed'), 'error'))
+    return chain.current
   }
 
   return (

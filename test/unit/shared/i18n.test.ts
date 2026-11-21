@@ -48,4 +48,9 @@ describe('dayanıklılık', () => {
   it('tanınmayan dil Türkçeye düşer', () => {
     expect(t('fr' as never, 'common.subpages.other', { count: 2 })).toBe('2 alt sayfa')
   })
+  it('Object.prototype anahtarlarında fonksiyon sızdırmaz', () => {
+    expect(t('tr', 'toString' as MessageKey)).toBe('toString')
+    expect(t('tr', 'constructor' as MessageKey)).toBe('constructor')
+    expect(t('tr', 'common.subpages.other', { count: 2 })).toBe('2 alt sayfa')
+  })
 })

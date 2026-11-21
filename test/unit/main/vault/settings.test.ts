@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { readSettings, writeSettings } from '../../../../src/main/vault/settings'
@@ -67,5 +67,25 @@ describe('güncelleme ayarı', () => {
     expect((await readSettings(root)).updates).toEqual({ check: true, skipped: null })
     await writeSettings(root, { updates: { check: false, skipped: null } })
     expect((await writeSettings(root, { updates: { skipped: '0.5.0' } as never })).updates).toEqual({ check: false, skipped: '0.5.0' })
+  })
+})
+
+describe('hata dayanıklılığı', () => {
+  it('okuma EBUSY verirse mevcut ayar dosyasının üzerine yazmaz', async () => {
+    await writeSettings(root, { theme: 'dark' })
+    const lockedFs = {
+      readFile: async () => {
+        throw Object.assign(new Error('EBUSY'), { code: 'EBUSY' })
+      },
+      rename: async () => undefined
+    }
+    await expect((writeSettings as (r: string, p: object, o?: object) => Promise<unknown>)(root, { pageWidth: 'wide' }, { fs: lockedFs, retries: 1, delayMs: 1 })).rejects.toThrow('EBUSY')
+    expect((await readSettings(root)).theme).toBe('dark')
+  })
+  it('bozuk ayar dosyası .corrupt-* olarak yedeklenir', async () => {
+    writeFileSync(join(root, '.kernel', 'settings.json'), '{bozuk')
+    const s = await readSettings(root)
+    expect(s.theme).toBe('system')
+    expect(readdirSync(join(root, '.kernel')).some((n) => n.startsWith('settings.json.corrupt-'))).toBe(true)
   })
 })

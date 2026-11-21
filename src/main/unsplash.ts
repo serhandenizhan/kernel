@@ -1,6 +1,7 @@
 import { net } from 'electron'
 import { readFile } from 'node:fs/promises'
 import { creditLine, isUnsplashImageUrl, isUnsplashLink, parseSearch, photoFileUrl, searchUrl, UNSPLASH_API, type UnsplashPhoto } from '@core/unsplash'
+import { devEnv } from './env'
 
 // Unsplash kapak görselleri. Ağa yalnızca ana süreç çıkar (arayüzün CSP'si dış sunucuya izin vermez):
 // arama sonuçları ve küçük önizlemeler buradan gelir, seçilen görsel kasaya kaydedilir.
@@ -43,14 +44,14 @@ export async function searchPhotos(key: string, query: string, page: number): Pr
   if (!key.trim()) return { ok: false, error: 'no-key' }
   if (!query.trim()) return { ok: true, photos: [], totalPages: 0 }
   let json: unknown
-  const fixture = process.env['KERNEL_TEST_UNSPLASH_FIXTURE']
+  const fixture = devEnv('KERNEL_TEST_UNSPLASH_FIXTURE')
   if (fixture) {
     try {
       json = JSON.parse(await readFile(fixture, 'utf8'))
     } catch {
       return { ok: false, error: 'network' }
     }
-  } else if (process.env['KERNEL_TEST']) {
+  } else if (devEnv('KERNEL_TEST')) {
     return { ok: false, error: 'network' }
   } else {
     try {
@@ -76,7 +77,7 @@ export async function fetchPhoto(key: string, id: string): Promise<{ bytes: Uint
   const photo = known.get(id)
   if (!photo) throw new Error('unknown photo')
   let bytes: Uint8Array
-  const local = process.env['KERNEL_TEST_UNSPLASH_IMAGE']
+  const local = devEnv('KERNEL_TEST_UNSPLASH_IMAGE')
   if (local) {
     bytes = await readFile(local)
   } else {

@@ -20,6 +20,6 @@ export function windowOptions(platform: string, dark: boolean): BrowserWindowCon
  * Otomatik testlerde pencere gösterilmez ve Dock'ta görünmez: testler çalışırken kullanıcı bilgisayarını rahatça kullanabilsin (odak çalınmaz).
  * KERNEL_TEST_SHOW=1 ile (hata ayıklarken) ya da ekran görüntüsü alırken (KERNEL_SCREENSHOTS=1) pencere görünür.
  */
-export function isHeadlessTest(env: Record<string, string | undefined>): boolean {
-  return !!env['KERNEL_TEST'] && !env['KERNEL_TEST_SHOW'] && !env['KERNEL_SCREENSHOTS']
+export function isHeadlessTest(env: Record<string, string | undefined>, packaged = false): boolean {
+  return !packaged && !!env['KERNEL_TEST'] && !env['KERNEL_TEST_SHOW'] && !env['KERNEL_SCREENSHOTS']
 }

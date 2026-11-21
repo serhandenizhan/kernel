@@ -19,16 +19,20 @@ async function renameRetry(fs: Fs, from: string, to: string): Promise<void> {
 }
 
 // Yarım dosya bırakmayan yazma: geçici dosya → fsync → rename
-export function writeAtomic(file: string, data: string | Uint8Array, fs: Fs = fsp): Promise<void> {
+export function writeAtomic(file: string, data: string | Uint8Array, fs: Fs = fsp, mode?: number): Promise<void> {
   // kapanışta yarım kalmasın diye takip edilir
-  return track(write(file, data, fs))
+  return track(write(file, data, fs, mode))
 }
 
-async function write(file: string, data: string | Uint8Array, fs: Fs): Promise<void> {
+async function write(file: string, data: string | Uint8Array, fs: Fs, mode?: number): Promise<void> {
   const tmp = `${file}.${randomBytes(4).toString('hex')}.tmp`
   try {
-    const h = await fs.open(tmp, 'w')
+    const h = mode !== undefined ? await fs.open(tmp, 'w', mode) : await fs.open(tmp, 'w')
     try {
+      // umask kısaltmış olsa bile istenen dosya izni açıkça verilir
+      if (mode !== undefined && 'chmod' in h && typeof (h as { chmod: unknown }).chmod === 'function') {
+        await (h as { chmod(m: number): Promise<void> }).chmod(mode)
+      }
       await h.writeFile(data)
       await h.sync()
     } finally {

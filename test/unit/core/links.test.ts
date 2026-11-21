@@ -35,6 +35,11 @@ describe('extractTags', () => {
     expect(extractTags(md)).toEqual([])
   })
 
+  it('does not treat markdown link anchor targets as tags', () => {
+    expect(extractTags('[Özet](#ozet) metin')).toEqual([])
+    expect(extractTags('[Özet](#ozet) ve #gercek ve (#parantez) ![resim](<a#b.png>)')).toEqual(['gercek', 'parantez'])
+  })
+
   it('ignores non-array frontmatter tags safely', () => {
     expect(extractTags('#a', 'tek')).toEqual(['tek', 'a'])
     expect(extractTags('', { x: 1 })).toEqual([])

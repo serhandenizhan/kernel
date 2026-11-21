@@ -110,6 +110,19 @@ describe('uygulama içi güncelleme', () => {
     const bad = { ...withZip, assets: [{ name: 'Kernel-0.7.0-arm64-mac.zip', browser_download_url: 'https://evil.example/Kernel.zip' }] }
     expect(parseRelease(bad, 'darwin')).toBeNull()
   })
+  it('geçersiz ya da yol geçişi içeren sürüm etiketlerini reddeder', () => {
+    expect(parseRelease({ ...withZip, tag_name: 'v1.0/../x' }, 'darwin')).toBeNull()
+    expect(parseRelease({ ...withZip, tag_name: 'v1.0.0.0.1' }, 'darwin')).toBeNull()
+    expect(parseRelease({ ...withZip, tag_name: 'v1.0-foo' }, 'darwin')).toBeNull()
+  })
+  it('varsa digest alanından kurulum sha256 özetini okur', () => {
+    const hash = 'a'.repeat(64)
+    const digested = {
+      ...withZip,
+      assets: withZip.assets.map((a) => (a.name.endsWith('-mac.zip') ? { ...a, digest: `sha256:${hash.toUpperCase()}` } : a))
+    }
+    expect(parseRelease(digested, 'darwin')?.installSha256).toBe(hash)
+  })
   it('çalışan dosyadan uygulama paketinin yolu bulunur', () => {
     expect(macBundleFromExe('/Applications/Kernel.app/Contents/MacOS/Kernel')).toBe('/Applications/Kernel.app')
     expect(macBundleFromExe('/usr/local/bin/electron')).toBeNull()

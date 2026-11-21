@@ -40,4 +40,14 @@ describe('PinStore okuma', () => {
     await p.remove('a')
     expect(await p.list()).toEqual(['b'])
   })
+  it('EBUSY hatasında sabitlemeleri boş liste gibi sıfırlamaz', async () => {
+    await new PinStore(root).set(['a', 'b'])
+    const locked = new (PinStore as unknown as new (r: string, o?: object) => PinStore)(root, {
+      fs: { readFile: async () => { throw Object.assign(new Error('EBUSY'), { code: 'EBUSY' }) }, rename: async () => undefined },
+      retries: 1,
+      delayMs: 1
+    })
+    await expect(locked.remove('a')).rejects.toThrow('EBUSY')
+    expect(await new PinStore(root).list()).toEqual(['a', 'b'])
+  })
 })

@@ -38,4 +38,14 @@ describe('fetchLatestRelease', () => {
     expect(info?.version).toBe('9.0.0')
     expect(fetchImpl).not.toHaveBeenCalled()
   })
+
+  it('ignores KERNEL_TEST env hooks when packaged is true', async () => {
+    const fetchImpl = vi.fn(async () => new Response(JSON.stringify(body), { status: 200 }))
+    const dir = mkdtempSync(join(tmpdir(), 'kernel-feed-pkg-'))
+    const feed = join(dir, 'latest.json')
+    writeFileSync(feed, JSON.stringify({ ...body, tag_name: 'v1.0.0' }))
+    const info = await fetchLatestRelease({ fetchImpl, platform: 'darwin', env: { KERNEL_TEST: '1', KERNEL_TEST_UPDATE_FEED: feed }, packaged: true } as never)
+    expect(fetchImpl).toHaveBeenCalledTimes(1)
+    expect(info?.version).toBe('9.0.0')
+  })
 })
